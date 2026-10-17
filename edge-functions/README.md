@@ -1,15 +1,17 @@
 # Edge functions
 
-Supabase Edge Functions (Deno) for everything that calls the Perceptron vision API
-(`perceptron-mk1.5` and `/v1/detect`), written against the HuskyFind Supabase schema
-(`found_items`, `missing_reports`, `item_matches`, Storage buckets `found-photos` / `missing-photos`).
+Supabase Edge Functions (Deno) for everything that calls the Perceptron vision API (`perceptron-mk1.5` and
+`/v1/detect`), written against the HuskyFind Supabase schema (`found_items`, `missing_reports`, `item_matches`, Storage
+buckets `found-photos` / `missing-photos`).
 
-| Function | Who calls it | What it does |
-| - | - | - |
-| `identify-found-items` | Rover / desk ingestion (trusted) | Detects every lost item in a photo, crops and describes each one, uploads the crops to `found-photos`, inserts `found_items` rows. The INSERT trigger then runs matching and notifications. |
-| `compare-items` | Student app or backend | Rates 0–100 whether a missing report and a found listing are the same physical object, using both photos plus the owner's description. Read-only. |
+| Function                | Who calls it                     | What it does                                                                                                                                                                                |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `identify-found-items`  | Rover / desk ingestion (trusted) | Detects every lost item in a photo, crops and describes each one, uploads the crops to `found-photos`, inserts `found_items` rows. The INSERT trigger then runs matching and notifications. |
+| `analyze-missing-photo` | Student app                      | Suggests title, description, category and color from a photo of the student's lost item, so the report form is pre-filled with the app's exact category spellings before insert. Read-only. |
+| `compare-items`         | Student app or backend           | Rates 0–100 whether a missing report and a found listing are the same physical object, using both photos plus the owner's description. Read-only.                                           |
 
-`_shared/` holds the Perceptron client, image loading/cropping, and HTTP helpers.
+`_shared/` holds the Perceptron client, the category/color vocabulary (`items.ts`), image loading/cropping, and HTTP
+helpers.
 
 ## Secrets
 
@@ -26,14 +28,18 @@ supabase secrets set --env-file edge-functions/.env --project-ref salsusdncqbtrk
 
 ## Deploy
 
-- `identify-found-items`: `verify_jwt = false`. It authenticates with `x-ingest-secret` and writes with the service role.
-- `compare-items`: `verify_jwt = true`. It runs as the caller, so RLS limits it to the student's own reports and visible listings.
+- `identify-found-items`: `verify_jwt = false`. It authenticates with `x-ingest-secret` and writes with the service
+  role.
+- `analyze-missing-photo`: `verify_jwt = true`. Storage reads run as the caller.
+- `compare-items`: `verify_jwt = true`. It runs as the caller, so RLS limits it to the student's own reports and visible
+  listings.
 
 The Supabase CLI looks for functions in `supabase/functions/`, so deploy from a copy laid out that way:
 
 ```bash
-W=$(mktemp -d) && mkdir -p $W/supabase/functions && cp -R edge-functions/{_shared,identify-found-items,compare-items} $W/supabase/functions/
+W=$(mktemp -d) && mkdir -p $W/supabase/functions && cp -R edge-functions/{_shared,identify-found-items,analyze-missing-photo,compare-items} $W/supabase/functions/
 (cd $W && supabase functions deploy identify-found-items --project-ref salsusdncqbtrkcqxdkg --no-verify-jwt --use-api \
+       && supabase functions deploy analyze-missing-photo --project-ref salsusdncqbtrkcqxdkg --use-api \
        && supabase functions deploy compare-items --project-ref salsusdncqbtrkcqxdkg --use-api)
 ```
 
@@ -47,8 +53,14 @@ curl -X POST "$SUPABASE_URL/functions/v1/identify-found-items" \
        "latitude":47.6557,"longitude":-122.3080,"source":"rover","rover_id":"<uuid>","is_demo":false}'
 ```
 
-Send exactly one of `image_path` (in `found-photos`), `image_url` (HTTPS), or `image_base64`.
-The response lists the inserted rows under `listed`, and detections that were dropped (furniture, or a failed description) under `skipped`.
+Send exactly one of `image_path` (in `found-photos`), `image_url` (HTTPS), or `image_base64`. The response lists the
+inserted rows under `listed`, and detections that were dropped (furniture, or a failed description) under `skipped`.
+
+```ts
+// Pre-fill the report form (before or after uploading to missing-photos):
+const { data } = await supabase.functions.invoke("analyze-missing-photo", { body: { image_path } });
+// -> { item_visible, title, description, category, color }
+```
 
 ```ts
 // From the app, with the student's session:
@@ -73,7 +85,10 @@ SUPABASE_URL=https://salsusdncqbtrkcqxdkg.supabase.co SUPABASE_SERVICE_ROLE_KEY=
 
 ## Notes
 
-- Listing descriptions are told to leave out names, ID numbers and other owner text, because owners use those details privately to prove a claim.
+- Listing descriptions are told to leave out names, ID numbers and other owner text, because owners use those details
+  privately to prove a claim.
 - Crops are made with imagescript, which can't decode WebP. WebP scans fall back to the full photo with a box hint.
-- Comparison is most reliable when the owner's photo is a close-up. If the item is tiny in a wide scene, the score is noisy.
-- `compare-items` doesn't store its rating, because `item_matches` has no column for it. Persisting it would need a migration (for example `visual_similarity integer`).
+- Comparison is most reliable when the owner's photo is a close-up. If the item is tiny in a wide scene, the score is
+  noisy.
+- `compare-items` doesn't store its rating, because `item_matches` has no column for it. Persisting it would need a
+  migration (for example `visual_similarity integer`).

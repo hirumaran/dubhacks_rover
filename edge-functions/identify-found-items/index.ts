@@ -22,6 +22,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { HttpError, json, safeEqual, serve } from "../_shared/http.ts";
 import { cropToJpeg, fromBase64, fromStorage, fromUrl, type LoadedImage } from "../_shared/images.ts";
+import { CATEGORIES, CATEGORY_GUIDE, COLORS } from "../_shared/items.ts";
 import { askJson, type Box, detect, type Detection, image, text, toDataUrl } from "../_shared/perceptron.ts";
 
 const MAX_ITEMS = 12;
@@ -55,26 +56,6 @@ const DETECT_CATEGORIES = [
   "umbrella",
   "book",
   "notebook",
-];
-
-// The app's category spellings (SUPABASE_SCHEMA.md). Matching compares these exactly.
-const CATEGORIES = ["Electronics", "Water Bottles", "Bags", "Keys", "Clothing", "Accessories", "Other"];
-const COLORS = [
-  "Black",
-  "White",
-  "Gray",
-  "Silver",
-  "Gold",
-  "Red",
-  "Orange",
-  "Yellow",
-  "Green",
-  "Blue",
-  "Purple",
-  "Pink",
-  "Brown",
-  "Beige",
-  "Multicolor",
 ];
 
 type Description = {
@@ -115,10 +96,7 @@ names, student or ID numbers, phone numbers, email addresses, or any other text 
 the owner: owners describe those privately to prove the item is theirs, so publishing them would
 let anyone claim it.
 
-Category guide: phones, laptops, chargers, headphones, calculators -> Electronics. Bottles,
-tumblers, mugs -> Water Bottles. Backpacks, totes, purses, lunch boxes -> Bags. Keys and key
-rings -> Keys. Jackets, hats, scarves, gloves -> Clothing. Wallets, ID cards, glasses, jewelry,
-watches, umbrellas -> Accessories. Anything else -> Other.`;
+${CATEGORY_GUIDE}`;
 
 function iou(a: Box, b: Box): number {
   const ix = Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1));
