@@ -1,0 +1,6 @@
+Webots Project File version R2025a
+renderingDevicePerspectives: CampusScout:camera_0;0;1;0;0
+renderingDevicePerspectives: CampusScout:camera_1;0;1;0;0
+renderingDevicePerspectives: CampusScout:camera_2;0;1;0;0
+renderingDevicePerspectives: CampusScout:camera_3;0;1;0;0
+renderingDevicePerspectives: GatesDirector:photo_board;0;1;0.7;0.05

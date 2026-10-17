@@ -1,5 +1,7 @@
 # dubhacks_rover
 
+The standalone indoor rover showcase on branch **sarath** is in [`simulation-indoors/`](simulation-indoors/README.md). It captures all four directions every five simulation seconds and labels visible items. Open `simulation-indoors/Start Showcase.command` to run it.
+
 The complete autonomous campus rover simulation is in [`simulation/`](simulation/).
 
 - [Gates atrium indoor showcase](simulation/indoor_showcase/README.md) — autonomous indoor patrol, 360° camera and photo gallery

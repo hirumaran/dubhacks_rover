@@ -24,3 +24,9 @@ perception/inbox/
 perception/state/
 perception/reports/
 perception/.env
+
+# Standalone indoor project on sarath
+simulation-indoors/worlds/.*.wbproj*
+simulation-indoors/presentation/data/*
+!simulation-indoors/presentation/data/.gitkeep
+simulation-indoors/recordings/

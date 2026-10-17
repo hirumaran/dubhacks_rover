@@ -1,0 +1,20 @@
+{
+  "GATES-001": {
+    "description": "Rust-colored backpack"
+  },
+  "GATES-002": {
+    "description": "Purple-covered book"
+  },
+  "GATES-003": {
+    "description": "Navy blue backpack"
+  },
+  "GATES-004": {
+    "description": "Teal water bottle"
+  },
+  "GATES-005": {
+    "description": "Olive green backpack"
+  },
+  "GATES-006": {
+    "description": "Red-covered book"
+  }
+}
