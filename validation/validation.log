@@ -1,0 +1,113 @@
+UNSUPPORTED (log once): POSSIBLE ISSUE: unit 0 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable
+INFO: campus_rover: Starting controller: python3 -u campus_rover.py
+INFO: mission_supervisor: Starting controller: python3 -u mission_supervisor.py
+CAMPUS_SCOUT READY | OSM route 115.3m | 6 wheel motors | 4 recognition cameras | lidar
+PATROL 0.1s | PATROL | waypoint 1/157 | distance 0.0m | found 0
+PATROL 0.6s | PATROL | waypoint 1/157 | distance 0.1m | found 0
+CAPTURE CS-001 backpack | camera 0 | sim 5.7s | item crop saved, no location metadata
+PATROL 10.3s | PATROL | waypoint 5/157 | distance 3.0m | found 1
+PATROL 10.8s | PATROL | waypoint 5/157 | distance 3.2m | found 1
+PATROL 20.0s | PATROL | waypoint 9/157 | distance 6.2m | found 1
+PATROL 20.5s | PATROL | waypoint 9/157 | distance 6.4m | found 1
+CAPTURE CS-002 book | camera 0 | sim 29.2s | item crop saved, no location metadata
+PATROL 30.3s | PATROL | waypoint 13/157 | distance 9.2m | found 2
+PATROL 30.8s | PATROL | waypoint 13/157 | distance 9.4m | found 2
+PATROL 40.0s | PATROL | waypoint 17/157 | distance 12.4m | found 2
+PATROL 40.5s | PATROL | waypoint 17/157 | distance 12.6m | found 2
+LIDAR DETOUR | sim 47.0s front=0.53m, side=-1
+PATROL 50.2s | AVOID | waypoint 20/157 | distance 15.2m | found 2
+PATROL 50.8s | AVOID | waypoint 20/157 | distance 15.3m | found 2
+PATROL 60.5s | AVOID | waypoint 20/157 | distance 16.8m | found 2
+PATROL 61.0s | AVOID | waypoint 20/157 | distance 16.9m | found 2
+PATROL 70.2s | PATROL | waypoint 23/157 | distance 18.5m | found 2
+PATROL 70.7s | PATROL | waypoint 23/157 | distance 18.6m | found 2
+PATROL 80.4s | PATROL | waypoint 27/157 | distance 21.8m | found 2
+PATROL 81.0s | PATROL | waypoint 27/157 | distance 22.0m | found 2
+CAPTURE CS-003 bottle | camera 0 | sim 84.7s | item crop saved, no location metadata
+PATROL 90.2s | PATROL | waypoint 31/157 | distance 24.7m | found 3
+PATROL 90.7s | PATROL | waypoint 31/157 | distance 24.9m | found 3
+PATROL 100.4s | PATROL | waypoint 35/157 | distance 28.0m | found 3
+PATROL 100.9s | PATROL | waypoint 35/157 | distance 28.2m | found 3
+PATROL 110.1s | PATROL | waypoint 39/157 | distance 31.2m | found 3
+PATROL 110.7s | PATROL | waypoint 40/157 | distance 31.4m | found 3
+PATROL 120.4s | PATROL | waypoint 44/157 | distance 34.6m | found 3
+PATROL 120.9s | PATROL | waypoint 44/157 | distance 34.7m | found 3
+PATROL 130.1s | PATROL | waypoint 48/157 | distance 37.7m | found 3
+PATROL 130.6s | PATROL | waypoint 48/157 | distance 37.9m | found 3
+PATROL 140.4s | PATROL | waypoint 52/157 | distance 40.8m | found 3
+PATROL 140.9s | PATROL | waypoint 52/157 | distance 41.0m | found 3
+PATROL 150.1s | PATROL | waypoint 56/157 | distance 43.6m | found 3
+PATROL 150.6s | PATROL | waypoint 56/157 | distance 43.8m | found 3
+CAPTURE CS-004 backpack | camera 0 | sim 153.0s | item crop saved, no location metadata
+PATROL 160.3s | PATROL | waypoint 60/157 | distance 46.7m | found 4
+PATROL 160.8s | PATROL | waypoint 60/157 | distance 46.9m | found 4
+PATROL 170.0s | PATROL | waypoint 64/157 | distance 49.9m | found 4
+PATROL 170.6s | PATROL | waypoint 65/157 | distance 50.0m | found 4
+PATROL 180.3s | PATROL | waypoint 69/157 | distance 53.2m | found 4
+PATROL 180.8s | PATROL | waypoint 69/157 | distance 53.4m | found 4
+PATROL 190.0s | PATROL | waypoint 73/157 | distance 56.4m | found 4
+PATROL 190.5s | PATROL | waypoint 73/157 | distance 56.5m | found 4
+PATROL 200.3s | PATROL | waypoint 77/157 | distance 59.7m | found 4
+PATROL 200.8s | PATROL | waypoint 78/157 | distance 59.9m | found 4
+PATROL 210.5s | PATROL | waypoint 82/157 | distance 63.1m | found 4
+PATROL 220.2s | PATROL | waypoint 86/157 | distance 66.3m | found 4
+PATROL 220.7s | PATROL | waypoint 86/157 | distance 66.4m | found 4
+PATROL 230.5s | PATROL | waypoint 90/157 | distance 69.6m | found 4
+PATROL 231.0s | PATROL | waypoint 91/157 | distance 69.8m | found 4
+CAPTURE CS-005 book | camera 0 | sim 232.3s | item crop saved, no location metadata
+PATROL 240.2s | PATROL | waypoint 94/157 | distance 72.5m | found 5
+PATROL 240.7s | PATROL | waypoint 94/157 | distance 72.7m | found 5
+PATROL 250.4s | PATROL | waypoint 98/157 | distance 75.9m | found 5
+PATROL 250.9s | PATROL | waypoint 99/157 | distance 76.1m | found 5
+PATROL 260.2s | PATROL | waypoint 103/157 | distance 79.1m | found 5
+PATROL 260.7s | PATROL | waypoint 103/157 | distance 79.3m | found 5
+PATROL 270.4s | PATROL | waypoint 107/157 | distance 82.3m | found 5
+PATROL 270.9s | PATROL | waypoint 107/157 | distance 82.4m | found 5
+PATROL 280.1s | PATROL | waypoint 111/157 | distance 85.4m | found 5
+PATROL 280.6s | PATROL | waypoint 111/157 | distance 85.6m | found 5
+PATROL 290.4s | PATROL | waypoint 116/157 | distance 88.8m | found 5
+PATROL 290.9s | PATROL | waypoint 116/157 | distance 88.9m | found 5
+PATROL 300.1s | PATROL | waypoint 120/157 | distance 91.7m | found 5
+PATROL 300.6s | PATROL | waypoint 120/157 | distance 91.8m | found 5
+PATROL 310.3s | PATROL | waypoint 124/157 | distance 94.9m | found 5
+PATROL 310.8s | PATROL | waypoint 124/157 | distance 95.1m | found 5
+PATROL 320.1s | PATROL | waypoint 128/157 | distance 98.1m | found 5
+PATROL 320.6s | PATROL | waypoint 129/157 | distance 98.3m | found 5
+PATROL 330.3s | PATROL | waypoint 133/157 | distance 101.5m | found 5
+PATROL 330.8s | PATROL | waypoint 133/157 | distance 101.6m | found 5
+PATROL 340.0s | PATROL | waypoint 137/157 | distance 104.6m | found 5
+PATROL 340.5s | PATROL | waypoint 137/157 | distance 104.8m | found 5
+PATROL 350.3s | PATROL | waypoint 141/157 | distance 108.0m | found 5
+PATROL 350.8s | PATROL | waypoint 142/157 | distance 108.1m | found 5
+PATROL 360.0s | PATROL | waypoint 146/157 | distance 111.1m | found 5
+PATROL 360.5s | PATROL | waypoint 146/157 | distance 111.3m | found 5
+PATROL 370.2s | PATROL | waypoint 150/157 | distance 114.5m | found 5
+PATROL 370.8s | PATROL | waypoint 150/157 | distance 114.7m | found 5
+PATROL 380.5s | PATROL | waypoint 155/157 | distance 117.8m | found 5
+PATROL 381.0s | PATROL | waypoint 155/157 | distance 118.0m | found 5
+PATROL LAP 1 COMPLETE
+PATROL 390.2s | PATROL | waypoint 2/157 | distance 120.7m | found 5
+PATROL 390.7s | PATROL | waypoint 3/157 | distance 120.8m | found 5
+PATROL 400.4s | PATROL | waypoint 7/157 | distance 124.0m | found 5
+PATROL 401.0s | PATROL | waypoint 7/157 | distance 124.2m | found 5
+PATROL 410.2s | PATROL | waypoint 11/157 | distance 127.2m | found 5
+PATROL 410.7s | PATROL | waypoint 11/157 | distance 127.4m | found 5
+PATROL 420.4s | PATROL | waypoint 15/157 | distance 130.5m | found 5
+PATROL 420.9s | PATROL | waypoint 16/157 | distance 130.7m | found 5
+PATROL 430.1s | PATROL | waypoint 20/157 | distance 133.7m | found 5
+PATROL 430.7s | PATROL | waypoint 20/157 | distance 133.9m | found 5
+LIDAR DETOUR | sim 431.3s front=0.53m, side=-1
+PATROL 440.4s | AVOID | waypoint 20/157 | distance 135.4m | found 5
+PATROL 440.9s | AVOID | waypoint 20/157 | distance 135.5m | found 5
+PATROL 450.1s | AVOID | waypoint 20/157 | distance 137.0m | found 5
+PATROL 450.6s | AVOID | waypoint 20/157 | distance 137.1m | found 5
+PATROL 460.4s | PATROL | waypoint 25/157 | distance 139.8m | found 5
+PATROL 460.9s | PATROL | waypoint 26/157 | distance 140.0m | found 5
+PATROL 470.1s | PATROL | waypoint 29/157 | distance 143.0m | found 5
+PATROL 470.6s | PATROL | waypoint 30/157 | distance 143.1m | found 5
+PATROL 480.3s | PATROL | waypoint 34/157 | distance 146.3m | found 5
+PATROL 480.8s | PATROL | waypoint 34/157 | distance 146.5m | found 5
+PATROL 490.0s | PATROL | waypoint 38/157 | distance 149.5m | found 5
+PATROL 490.6s | PATROL | waypoint 38/157 | distance 149.6m | found 5
+INFO: campus_rover: Terminating.
+INFO: mission_supervisor: Terminating.

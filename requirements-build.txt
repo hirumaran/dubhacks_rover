@@ -1,0 +1,7 @@
+# Needed only to rebuild the world from OSM; not needed by the robot controllers.
+lxml
+pyproj
+shapely
+webcolors
+numpy
+Pillow

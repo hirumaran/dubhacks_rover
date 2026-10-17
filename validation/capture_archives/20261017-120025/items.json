@@ -1,0 +1,37 @@
+[
+  {
+    "sample_id": "CS-001",
+    "category": "backpack",
+    "simulation_time_s": 5.7,
+    "image": "captures/CS-001.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "CS-002",
+    "category": "book",
+    "simulation_time_s": 29.25,
+    "image": "captures/CS-002.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "CS-003",
+    "category": "bottle",
+    "simulation_time_s": 84.67,
+    "image": "captures/CS-003.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "CS-004",
+    "category": "backpack",
+    "simulation_time_s": 153.02,
+    "image": "captures/CS-004.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "CS-005",
+    "category": "book",
+    "simulation_time_s": 232.26,
+    "image": "captures/CS-005.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  }
+]

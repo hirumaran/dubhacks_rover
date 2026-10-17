@@ -1,0 +1,25 @@
+{
+  "attribution": "\u00a9 OpenStreetMap contributors",
+  "license": "ODbL 1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "download_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-122.3100,47.6569,-122.3048,47.6604",
+  "download_date": "2026-10-17",
+  "bounds": [
+    14.537754265591502,
+    -153.02333823684603
+  ],
+  "importer": "Webots R2025a official OSM importer",
+  "active_world_counts": {
+    "Crossroad": 109,
+    "Road": 187,
+    "SimpleBuilding": 9,
+    "SimpleTree": 53
+  },
+  "patrol_length_m": 115.34888023768306,
+  "limits": [
+    "Flat terrain; no surveyed elevations",
+    "OSM footprints and pedestrian topology; estimated building heights",
+    "Rover suspension rigid; skid steering",
+    "Recognition is simulator ground truth, not machine learning"
+  ]
+}

@@ -1,0 +1,14 @@
+# Python and editor caches
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+
+# Webots local workspace state
+worlds/.*.wbproj
+worlds/.*.wbproj.*
+
+# Runtime outputs. Reference evidence is retained under validation/.
+logs/
+gallery/captures/*
+!gallery/captures/.gitkeep

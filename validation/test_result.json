@@ -1,0 +1,23 @@
+{
+  "simulated_seconds": 500.03,
+  "robot": {
+    "time_s": 499.78,
+    "state": "PATROL",
+    "waypoint": 42,
+    "waypoints": 157,
+    "lap": 1,
+    "distance_m": 152.65,
+    "captures": 5,
+    "new_captures": 5,
+    "avoid_events": 2,
+    "front_range_m": 5.0,
+    "position_local_m": [
+      36.4195,
+      -131.3644
+    ],
+    "heading_rad": 0.78
+  },
+  "world": "uw_autonomous.wbt",
+  "success_motion": true,
+  "success_capture": true
+}
