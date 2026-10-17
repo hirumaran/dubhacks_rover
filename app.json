@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "HuskyFind",
+    "slug": "huskyfind",
+    "scheme": "huskyfind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "edu.huskyfind.mobile"
+    },
+    "android": { "package": "edu.huskyfind.mobile" },
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos of your missing item or ownership evidence.",
+          "cameraPermission": "Photograph your item."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Center the campus map on your location."
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": true }
+  }
+}
