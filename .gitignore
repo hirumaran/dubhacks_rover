@@ -19,17 +19,19 @@ simulation/indoor_showcase/presentation/data/*
 !simulation/indoor_showcase/presentation/data/.gitkeep
 simulation/indoor_showcase/recordings/
 
-# Perception pipeline runtime
-perception/inbox/
-perception/state/
-perception/reports/
-perception/.env
+# Perception bridge runtime
+simulation/perception_bridge/inbox/
+simulation/perception_bridge/state/
+simulation/perception_bridge/reports/
+simulation/perception_bridge/.env
 
 # Standalone indoor project on sarath
 simulation-indoors/worlds/.*.wbproj*
 simulation-indoors/presentation/data/*
 !simulation-indoors/presentation/data/.gitkeep
 simulation-indoors/recordings/
+
 # Edge function secrets
 edge-functions/.env
 edge-functions/supabase/.temp/
+supabase/.temp/

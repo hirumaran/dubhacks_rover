@@ -1,17 +1,18 @@
 """Perception bridge: optional controller add-on that mirrors the rover's
-cameras into the Isaac perception service inbox (default 5s cadence).
+cameras into the perception bridge inbox (default 5s cadence).
 
-Activation: set PERCEPTION_INBOX to the perception inbox dir before launching
-Webots. Without the env var this module is never imported and the rover
-controller behaves exactly as before.
+Activation: set PERCEPTION_INBOX to the inbox dir before launching Webots.
+Without the env var this module is never imported and the rover controller
+behaves exactly as before.
 
 Contract written per tick (one seq = one Webots sim moment):
   frame_<seq:07d>_c<i>.png   full camera image (RGB PNG)
-  frame_<seq:07d>.json       {"sim_time_s","gps","heading_rad","cameras":[
-                              {"idx":i,"objects":[{"model","position"[camera frame],
-                               "position_on_image","size_on_image","distance"}]}]}
-The perception service consumes, tracks, geotags and uploads; the controller
-(months of stdlib-only discipline included) writes only, never blocks driving.
+  frame_<seq:07d>.json       {"sim_time_s","gps","heading_rad","seq","cameras":[{"idx":i}]}
+Only what a real rover could sense is exported: camera pixels and its own GPS
+and compass pose. Simulator ground truth (Recognition objects) is deliberately
+left out, so everything downstream is pure vision. The bridge service
+(simulation/perception_bridge) does the rest; the controller writes only and
+never blocks driving.
 """
 import json
 import math
@@ -87,20 +88,7 @@ class PerceptionHook:
             if not data:
                 continue
             (self.inbox / f"frame_{seq:07d}_c{i}.png").write_bytes(data)
-            objects = []
-            for obj in cam.getRecognitionObjects():
-                model = obj.getModel()
-                if not model:
-                    continue
-                pos = obj.getPosition()
-                objects.append({
-                    "model": model,
-                    "position": [round(float(pos[0]), 3), round(float(pos[1]), 3), round(float(pos[2]), 3)],
-                    "position_on_image": [int(v) for v in obj.getPositionOnImage()],
-                    "size_on_image": [int(v) for v in obj.getSizeOnImage()],
-                    "distance": round(math.dist(pos, [0, 0, 0]), 3),
-                })
-            cam_entries.append({"idx": i, "objects": objects})
+            cam_entries.append({"idx": i})
 
         meta = {
             "sim_time_s": round(float(now), 2),

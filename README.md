@@ -9,10 +9,12 @@ The complete autonomous campus rover simulation is in [`simulation/`](simulation
 - [Webots world](simulation/worlds/uw_autonomous.wbt)
 - [Validation results](simulation/VALIDATION.md)
 
-The on-rover intelligence layer ([`perception/`](perception/)) runs
-Isaac-0.2-1B locally: camera frames -> detections -> stable object IDs ->
-geotags -> Supabase `sightings`, with a matching agent for the student web
-flow. See [perception/README.md](perception/README.md).
+Item recognition runs on Perceptron Mk1.5 through Supabase Edge Functions
+([`edge-functions/`](edge-functions/README.md)): they identify items in rover
+photos, list them as found, help students fill in missing-item reports, and rate
+whether a lost and a found item are the same object. The rover feeds them through
+[`simulation/perception_bridge/`](simulation/perception_bridge/README.md), which
+sends only camera images and the rover's GPS/compass pose.
 
 On macOS, open `simulation/Start Rover.command` to launch the rover (set
 `PERCEPTION_INBOX` first to enable the perception bridge), or open

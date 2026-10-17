@@ -1,0 +1,3 @@
+# Everything else is the Python standard library. Detection and description run on
+# Perceptron Mk1.5 inside the identify-found-items edge function.
+pillow>=10.0

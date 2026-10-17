@@ -5,6 +5,11 @@
 // uploads the crops to `found-photos`, and inserts one `found_items` row per item.
 // The database's INSERT trigger then runs matching and notifications.
 //
+// Before listing, each item is compared with recent available listings of the same category
+// nearby; if Perceptron rates it the same object, it is reported under `duplicates` instead of
+// being listed again. Send one image at a time per rover so two requests can't both list the
+// same item.
+//
 // Auth: `x-ingest-secret: <ROVER_INGEST_SECRET>`. Deploy with verify_jwt = false.
 //
 // Body:
@@ -19,13 +24,29 @@
 //   discovered_at? ISO 8601 timestamp, default now
 //   dry_run?       boolean  identify only; no uploads or inserts
 
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { HttpError, json, safeEqual, serve } from "../_shared/http.ts";
-import { cropToJpeg, fromBase64, fromStorage, fromUrl, type LoadedImage } from "../_shared/images.ts";
+import {
+  cropToJpeg,
+  fromBase64,
+  fromFoundImagePath,
+  fromStorage,
+  fromUrl,
+  type LoadedImage,
+} from "../_shared/images.ts";
 import { CATEGORIES, CATEGORY_GUIDE, COLORS } from "../_shared/items.ts";
+import { compareSightings, type Sighting } from "../_shared/rating.ts";
 import { askJson, type Box, detect, type Detection, image, text, toDataUrl } from "../_shared/perceptron.ts";
 
 const MAX_ITEMS = 12;
+// Detections smaller than this (pixels per side) are too small to describe or compare reliably.
+const MIN_SIDE_PX = 24;
+
+// Duplicate check. Stored coordinates are rounded to ~100 m, so the radius has to cover that.
+const DUP_RADIUS_M = 150;
+const DUP_WINDOW_H = 24;
+const DUP_MAX_CANDIDATES = 5;
+const DUP_MIN_SIMILARITY = 70;
 
 // What Detect looks for. Kept to concrete nouns: Detect's mention is one of these.
 const DETECT_CATEGORIES = [
@@ -110,7 +131,7 @@ function iou(a: Box, b: Box): number {
 function dedupe(dets: Detection[]): Detection[] {
   const kept: Detection[] = [];
   for (const d of dets) {
-    if (d.box.x2 - d.box.x1 < 4 || d.box.y2 - d.box.y1 < 4) continue;
+    if (d.box.x2 - d.box.x1 < MIN_SIDE_PX || d.box.y2 - d.box.y1 < MIN_SIDE_PX) continue;
     if (!kept.some((k) => iou(k.box, d.box) > 0.6)) kept.push(d);
   }
   return kept.slice(0, MAX_ITEMS);
@@ -131,6 +152,64 @@ async function describe(scene: LoadedImage, det: Detection, crop: Uint8Array | n
     title: d.title.trim().slice(0, 80),
     category: CATEGORIES.includes(d.category) ? d.category : "Other",
   };
+}
+
+type Listing = Sighting & { id: string; image_path: string; latitude: number; longitude: number };
+type Duplicate = { id: string; similarity: number };
+
+/** Campus-scale planar distance in meters. */
+function metersBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const dy = (lat2 - lat1) * 111_320;
+  const dx = (lng2 - lng1) * 111_320 * Math.cos((lat1 * Math.PI) / 180);
+  return Math.hypot(dx, dy);
+}
+
+/** Returns the existing listing this item duplicates, if Perceptron rates any nearby one the same object. */
+async function findDuplicate(
+  supabase: SupabaseClient,
+  info: Description,
+  photo: LoadedImage,
+  where: { lat: number; lng: number; isDemo: boolean; at: string },
+): Promise<Duplicate | null> {
+  const dLat = DUP_RADIUS_M / 111_320;
+  const dLng = DUP_RADIUS_M / (111_320 * Math.cos((where.lat * Math.PI) / 180));
+  const since = new Date(Date.parse(where.at) - DUP_WINDOW_H * 3_600_000).toISOString();
+
+  const { data, error } = await supabase
+    .from("found_items")
+    .select("id, title, description, category, color, image_path, latitude, longitude")
+    .eq("status", "available")
+    .eq("is_demo", where.isDemo)
+    .eq("category", info.category)
+    .gte("discovered_at", since)
+    .gte("latitude", where.lat - dLat).lte("latitude", where.lat + dLat)
+    .gte("longitude", where.lng - dLng).lte("longitude", where.lng + dLng)
+    .order("discovered_at", { ascending: false })
+    .limit(DUP_MAX_CANDIDATES)
+    .returns<Listing[]>();
+  if (error) throw new Error(`Duplicate lookup failed: ${error.message}`);
+
+  // A failed comparison counts as "not a duplicate": listing twice beats losing an item.
+  const rated = await Promise.allSettled(data.map(async (c) => ({
+    id: c.id,
+    r: await compareSightings(
+      info,
+      photo,
+      c,
+      await fromFoundImagePath(supabase, c.image_path),
+      metersBetween(where.lat, where.lng, c.latitude, c.longitude),
+    ),
+  })));
+  let best: Duplicate | null = null;
+  for (const x of rated) {
+    if (x.status !== "fulfilled") continue;
+    const { id, r } = x.value;
+    const same = r.verdict === "same_item" || r.verdict === "likely_same";
+    if (same && r.similarity >= DUP_MIN_SIMILARITY && (!best || r.similarity > best.similarity)) {
+      best = { id, similarity: r.similarity };
+    }
+  }
+  return best;
 }
 
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
@@ -178,7 +257,7 @@ serve(async (body, req) => {
   const crops = await Promise.all(detections.map((d) => cropToJpeg(scene, d.box)));
   const results = await Promise.allSettled(detections.map((d, i) => describe(scene, d, crops[i])));
 
-  const items: { detection: Detection; crop: Uint8Array | null; info: Description }[] = [];
+  let items: { detection: Detection; crop: Uint8Array | null; info: Description }[] = [];
   const skipped: { label: string; box: Box; reason: string }[] = [];
   results.forEach((r, i) => {
     const detection = detections[i];
@@ -191,11 +270,32 @@ serve(async (body, req) => {
     }
   });
 
+  // ---- drop items that are already listed nearby
+  const where = { lat, lng, isDemo: body.is_demo, at: discoveredAt };
+  const dupChecks = await Promise.all(
+    items.map((it) =>
+      findDuplicate(supabase, it.info, it.crop ? { bytes: it.crop, mime: "image/jpeg" } : scene, where)
+    ),
+  );
+  const duplicates = items.flatMap((it, i) => {
+    const dup = dupChecks[i];
+    return dup
+      ? [{
+        label: it.detection.mention,
+        box: it.detection.box,
+        existing_found_item_id: dup.id,
+        similarity: dup.similarity,
+      }]
+      : [];
+  });
+  items = items.filter((_, i) => !dupChecks[i]);
+
   if (dryRun || items.length === 0) {
     return json({
       dry_run: dryRun,
       listed: [],
       identified: items.map(({ detection, info }) => ({ ...info, label: detection.mention, box: detection.box })),
+      duplicates,
       skipped,
     });
   }
@@ -247,6 +347,7 @@ serve(async (body, req) => {
       const { detection } = items[rows.findIndex((r) => r.id === row.id)];
       return { ...row, label: detection.mention, box: detection.box };
     }),
+    duplicates,
     skipped,
   }, 201);
 });

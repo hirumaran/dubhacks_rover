@@ -17,7 +17,7 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { HttpError, json, serve } from "../_shared/http.ts";
 import { fromFoundImagePath, fromStorage, type LoadedImage } from "../_shared/images.ts";
-import { compare, type Found, type Report } from "./rating.ts";
+import { compare, type Found, type Report } from "../_shared/rating.ts";
 
 const MAX_PAIRS = 10;
 
