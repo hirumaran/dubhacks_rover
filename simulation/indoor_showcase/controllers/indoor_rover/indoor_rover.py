@@ -1,7 +1,8 @@
 """Sensor-driven autonomous indoor showcase. This controller has no Supervisor access.
 Navigation: simulated indoor pose, reference-layout waypoints, physical drive and lidar.
 The GPS device is idealized localization for simulation; real indoor operation needs SLAM.
-Detection: simulator camera Recognition (ground truth), deliberately replaceable.
+Capture: synchronized four-camera snapshot every five simulation seconds, including empty scenes.
+Detection: all visible simulated items within each scheduled snapshot, including repeat sightings.
 No item world coordinates or Supervisor object lookups are used by this controller.
 """
 from controller import Robot
@@ -15,24 +16,25 @@ def atomic_json(path,value):
  tmp=path.with_suffix('.tmp');tmp.write_text(json.dumps(value,indent=2));os.replace(tmp,path)
 def wrap(a):return math.atan2(math.sin(a),math.cos(a))
 def clamp(v,a,b):return max(a,min(b,v))
-def crop_png(camera,obj,path):
- """Encode a tight RGB crop from the sensor image, using only standard-library PNG code."""
+def write_png(path,w,h,rows):
+ def chunk(t,d):return struct.pack('!I',len(d))+t+d+struct.pack('!I',zlib.crc32(t+d)&0xffffffff)
+ data=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',w,h,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(rows,3))+chunk(b'IEND',b'')
+ tmp=path.with_suffix('.tmp');tmp.write_bytes(data);os.replace(tmp,path)
+def rgb_row(raw,w,y,x0=0,x1=None):
+ x1=w if x1 is None else x1;src=raw[(y*w+x0)*4:(y*w+x1)*4];out=bytearray((x1-x0)*3)
+ out[0::3]=src[2::4];out[1::3]=src[1::4];out[2::3]=src[0::4];return out
+def crop_png(camera,obj,path,raw=None):
  w,h=camera.getWidth(),camera.getHeight();cx,cy=obj.getPositionOnImage();bw,bh=obj.getSizeOnImage()
- pad=4;x0=max(0,int(cx-bw/2)-pad);x1=min(w,int(cx+bw/2)+pad);y0=max(0,int(cy-bh/2)-pad);y1=min(h,int(cy+bh/2)+pad)
- raw=camera.getImage()
+ x0=max(0,int(cx-bw/2)-4);x1=min(w,int(cx+bw/2)+4);y0=max(0,int(cy-bh/2)-4);y1=min(h,int(cy+bh/2)+4)
+ raw=camera.getImage() if raw is None else raw
  if not raw or x1<=x0 or y1<=y0:return False
  rows=bytearray()
- for y in range(y0,y1):
-  rows.append(0)
-  for x in range(x0,x1):
-   k=(y*w+x)*4;rows.extend((raw[k+2],raw[k+1],raw[k]))
- def chunk(t,d):return struct.pack('!I',len(d))+t+d+struct.pack('!I',zlib.crc32(t+d)&0xffffffff)
- data=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',x1-x0,y1-y0,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(rows,6))+chunk(b'IEND',b'')
- path.write_bytes(data);return True
+ for y in range(y0,y1):rows.append(0);rows.extend(rgb_row(raw,w,y,x0,x1))
+ write_png(path,x1-x0,y1-y0,rows);return True
 
 class CampusRover(Robot):
  def __init__(self):
-  super().__init__();self.dt=64;self.route=MISSION['waypoints'];self.wp=1;self.lap=0;self.travel=0.;self.lastxy=None;self.state='PATROL';self.resume_at=0.;self.pending=None;self.evidence={};self.last_status=-1.;self.detour=[];self.detour_started=0.;self.avoid_until=0.;self.avoid_sign=1;self.blocked_seconds=0.;self.last_progress=0.;self.last_progress_xy=None;self.sequence=0
+  super().__init__();self.dt=64;self.route=MISSION['waypoints'];self.wp=1;self.lap=0;self.travel=0.;self.lastxy=None;self.state='PATROL';self.last_status=-1.;self.detour=[];self.detour_started=0.;self.avoid_until=0.;self.avoid_sign=1;self.blocked_seconds=0.
   self.flash=self.getDevice('photo_flash');self.flash.set(0);self.flash_until=0.;self.left=[];self.right=[]
   for side,arr in [('left',self.left),('right',self.right)]:
    for i in range(3):
@@ -41,39 +43,66 @@ class CampusRover(Robot):
   self.gps=self.getDevice('gps');self.gps.enable(self.dt);self.compass=self.getDevice('compass');self.compass.enable(self.dt);self.imu=self.getDevice('imu');self.imu.enable(self.dt);self.lidar=self.getDevice('lidar');self.lidar.enable(self.dt)
   self.cameras=[]
   for i in range(4):
-   c=self.getDevice(f'camera_{i}');c.enable(128);c.recognitionEnable(128);self.cameras.append(c)
+   c=self.getDevice(f'camera_{i}');c.enable(self.dt);c.recognitionEnable(self.dt);self.cameras.append(c)
   self.emitter=self.getDevice('telemetry')
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
   self.seen={r['sample_id']for r in self.records};self.new_captures=0;self.avoid_events=0
+  self.catalog=json.loads((ROOT/'maps/items.json').read_text());self.next_snapshot=5.;self.snapshot_interval=5.
+  self.snapdir=GALLERY/'snapshots';self.snapdir.mkdir(exist_ok=True)
+  try:self.snapshots=json.loads((GALLERY/'snapshots.json').read_text())
+  except (OSError,ValueError):self.snapshots=[]
+  self.session_prefix=os.urandom(3).hex()
+  if self.snapshots or self.records:
+   archive=LOGS/'session_history';archive.mkdir(exist_ok=True)
+   atomic_json(archive/f'{self.session_prefix}.json',{'items':self.records,'snapshots':self.snapshots})
+   self.records=[];self.seen=set();self.snapshots=[]
+  atomic_json(GALLERY/'items.json',self.records)
+  atomic_json(GALLERY/'snapshots.json',self.snapshots)
   print(f'GATES_SCOUT READY | indoor route {MISSION["length_m"]:.1f}m | 6 wheel motors | 4 recognition cameras | lidar',flush=True)
  def drive(self,v,w):
   r=MISSION['wheel_radius_m'];track=MISSION['track_width_m'];vl=clamp((v-w*track/2)/r,-17,17);vr=clamp((v+w*track/2)/r,-17,17)
   for m in self.left:m.setVelocity(vl)
   for m in self.right:m.setVelocity(vr)
- def visible(self):
-  out=[]
+ def snapshot(self,now,scheduled):
+  """Capture all four synchronized camera buffers first, then recognize only that sample.
+  This is a full-azimuth four-view mosaic, not a spherical/equirectangular photograph.
+  Identity labels use visible simulated Recognition results and an ID catalog, never poses.
+  """
+  frames=[bytes(c.getImage()) for c in self.cameras]
+  if not all(frames):return
+  order=[0,3,2,1];directions=['Front','Right','Rear','Left'];w=self.cameras[0].getWidth();h=self.cameras[0].getHeight()
+  number=len(self.snapshots)+1;sid=f'SCAN-{self.session_prefix}-{number:05}';image=f'snapshots/{sid}.png';rows=bytearray()
+  for y in range(h):
+   rows.append(0)
+   for i in order:rows.extend(rgb_row(frames[i],w,y))
+  write_png(GALLERY/image,w*4,h,rows)
+  candidates={}
   for i,c in enumerate(self.cameras):
    for obj in c.getRecognitionObjects():
     model=obj.getModel()
-    if '|'not in model:continue
-    kind,sid=model.split('|',1)
-    if kind not in ('backpack','book','bottle')or sid in self.seen:continue
-    p=obj.getPosition();dist=math.sqrt(sum(q*q for q in p));bw,bh=obj.getSizeOnImage()
-    if dist<1.25 and bw>=10 and bh>=4 and bw*bh>=100:out.append((dist,i,obj,kind,sid))
-  return sorted(out,key=lambda v:v[0])
- def inspect(self,now):
-  if self.pending is None:return
-  self.drive(0,0)
-  if now<self.resume_at:return
-  sid=self.pending;matches=[v for v in self.visible()if v[4]==sid]
-  if matches:
-   _,i,obj,kind,sid=matches[0];image=f'captures/{sid}.png'
-   if crop_png(self.cameras[i],obj,GALLERY/image):
-    record={'sample_id':sid,'category':kind,'simulation_time_s':round(now,2),'image':image,'detector':'Webots camera recognition (simulation ground truth)'}
-    self.records.append(record);self.seen.add(sid);self.new_captures+=1;atomic_json(GALLERY/'items.json',self.records);self.flash.set(1);self.flash_until=now+.22
-    print(f'CAPTURE {sid} {kind} | camera {i} | sim {now:.1f}s | item crop saved, no location metadata',flush=True)
-  self.pending=None;self.state='PHOTO_PAUSE';self.resume_at=now+1.5;self.evidence={}
+    if '|' not in model:continue
+    kind,item_id=model.split('|',1)
+    if kind not in ('backpack','book','bottle'):continue
+    bw,bh=obj.getSizeOnImage()
+    if bw<6 or bh<3 or bw*bh<36:continue
+    # Adjacent cameras overlap slightly. One best view identifies each exact instance.
+    if item_id not in candidates or bw*bh>candidates[item_id][0]:candidates[item_id]=(bw*bh,i,obj,kind)
+  detections=[]
+  for item_id,(_,i,obj,kind) in sorted(candidates.items()):
+   cx,cy=obj.getPositionOnImage();bw,bh=obj.getSizeOnImage();tile=order.index(i)
+   x0=max(0,cx-bw/2);y0=max(0,cy-bh/2);x1=min(w,cx+bw/2);y1=min(h,cy+bh/2)
+   crop=f'captures/{sid}_{item_id}.png'
+   if not crop_png(self.cameras[i],obj,GALLERY/crop,frames[i]):continue
+   entry={'sample_id':item_id,'category':kind,'description':self.catalog.get(item_id,{}).get('description',kind.title()),'simulation_time_s':round(now,3),'image':crop,'snapshot_id':sid,'direction':directions[tile],'camera':i,'bbox':[(tile*w+x0)/(w*4),y0/h,(x1-x0)/(w*4),(y1-y0)/h],'detector':'Webots camera Recognition (simulation ground truth)'}
+   detections.append(entry)
+   existing=next((n for n,r in enumerate(self.records)if r['sample_id']==item_id),None)
+   if existing is None:self.records.append(entry);self.seen.add(item_id);self.new_captures+=1
+   else:self.records[existing]=entry
+  shot={'snapshot_id':sid,'simulation_time_s':round(now,3),'scheduled_time_s':round(scheduled,3),'image':image,'width':w*4,'height':h,'projection':'four synchronized perspective views, 360-degree horizontal coverage','directions':directions,'detections':detections}
+  self.snapshots.append(shot);atomic_json(GALLERY/'items.json',self.records);atomic_json(GALLERY/'snapshots.json',self.snapshots)
+  self.flash.set(1);self.flash_until=now+.22
+  print(f'SNAPSHOT {sid} | scheduled {scheduled:.1f}s actual {now:.3f}s | 360 degrees | {len(detections)} items: '+(', '.join(d['description']+' '+d['sample_id']for d in detections) or 'none'),flush=True)
  def ranges(self):
   rs=list(self.lidar.getRangeImage());n=len(rs)
   def sector(center,span):
@@ -91,19 +120,11 @@ class CampusRover(Robot):
   xy=(p[0],p[1]);heading=math.atan2(north[0],north[1]);roll,pitch,_=self.imu.getRollPitchYaw()
   if self.lastxy:self.travel+=math.dist(xy,self.lastxy)
   self.lastxy=xy
+  if now+1e-7>=self.next_snapshot:
+   scheduled=self.next_snapshot;self.next_snapshot+=self.snapshot_interval
+   self.snapshot(now,scheduled);self.last_status=-1.
   if abs(roll)>.8 or abs(pitch)>.8:self.drive(0,0);self.state='TILT_STOP';self.status(now,xy,heading,5.);return
   if self.state=='OBSTACLE_STOP':self.drive(0,0);self.status(now,xy,heading,5.);return
-  if self.state=='PHOTO_PAUSE':
-   self.drive(0,0)
-   if now>=self.resume_at:self.state='PATROL'
-   self.status(now,xy,heading,5.);return
-  if self.state=='INSPECT':self.inspect(now);self.status(now,xy,heading,5.);return
-  vis=self.visible()
-  present={v[4]for v in vis};self.evidence={sid:n for sid,n in self.evidence.items()if sid in present}
-  for _,i,obj,kind,sid in vis:
-   self.evidence[sid]=self.evidence.get(sid,0)+1
-   if self.evidence[sid]>=4:
-    self.pending=sid;self.resume_at=now+1.0;self.state='INSPECT';self.drive(0,0);self.status(now,xy,heading,5.);return
   front,left,right=self.ranges()
   # A local lidar-derived detour stays separate from the mapped global route.
   if self.detour and math.dist(xy,self.detour[0])<.14:
@@ -139,7 +160,7 @@ class CampusRover(Robot):
  def status(self,now,xy,heading,front):
   if now-self.last_status<.5:return
   self.last_status=now
-  status={'time_s':round(now,2),'state':self.state,'waypoint':self.wp,'waypoints':len(self.route),'lap':self.lap,'distance_m':round(self.travel,2),'captures':len(self.records),'new_captures':self.new_captures,'avoid_events':self.avoid_events,'front_range_m':round(front,2),'position_local_m':[round(v,4)for v in xy],'heading_rad':round(heading,4),'latest':self.records[-1]if self.records else None}
+  status={'time_s':round(now,2),'state':self.state,'waypoint':self.wp,'waypoints':len(self.route),'lap':self.lap,'distance_m':round(self.travel,2),'captures':len(self.records),'new_captures':self.new_captures,'avoid_events':self.avoid_events,'front_range_m':round(front,2),'position_local_m':[round(v,4)for v in xy],'heading_rad':round(heading,4),'latest':self.snapshots[-1]['detections'][0]if self.snapshots and self.snapshots[-1]['detections']else None,'snapshots':len(self.snapshots),'snapshot_interval_s':self.snapshot_interval,'next_snapshot_s':self.next_snapshot,'latest_snapshot':self.snapshots[-1]if self.snapshots else None}
   atomic_json(LOGS/'robot_state.json',status);self.emitter.send(json.dumps(status).encode())
   if int(now)%10==0:print(f'PATROL {now:.1f}s | {self.state} | waypoint {self.wp}/{len(self.route)} | distance {self.travel:.1f}m | found {len(self.records)}',flush=True)
  def run(self):

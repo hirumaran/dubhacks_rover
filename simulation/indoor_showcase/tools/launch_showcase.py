@@ -17,8 +17,10 @@ if a.fresh or not(data/'items.json').exists():
  old=ROOT/'logs'/('capture_archive_'+time.strftime('%Y%m%d_%H%M%S'))
  if(data/'items.json').exists():
   old.mkdir(parents=True,exist_ok=True);shutil.copy(data/'items.json',old/'items.json')
+  if(data/'snapshots.json').exists():shutil.copy(data/'snapshots.json',old/'snapshots.json')
+  if(data/'snapshots').exists():shutil.copytree(data/'snapshots',old/'snapshots')
   if(data/'captures').exists():shutil.copytree(data/'captures',old/'captures')
- (data/'items.json').write_text('[]')
+ (data/'items.json').write_text('[]');(data/'snapshots.json').write_text('[]')
 (data/'control.json').unlink(missing_ok=True)
 preferences=ROOT/'worlds/.gates_atrium.wbproj'
 if not preferences.exists():shutil.copy(ROOT/'tools/showcase.wbproj',preferences)

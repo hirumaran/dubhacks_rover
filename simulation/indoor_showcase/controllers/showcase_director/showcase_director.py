@@ -51,13 +51,13 @@ while s.step(dt)!=-1:
     last_command=cmd.get('nonce');requested=cmd.get('view')
     if requested in ('orbit','follow','atrium'):mode=requested
     if cmd.get('action')=='restart':
-     atomic_json(DATA/'items.json',[]);control.unlink(missing_ok=True);s.worldReload();s.step(dt);break
+     atomic_json(DATA/'items.json',[]);atomic_json(DATA/'snapshots.json',[]);control.unlink(missing_ok=True);s.worldReload();s.step(dt);break
   except (OSError,ValueError):pass
- rp=rover.getPosition();ori=rover.getOrientation();heading=math.atan2(ori[3],ori[0]);latest=state.get('latest');new_id=latest.get('sample_id')if latest else None
+ rp=rover.getPosition();ori=rover.getOrientation();heading=math.atan2(ori[3],ori[0]);latest=state.get('latest');snapshot=state.get('latest_snapshot');new_id=snapshot.get('snapshot_id')if snapshot else None
  if new_id and new_id!=last_capture:
   last_capture=new_id;shot_time=now;print(f'SHOWCASE PHOTO {new_id}: flash -> presentation gallery',flush=True)
  age=now-shot_time
- phase='CAPTURING'if age<.30 else'UPLOADING TO DEMO GALLERY'if age<2.0 else'ADDED TO LOCAL GALLERY'
+ phase='CAPTURING'if age<.30 else'ANALYZING 360 SNAPSHOT'if age<1.2 else'SNAPSHOT SAVED'
  if mode=='atrium' or now<2.5:
   eye=[0,-17.5,1.7];target=[0,2.5,3.3];shot='ATRIUM'
  elif mode=='follow':
@@ -70,7 +70,7 @@ while s.step(dt)!=-1:
   last_board=now;update_board(latest,phase)
  if now-last_status>.20:
   last_status=now
-  public={'simulation_time':round(now,2),'state':state.get('state','STARTING'),'captured':state.get('captures',0),'total':6,'distance_m':state.get('distance_m',0),'camera':mode,'shot':shot,'phase':phase if latest else'SEARCHING','latest':latest,'scene':'Reference-inspired Gates atrium','recognition':'simulated object recognition','live':True}
+  public={'simulation_time':round(now,2),'state':state.get('state','STARTING'),'captured':state.get('captures',0),'total':6,'distance_m':state.get('distance_m',0),'camera':mode,'shot':shot,'phase':phase if snapshot else'WAITING FOR FIRST SNAPSHOT','snapshots':state.get('snapshots',0),'next_snapshot_s':state.get('next_snapshot_s',5),'snapshot_interval_s':5,'latest_snapshot':snapshot,'latest':latest,'scene':'Reference-inspired Gates atrium','recognition':'simulated object recognition','live':True}
   atomic_json(DATA/'state.json',public)
   s.setLabel(0,'CAMPUS SCOUT  /  GATES ATRIUM',.025,.035,.065,0xF1DEC0,.1,'Arial')
   s.setLabel(1,f'{shot}    {state.get("state","STARTING")}    FOUND {state.get("captures",0)}/6',.025,.10,.05,0xE4D3B5,.1,'Arial')
@@ -85,7 +85,7 @@ while s.step(dt)!=-1:
  if now>1.5 and not (LOG/'atrium_reference_view.png').exists():s.exportImage(str(LOG/'atrium_reference_view.png'),95)
  if 14<now<15 and not (LOG/'orbit_view.png').exists():s.exportImage(str(LOG/'orbit_view.png'),95)
  if limit and now>=limit and not end_requested:
-  summary={'simulated_seconds':round(now,2),'robot':state,'camera_shots':sorted(visited_modes),'captures':state.get('captures',0),'success_capture':state.get('captures',0)==6,'success_lap':state.get('lap',0)>=1,'geometry':'approximate, inspired by two supplied references','recognition':'Webots Recognition (ground truth)'}
+  summary={'simulated_seconds':round(now,2),'robot':state,'camera_shots':sorted(visited_modes),'captures':state.get('captures',0),'success_capture':state.get('captures',0)==6,'success_lap':state.get('lap',0)>=1,'snapshots':state.get('snapshots',0),'geometry':'approximate, inspired by two supplied references','recognition':'Webots Recognition (ground truth)'}
   atomic_json(LOG/'test_result.json',summary);s.exportImage(str(LOG/'test_end.png'),95);print('GATES_TEST_COMPLETE '+json.dumps(summary),flush=True);end_requested=True
  if end_requested:
   public['live']=False;atomic_json(DATA/'state.json',public);s.simulationQuit(0);break

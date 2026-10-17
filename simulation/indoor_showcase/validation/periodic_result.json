@@ -1,0 +1,96 @@
+{
+  "simulated_seconds": 230.02,
+  "robot": {
+    "time_s": 229.95,
+    "state": "PATROL",
+    "waypoint": 20,
+    "waypoints": 158,
+    "lap": 1,
+    "distance_m": 87.91,
+    "captures": 6,
+    "new_captures": 6,
+    "avoid_events": 0,
+    "front_range_m": 3.53,
+    "position_local_m": [
+      7.4141,
+      -10.0021
+    ],
+    "heading_rad": -0.0013,
+    "latest": {
+      "sample_id": "GATES-002",
+      "category": "book",
+      "description": "Purple-covered book",
+      "simulation_time_s": 225.024,
+      "image": "captures/SCAN-78f66d-00045_GATES-002.png",
+      "snapshot_id": "SCAN-78f66d-00045",
+      "direction": "Left",
+      "camera": 1,
+      "bbox": [
+        0.8126953125,
+        0.5520833333333334,
+        0.022265625,
+        0.020833333333333332
+      ],
+      "detector": "Webots camera Recognition (simulation ground truth)"
+    },
+    "snapshots": 45,
+    "snapshot_interval_s": 5.0,
+    "next_snapshot_s": 230.0,
+    "latest_snapshot": {
+      "snapshot_id": "SCAN-78f66d-00045",
+      "simulation_time_s": 225.024,
+      "scheduled_time_s": 225.0,
+      "image": "snapshots/SCAN-78f66d-00045.png",
+      "width": 2560,
+      "height": 480,
+      "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+      "directions": [
+        "Front",
+        "Right",
+        "Rear",
+        "Left"
+      ],
+      "detections": [
+        {
+          "sample_id": "GATES-002",
+          "category": "book",
+          "description": "Purple-covered book",
+          "simulation_time_s": 225.024,
+          "image": "captures/SCAN-78f66d-00045_GATES-002.png",
+          "snapshot_id": "SCAN-78f66d-00045",
+          "direction": "Left",
+          "camera": 1,
+          "bbox": [
+            0.8126953125,
+            0.5520833333333334,
+            0.022265625,
+            0.020833333333333332
+          ],
+          "detector": "Webots camera Recognition (simulation ground truth)"
+        }
+      ]
+    }
+  },
+  "camera_shots": [
+    "360 ORBIT",
+    "ATRIUM"
+  ],
+  "captures": 6,
+  "success_capture": true,
+  "success_lap": true,
+  "snapshots": 45,
+  "geometry": "approximate, inspired by two supplied references",
+  "recognition": "Webots Recognition (ground truth)",
+  "snapshot_count": 46,
+  "empty_snapshots": 15,
+  "max_timer_error_s": 0.056,
+  "unique_ids": [
+    "GATES-001",
+    "GATES-002",
+    "GATES-003",
+    "GATES-004",
+    "GATES-005",
+    "GATES-006"
+  ],
+  "multi_item_snapshots": 4
+}

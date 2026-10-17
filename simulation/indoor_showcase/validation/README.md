@@ -1,4 +1,14 @@
-# Verified indoor patrol
+# Current five-second snapshot workflow
+
+Verified in native Webots R2025a on October 17, 2026. The new 230.02-second bounded run saved **46 snapshots** at targets 5, 10, 15…230 simulation seconds, with maximum timing error **0.056 s** (one 64 ms controller tick). It saved **15 empty snapshots**, captured multiple distinct objects in **4 snapshots**, identified **all six unique item IDs**, and completed **one full patrol lap**. The robot continued navigating while the timer captured; object detection never triggered a capture.
+
+`periodic_result.json` holds the current behavioral result. `periodic_snapshots.json` contains all snapshot records and normalized pixel boxes. `periodic_snapshot_example.png` is the actual four-camera RGB mosaic from the 15-second scan, which found two items. `periodic_run.log` is the native controller log. The Supervisor's final packet can trail the file manifest by one controller update, so the manifest is authoritative for the terminal snapshot count.
+
+The mosaic covers horizontal 360° using synchronized front/right/rear/left perspective views. Identification is Webots camera Recognition ground truth plus a description catalog keyed by simulated instance ID. It is not image-only AI recognition. Pixel boxes and relative camera direction do not expose building coordinates.
+
+---
+
+## Earlier object-triggered version (historical evidence)
 
 Tested in native Webots R2025a on macOS, October 17, 2026.
 
