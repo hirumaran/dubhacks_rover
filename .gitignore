@@ -5,10 +5,10 @@ __pycache__/
 .DS_Store
 
 # Webots local workspace state
-worlds/.*.wbproj
-worlds/.*.wbproj.*
+simulation/worlds/.*.wbproj
+simulation/worlds/.*.wbproj.*
 
 # Runtime outputs. Reference evidence is retained under validation/.
 logs/
-gallery/captures/*
-!gallery/captures/.gitkeep
+simulation/gallery/captures/*
+!simulation/gallery/captures/.gitkeep
