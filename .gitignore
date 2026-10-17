@@ -12,3 +12,6 @@ simulation/worlds/.*.wbproj.*
 logs/
 simulation/gallery/captures/*
 !simulation/gallery/captures/.gitkeep
+
+# Edge function secrets
+edge-functions/.env
