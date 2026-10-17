@@ -30,3 +30,6 @@ simulation-indoors/worlds/.*.wbproj*
 simulation-indoors/presentation/data/*
 !simulation-indoors/presentation/data/.gitkeep
 simulation-indoors/recordings/
+# Edge function secrets
+edge-functions/.env
+edge-functions/supabase/.temp/
