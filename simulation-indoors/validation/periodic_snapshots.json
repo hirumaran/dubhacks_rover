@@ -1,0 +1,1364 @@
+[
+  {
+    "snapshot_id": "SCAN-78f66d-00001",
+    "simulation_time_s": 5.056,
+    "scheduled_time_s": 5.0,
+    "image": "snapshots/SCAN-78f66d-00001.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 5.056,
+        "image": "captures/SCAN-78f66d-00001_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00001",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.8830078125,
+          0.3125,
+          0.041015625,
+          0.4375
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00002",
+    "simulation_time_s": 10.048,
+    "scheduled_time_s": 10.0,
+    "image": "snapshots/SCAN-78f66d-00002.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 10.048,
+        "image": "captures/SCAN-78f66d-00002_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00002",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.6556640625,
+          0.44375,
+          0.021484375,
+          0.12916666666666668
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00003",
+    "simulation_time_s": 15.04,
+    "scheduled_time_s": 15.0,
+    "image": "snapshots/SCAN-78f66d-00003.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 15.04,
+        "image": "captures/SCAN-78f66d-00003_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00003",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.822265625,
+          0.4479166666666667,
+          0.01953125,
+          0.11666666666666667
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      },
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 15.04,
+        "image": "captures/SCAN-78f66d-00003_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00003",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.148828125,
+          0.540625,
+          0.01484375,
+          0.014583333333333334
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00004",
+    "simulation_time_s": 20.032,
+    "scheduled_time_s": 20.0,
+    "image": "snapshots/SCAN-78f66d-00004.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 20.032,
+        "image": "captures/SCAN-78f66d-00004_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00004",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.5685546875,
+          0.465625,
+          0.013671875,
+          0.07708333333333334
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      },
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 20.032,
+        "image": "captures/SCAN-78f66d-00004_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00004",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.849609375,
+          0.5520833333333334,
+          0.01875,
+          0.020833333333333332
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00005",
+    "simulation_time_s": 25.024,
+    "scheduled_time_s": 25.0,
+    "image": "snapshots/SCAN-78f66d-00005.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 25.024,
+        "image": "captures/SCAN-78f66d-00005_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00005",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.706640625,
+          0.5416666666666666,
+          0.0203125,
+          0.016666666666666666
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00006",
+    "simulation_time_s": 30.016,
+    "scheduled_time_s": 30.0,
+    "image": "snapshots/SCAN-78f66d-00006.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 30.016,
+        "image": "captures/SCAN-78f66d-00006_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00006",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.075390625,
+          0.45,
+          0.01875,
+          0.1125
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00007",
+    "simulation_time_s": 35.008,
+    "scheduled_time_s": 35.0,
+    "image": "snapshots/SCAN-78f66d-00007.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 35.008,
+        "image": "captures/SCAN-78f66d-00007_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00007",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.8732421875,
+          0.32708333333333334,
+          0.033203125,
+          0.4
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00008",
+    "simulation_time_s": 40.0,
+    "scheduled_time_s": 40.0,
+    "image": "snapshots/SCAN-78f66d-00008.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 40.0,
+        "image": "captures/SCAN-78f66d-00008_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00008",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.657421875,
+          0.44583333333333336,
+          0.0203125,
+          0.12083333333333333
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00009",
+    "simulation_time_s": 45.056,
+    "scheduled_time_s": 45.0,
+    "image": "snapshots/SCAN-78f66d-00009.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 45.056,
+        "image": "captures/SCAN-78f66d-00009_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00009",
+        "direction": "Right",
+        "camera": 3,
+        "bbox": [
+          0.2501953125,
+          0.45,
+          0.030859375,
+          0.1125
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00010",
+    "simulation_time_s": 50.048,
+    "scheduled_time_s": 50.0,
+    "image": "snapshots/SCAN-78f66d-00010.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 50.048,
+        "image": "captures/SCAN-78f66d-00010_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00010",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.18046875,
+          0.4041666666666667,
+          0.04140625,
+          0.22083333333333333
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00011",
+    "simulation_time_s": 55.04,
+    "scheduled_time_s": 55.0,
+    "image": "snapshots/SCAN-78f66d-00011.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 55.04,
+        "image": "captures/SCAN-78f66d-00011_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00011",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.5072265625,
+          0.384375,
+          0.051953125,
+          0.26875
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00012",
+    "simulation_time_s": 60.032,
+    "scheduled_time_s": 60.0,
+    "image": "snapshots/SCAN-78f66d-00012.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-003",
+        "category": "backpack",
+        "description": "Navy blue backpack",
+        "simulation_time_s": 60.032,
+        "image": "captures/SCAN-78f66d-00012_GATES-003.png",
+        "snapshot_id": "SCAN-78f66d-00012",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.5904296875,
+          0.46458333333333335,
+          0.012890625,
+          0.07916666666666666
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00013",
+    "simulation_time_s": 65.024,
+    "scheduled_time_s": 65.0,
+    "image": "snapshots/SCAN-78f66d-00013.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 65.024,
+        "image": "captures/SCAN-78f66d-00013_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00013",
+        "direction": "Right",
+        "camera": 3,
+        "bbox": [
+          0.266796875,
+          0.5520833333333334,
+          0.0265625,
+          0.020833333333333332
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00014",
+    "simulation_time_s": 70.016,
+    "scheduled_time_s": 70.0,
+    "image": "snapshots/SCAN-78f66d-00014.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 70.016,
+        "image": "captures/SCAN-78f66d-00014_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00014",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.037890625,
+          0.45208333333333334,
+          0.02109375,
+          0.10833333333333334
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      },
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 70.016,
+        "image": "captures/SCAN-78f66d-00014_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00014",
+        "direction": "Right",
+        "camera": 3,
+        "bbox": [
+          0.3923828125,
+          0.5520833333333334,
+          0.019921875,
+          0.020833333333333332
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00015",
+    "simulation_time_s": 75.008,
+    "scheduled_time_s": 75.0,
+    "image": "snapshots/SCAN-78f66d-00015.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 75.008,
+        "image": "captures/SCAN-78f66d-00015_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00015",
+        "direction": "Right",
+        "camera": 3,
+        "bbox": [
+          0.2705078125,
+          0.6302083333333334,
+          0.062890625,
+          0.11458333333333333
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00016",
+    "simulation_time_s": 80.0,
+    "scheduled_time_s": 80.0,
+    "image": "snapshots/SCAN-78f66d-00016.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 80.0,
+        "image": "captures/SCAN-78f66d-00016_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00016",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.565234375,
+          0.559375,
+          0.02421875,
+          0.022916666666666665
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00017",
+    "simulation_time_s": 85.056,
+    "scheduled_time_s": 85.0,
+    "image": "snapshots/SCAN-78f66d-00017.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00018",
+    "simulation_time_s": 90.048,
+    "scheduled_time_s": 90.0,
+    "image": "snapshots/SCAN-78f66d-00018.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00019",
+    "simulation_time_s": 95.04,
+    "scheduled_time_s": 95.0,
+    "image": "snapshots/SCAN-78f66d-00019.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-004",
+        "category": "bottle",
+        "description": "Teal water bottle",
+        "simulation_time_s": 95.04,
+        "image": "captures/SCAN-78f66d-00019_GATES-004.png",
+        "snapshot_id": "SCAN-78f66d-00019",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.15234375,
+          0.48541666666666666,
+          0.0046875,
+          0.0625
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00020",
+    "simulation_time_s": 100.032,
+    "scheduled_time_s": 100.0,
+    "image": "snapshots/SCAN-78f66d-00020.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-004",
+        "category": "bottle",
+        "description": "Teal water bottle",
+        "simulation_time_s": 100.032,
+        "image": "captures/SCAN-78f66d-00020_GATES-004.png",
+        "snapshot_id": "SCAN-78f66d-00020",
+        "direction": "Right",
+        "camera": 3,
+        "bbox": [
+          0.2595703125,
+          0.44479166666666664,
+          0.026953125,
+          0.26458333333333334
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00021",
+    "simulation_time_s": 105.024,
+    "scheduled_time_s": 105.0,
+    "image": "snapshots/SCAN-78f66d-00021.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-004",
+        "category": "bottle",
+        "description": "Teal water bottle",
+        "simulation_time_s": 105.024,
+        "image": "captures/SCAN-78f66d-00021_GATES-004.png",
+        "snapshot_id": "SCAN-78f66d-00021",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.5671875,
+          0.47604166666666664,
+          0.009375,
+          0.11458333333333333
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00022",
+    "simulation_time_s": 110.016,
+    "scheduled_time_s": 110.0,
+    "image": "snapshots/SCAN-78f66d-00022.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00023",
+    "simulation_time_s": 115.008,
+    "scheduled_time_s": 115.0,
+    "image": "snapshots/SCAN-78f66d-00023.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00024",
+    "simulation_time_s": 120.0,
+    "scheduled_time_s": 120.0,
+    "image": "snapshots/SCAN-78f66d-00024.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00025",
+    "simulation_time_s": 125.056,
+    "scheduled_time_s": 125.0,
+    "image": "snapshots/SCAN-78f66d-00025.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00026",
+    "simulation_time_s": 130.048,
+    "scheduled_time_s": 130.0,
+    "image": "snapshots/SCAN-78f66d-00026.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00027",
+    "simulation_time_s": 135.04,
+    "scheduled_time_s": 135.0,
+    "image": "snapshots/SCAN-78f66d-00027.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00028",
+    "simulation_time_s": 140.032,
+    "scheduled_time_s": 140.0,
+    "image": "snapshots/SCAN-78f66d-00028.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-005",
+        "category": "backpack",
+        "description": "Olive green backpack",
+        "simulation_time_s": 140.032,
+        "image": "captures/SCAN-78f66d-00028_GATES-005.png",
+        "snapshot_id": "SCAN-78f66d-00028",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.087890625,
+          0.45,
+          0.02109375,
+          0.1125
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00029",
+    "simulation_time_s": 145.024,
+    "scheduled_time_s": 145.0,
+    "image": "snapshots/SCAN-78f66d-00029.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-005",
+        "category": "backpack",
+        "description": "Olive green backpack",
+        "simulation_time_s": 145.024,
+        "image": "captures/SCAN-78f66d-00029_GATES-005.png",
+        "snapshot_id": "SCAN-78f66d-00029",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.8685546875,
+          0.18645833333333334,
+          0.119140625,
+          0.7354166666666667
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00030",
+    "simulation_time_s": 150.016,
+    "scheduled_time_s": 150.0,
+    "image": "snapshots/SCAN-78f66d-00030.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-005",
+        "category": "backpack",
+        "description": "Olive green backpack",
+        "simulation_time_s": 150.016,
+        "image": "captures/SCAN-78f66d-00030_GATES-005.png",
+        "snapshot_id": "SCAN-78f66d-00030",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.6763671875,
+          0.4,
+          0.034765625,
+          0.22916666666666666
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00031",
+    "simulation_time_s": 155.008,
+    "scheduled_time_s": 155.0,
+    "image": "snapshots/SCAN-78f66d-00031.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-005",
+        "category": "backpack",
+        "description": "Olive green backpack",
+        "simulation_time_s": 155.008,
+        "image": "captures/SCAN-78f66d-00031_GATES-005.png",
+        "snapshot_id": "SCAN-78f66d-00031",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.6453125,
+          0.4666666666666667,
+          0.00859375,
+          0.075
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00032",
+    "simulation_time_s": 160.0,
+    "scheduled_time_s": 160.0,
+    "image": "snapshots/SCAN-78f66d-00032.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00033",
+    "simulation_time_s": 165.056,
+    "scheduled_time_s": 165.0,
+    "image": "snapshots/SCAN-78f66d-00033.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00034",
+    "simulation_time_s": 170.048,
+    "scheduled_time_s": 170.0,
+    "image": "snapshots/SCAN-78f66d-00034.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-006",
+        "category": "book",
+        "description": "Red-covered book",
+        "simulation_time_s": 170.048,
+        "image": "captures/SCAN-78f66d-00034_GATES-006.png",
+        "snapshot_id": "SCAN-78f66d-00034",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.0927734375,
+          0.534375,
+          0.012109375,
+          0.010416666666666666
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00035",
+    "simulation_time_s": 175.04,
+    "scheduled_time_s": 175.0,
+    "image": "snapshots/SCAN-78f66d-00035.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-006",
+        "category": "book",
+        "description": "Red-covered book",
+        "simulation_time_s": 175.04,
+        "image": "captures/SCAN-78f66d-00035_GATES-006.png",
+        "snapshot_id": "SCAN-78f66d-00035",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.009765625,
+          0.6052083333333333,
+          0.053125,
+          0.05625
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00036",
+    "simulation_time_s": 180.032,
+    "scheduled_time_s": 180.0,
+    "image": "snapshots/SCAN-78f66d-00036.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-006",
+        "category": "book",
+        "description": "Red-covered book",
+        "simulation_time_s": 180.032,
+        "image": "captures/SCAN-78f66d-00036_GATES-006.png",
+        "snapshot_id": "SCAN-78f66d-00036",
+        "direction": "Rear",
+        "camera": 2,
+        "bbox": [
+          0.6751953125,
+          0.5833333333333334,
+          0.039453125,
+          0.041666666666666664
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00037",
+    "simulation_time_s": 185.024,
+    "scheduled_time_s": 185.0,
+    "image": "snapshots/SCAN-78f66d-00037.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00038",
+    "simulation_time_s": 190.016,
+    "scheduled_time_s": 190.0,
+    "image": "snapshots/SCAN-78f66d-00038.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00039",
+    "simulation_time_s": 195.008,
+    "scheduled_time_s": 195.0,
+    "image": "snapshots/SCAN-78f66d-00039.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00040",
+    "simulation_time_s": 200.0,
+    "scheduled_time_s": 200.0,
+    "image": "snapshots/SCAN-78f66d-00040.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00041",
+    "simulation_time_s": 205.056,
+    "scheduled_time_s": 205.0,
+    "image": "snapshots/SCAN-78f66d-00041.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 205.056,
+        "image": "captures/SCAN-78f66d-00041_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00041",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.0587890625,
+          0.43854166666666666,
+          0.026171875,
+          0.14375
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00042",
+    "simulation_time_s": 210.048,
+    "scheduled_time_s": 210.0,
+    "image": "snapshots/SCAN-78f66d-00042.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 210.048,
+        "image": "captures/SCAN-78f66d-00042_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00042",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.784375,
+          0.3125,
+          0.05546875,
+          0.4375
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00043",
+    "simulation_time_s": 215.04,
+    "scheduled_time_s": 215.0,
+    "image": "snapshots/SCAN-78f66d-00043.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 215.04,
+        "image": "captures/SCAN-78f66d-00043_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00043",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.821484375,
+          0.4427083333333333,
+          0.0265625,
+          0.13125
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00044",
+    "simulation_time_s": 220.032,
+    "scheduled_time_s": 220.0,
+    "image": "snapshots/SCAN-78f66d-00044.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-001",
+        "category": "backpack",
+        "description": "Rust-colored backpack",
+        "simulation_time_s": 220.032,
+        "image": "captures/SCAN-78f66d-00044_GATES-001.png",
+        "snapshot_id": "SCAN-78f66d-00044",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.7982421875,
+          0.4479166666666667,
+          0.021484375,
+          0.11666666666666667
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      },
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 220.032,
+        "image": "captures/SCAN-78f66d-00044_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00044",
+        "direction": "Front",
+        "camera": 0,
+        "bbox": [
+          0.154296875,
+          0.5479166666666667,
+          0.01875,
+          0.016666666666666666
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00045",
+    "simulation_time_s": 225.024,
+    "scheduled_time_s": 225.0,
+    "image": "snapshots/SCAN-78f66d-00045.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": [
+      {
+        "sample_id": "GATES-002",
+        "category": "book",
+        "description": "Purple-covered book",
+        "simulation_time_s": 225.024,
+        "image": "captures/SCAN-78f66d-00045_GATES-002.png",
+        "snapshot_id": "SCAN-78f66d-00045",
+        "direction": "Left",
+        "camera": 1,
+        "bbox": [
+          0.8126953125,
+          0.5520833333333334,
+          0.022265625,
+          0.020833333333333332
+        ],
+        "detector": "Webots camera Recognition (simulation ground truth)"
+      }
+    ]
+  },
+  {
+    "snapshot_id": "SCAN-78f66d-00046",
+    "simulation_time_s": 230.016,
+    "scheduled_time_s": 230.0,
+    "image": "snapshots/SCAN-78f66d-00046.png",
+    "width": 2560,
+    "height": 480,
+    "projection": "four synchronized perspective views, 360-degree horizontal coverage",
+    "directions": [
+      "Front",
+      "Right",
+      "Rear",
+      "Left"
+    ],
+    "detections": []
+  }
+]

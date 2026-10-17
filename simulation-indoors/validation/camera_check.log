@@ -1,0 +1,22 @@
+UNSUPPORTED (log once): POSSIBLE ISSUE: unit 0 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable
+INFO: indoor_rover: Starting controller: python3 -u indoor_rover.py
+INFO: showcase_director: Starting controller: python3 -u showcase_director.py
+GATES_SCOUT READY | indoor route 77.8m | 6 wheel motors | 4 recognition cameras | lidar
+PATROL 0.1s | PATROL | waypoint 1/158 | distance 0.0m | found 0
+PATROL 0.6s | PATROL | waypoint 1/158 | distance 0.1m | found 0
+CAPTURE GATES-001 backpack | camera 0 | sim 4.0s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-001: flash -> presentation gallery
+PATROL 10.3s | PATROL | waypoint 7/158 | distance 3.1m | found 1
+PATROL 10.8s | PATROL | waypoint 7/158 | distance 3.3m | found 1
+PATROL 20.0s | PATROL | waypoint 13/158 | distance 6.1m | found 1
+PATROL 20.5s | PATROL | waypoint 13/158 | distance 6.3m | found 1
+PATROL 30.3s | PATROL | waypoint 21/158 | distance 10.2m | found 1
+PATROL 30.8s | PATROL | waypoint 22/158 | distance 10.4m | found 1
+CAPTURE GATES-003 backpack | camera 0 | sim 36.5s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-003: flash -> presentation gallery
+PATROL 40.0s | PATROL | waypoint 27/158 | distance 13.3m | found 2
+PATROL 40.5s | PATROL | waypoint 27/158 | distance 13.5m | found 2
+PATROL 50.2s | PATROL | waypoint 34/158 | distance 16.6m | found 2
+PATROL 50.8s | PATROL | waypoint 34/158 | distance 16.6m | found 2
+INFO: indoor_rover: Terminating.
+INFO: showcase_director: Terminating.
