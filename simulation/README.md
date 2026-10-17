@@ -2,6 +2,10 @@
 
 This is a native **Webots R2025a** project, with a physical six-wheel rover and actual OpenStreetMap building footprints and pedestrian paths around the University of Washington's Quad in Seattle.
 
+## Indoor Gates atrium showcase
+
+The new **[Gates atrium indoor showcase](indoor_showcase/README.md)** includes an approximate reference-inspired interior, autonomous lost-item search, orbit/follow cameras, a flash and a live photo gallery. Launch `indoor_showcase/Start Showcase.command` and open http://127.0.0.1:8768/. The original outdoor UW simulation below remains available.
+
 ## Run on this Mac
 
 1. Double-click **Start Rover.command**, or open **worlds/uw_autonomous.wbt** in Webots and press Play.

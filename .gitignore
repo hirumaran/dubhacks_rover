@@ -12,3 +12,9 @@ simulation/worlds/.*.wbproj.*
 logs/
 simulation/gallery/captures/*
 !simulation/gallery/captures/.gitkeep
+
+# Indoor showcase generated workspace and runtime media
+simulation/indoor_showcase/worlds/.*.wbproj*
+simulation/indoor_showcase/presentation/data/*
+!simulation/indoor_showcase/presentation/data/.gitkeep
+simulation/indoor_showcase/recordings/
