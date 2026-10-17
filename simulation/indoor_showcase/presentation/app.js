@@ -1,6 +1,7 @@
 const $ = id => document.getElementById(id);
 let previousScan = null, previousTime = 0, lastGallery = '', lastHistory = '', posting = false, displayedScan = null, pinnedScan = false;
 const titles = {backpack: 'Backpack', book: 'Book', bottle: 'Water bottle'};
+const itemCount = n => n + (n === 1 ? ' item' : ' items');
 const clock = t => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 function toast(message) {
   $('toast').textContent = message; $('toast').classList.add('visible');
@@ -54,7 +55,7 @@ function history(scans) {
   const host = $('scan-history'); host.replaceChildren();
   for (const scan of scans.slice().reverse()) {
     const b = document.createElement('button'); b.dataset.scan = scan.snapshot_id;
-    b.textContent = clock(scan.simulation_time_s) + ' · ' + scan.detections.length + ' items';
+    b.textContent = clock(scan.simulation_time_s) + ' · ' + itemCount(scan.detections.length);
     b.classList.toggle('active', b.dataset.scan === displayedScan);
     b.onclick = () => { pinnedScan = true; $('follow-latest').hidden = false; showScan(scan); }; host.append(b);
   }
@@ -119,7 +120,7 @@ async function poll() {
       if (previousScan !== scan.snapshot_id) {
         if (live && age >= 0 && age < 1.2) {
           $('flash').classList.remove('fire'); void $('flash').offsetWidth; $('flash').classList.add('fire');
-          toast('360° snapshot saved · ' + scan.detections.length + ' items identified');
+          toast('360° snapshot saved · ' + itemCount(scan.detections.length) + ' identified');
         }
         previousScan = scan.snapshot_id; if (!pinnedScan) showScan(scan);
       }
@@ -130,10 +131,10 @@ async function poll() {
         $('latest-name').textContent = 'No items in this snapshot';
         $('sample-id').textContent = 'ALL FOUR DIRECTIONS CAPTURED';
       }
-      $('capture-badge').textContent = age < .4 ? 'CAPTURED' : scan.detections.length + ' ITEMS';
+      $('capture-badge').textContent = age < .4 ? 'CAPTURED' : itemCount(scan.detections.length).toUpperCase();
       $('step-capture').className = 'done'; $('step-upload').className = age >= 1.2 ? 'done' : '';
       $('progress-bar').style.width = age < .4 ? '30%' : age < 1.2 ? '70%' : '100%';
-      $('upload-label').textContent = age < .4 ? 'Four camera views saved together' : age < 1.2 ? 'Identifying visible items in the snapshot…' : '✓ ' + scan.detections.length + ' items identified · Snapshot saved';
+      $('upload-label').textContent = age < .4 ? 'Four camera views saved together' : age < 1.2 ? 'Identifying visible items in the snapshot…' : '✓ ' + itemCount(scan.detections.length) + ' identified · Snapshot saved';
     } else {
       $('latest-photo').hidden = true; $('empty-photo').hidden = false;
       $('latest-name').textContent = 'First snapshot at 00:05'; $('sample-id').textContent = 'CAPTURE → ANALYZE → IDENTIFY';
