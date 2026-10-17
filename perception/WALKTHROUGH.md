@@ -81,23 +81,32 @@ perception/
 ├── config.py                 knobs + camera specs + .env loader (no hardcoding of secrets)
 ├── frames.py                 PNG load / VLM downscale / normalized bbox crop
 ├── geotag.py                 THE MATH: pixel→bearing→range→world→lat/lon
+├── rover_geo.py              rover WGS84 + haversine + closest_rover
+├── dispatch.py               QR reports → closest live rover → missions.json
 ├── isaac_detector.py         backends: TransformersIsaac | SDKIsaac(stub) | MockDetector
 ├── tracker.py                stable IDs + association + gone detection + state file
 ├── events.py                 event shaping + 'seen' throttle
 ├── supabase_store.py         storage upload → insert → outbox → flush
-├── run_service.py            the loop that ties bricks 1–8 together
+├── run_service.py            the loop that ties bricks 1–8 together + rover heartbeat
 ├── match_agent.py            query side for the web branch
+├── kiosk/                    phone form, stations.json, printable QR PNGs
 ├── supabase/
-│   └── schema.sql            PASTE-ONCE into SQL editor (builds everything)
+│   ├── schema.sql            PASTE-ONCE into SQL editor (builds everything)
+│   └── schema_dispatch.sql   additive if schema.sql already ran
 ├── tools/
 │   ├── smoke_test.py         full pipeline on archived captures / live inbox, no Webots
-│   └── bridge_selftest.py    fabricates 2 inbox ticks, verifies contract without Webots
+│   ├── bridge_selftest.py    fabricates 2 inbox ticks, verifies contract without Webots (hermetic)
+│   ├── make_qr.py            desk QR cards (--lan auto-detects this machine's IP)
+│   ├── serve_kiosk.py        mobile report server + /api/status polling
+│   ├── rover_locate.py       print last rover lat/lon
+│   └── dispatch_selftest.py  closest-rover + stale/reconcile gates + QR URL, no GPU
 ├── inbox/                    (runtime) Webots → service. Gitignored, recreated on demand
 ├── state/                    (runtime) tracks.json, outbox.jsonl, crops/*.png. Gitignored
 ├── reports/                  (runtime) dry-run JSONL mirrors of what WOULD hit Supabase
 ├── .env.example              copy → .env and fill
-├── requirements.txt          torch/transformers/supabase/Pillow/dotenv
+├── requirements.txt          torch/transformers/supabase/Pillow/dotenv/qrcode
 ├── README.md                 quickstart (short)
+├── QR_AND_FLEET.md           student QR + fleet dispatch (teammate/agent manual)
 └── WALKTHROUGH.md            ← this file (deep)
 
 simulation/controllers/campus_rover/
@@ -131,6 +140,13 @@ Everything is env-driven so nothing needs code changes between machines:
 | `MOVE_MIN_M` | `0.15` | geotag jump >15 cm ⇒ `moved` instead of silent EMA |
 | `MATCH_IOU_MIN` / `MATCH_TEXT_MIN` | `0.20` / `0.35` | association floors |
 | `MAX_RANGE_M` | `6.0` | sanity clamp on any estimated range |
+| `ROVER_ID` / `ROVER_DISPLAY_NAME` | `mk1` / `Campus Scout MK1` | fleet identity; unique per physical rover |
+| `PUBLIC_APP_URL` | `http://localhost:8787` | origin encoded in printed QRs; regenerate cards if this changes |
+| `KIOSK_PORT` | `8787` | `serve_kiosk.py` bind port |
+| `HEARTBEAT_STALE_S` | `45` | rover ignored for dispatch if heartbeat older than this |
+| `LOST_ITEMS_BUCKET` | `lost-item-queries` | student photo uploads |
+| `MATCH_MIN_SCORE` | `0.3` | min match_agent score before a report flips to `matched` |
+| `PERCEPTION_INBOX_DIR` / `_STATE_DIR` / `_REPORTS_DIR` | unset (folder defaults) | isolate a second stack or tests; `bridge_selftest` sets its own temp dirs |
 
 **CameraSpec** (mirrors `simulation/protos/CampusScout.proto` — do not diverge):
 
@@ -568,3 +584,5 @@ Read path uses the ANON key intentionally (RLS proves itself).
 **Q: Where are dry-run artifacts?** `reports/events.jsonl` (every commit, with `persisted` flag), `reports/sightings_dry_run.jsonl` (rows that WOULD reach Supabase), `state/crops/` (the actual crop images the browser shows).
 
 **Q: Renaming — what breaks?** The seq/camera filename pattern (`frame_<seq:07d>_c<i>.png` + `frame_<seq:07d>.json`) is a cross-repo contract shared with the controller hook — change both sides or don't change it.
+
+**Q: Where is the student QR / closest-rover fleet bus?** [`QR_AND_FLEET.md`](QR_AND_FLEET.md). Print `kiosk/qr/`. Isaac-0.2-1B stays on the rover; Mk.1.5 is not an on-rover backend.

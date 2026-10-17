@@ -47,6 +47,19 @@ Rules:
 
 Answer with the JSON array only."""
 
+HUNT_SUFFIX = """
+
+HUNT PRIORITY — a student just reported: "{query}".
+If anything in the frame matches that description (or the uploaded photo description),
+list it FIRST with high confidence. Still list other lost-looking items."""
+
+
+def user_prompt(hunt_query: str | None = None) -> str:
+    text = USER_PROMPT.format(classes=", ".join(TARGET_CLASSES[:-1]))
+    if hunt_query:
+        text += HUNT_SUFFIX.format(query=hunt_query.replace('"', "'")[:240])
+    return text
+
 
 @dataclass
 class Detection:
@@ -150,10 +163,10 @@ class TransformersIsaac:
         inputs = self.processor(text=prompt_text, images=img, return_tensors="pt")
         return {k: v.to(self.device) for k, v in inputs.items()}
 
-    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None) -> list[Detection]:
+    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None, hunt_query: str | None = None) -> list[Detection]:
         from frames import downscale_for_vlm
         small = downscale_for_vlm(image, ISAAC_MAX_SIDE)
-        user_text = USER_PROMPT.format(classes=", ".join(TARGET_CLASSES[:-1]))
+        user_text = user_prompt(hunt_query)
         inputs = self._build_inputs(small, user_text)
         with self._torch.inference_mode():
             out = self.model.generate(
@@ -208,7 +221,7 @@ class SDKIsaac:
             ) from e
         self._client = Perceptron(model="isaac-0.2-1b", local=True)
 
-    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None) -> list[Detection]:
+    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None, hunt_query: str | None = None) -> list[Detection]:
         raise NotImplementedError(
             "Perceptron SDK local API differs between releases; verify at "
             "https://docs.perceptron.inc and finish this adapter, or use "
@@ -234,7 +247,7 @@ class MockDetector:
             ("book", "closed yellow notebook", "yellow"),
         ]
 
-    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None) -> list[Detection]:
+    def detect(self, image, camera_idx: int, sim_time_s: float, ref_dets=None, hunt_query: str | None = None) -> list[Detection]:
         if ref_dets:
             out = []
             for r in ref_dets:

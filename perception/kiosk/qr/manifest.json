@@ -1,0 +1,41 @@
+{
+  "base_url": "http://172.16.0.2:8787",
+  "cards": [
+    {
+      "id": "suzzallo-circulation",
+      "name": "Suzzallo Library \u2014 Circulation Desk",
+      "url": "http://172.16.0.2:8787/?station=suzzallo-circulation",
+      "file": "suzzallo-circulation.png"
+    },
+    {
+      "id": "odegaard-helpdesk",
+      "name": "Odegaard Library \u2014 Help Desk",
+      "url": "http://172.16.0.2:8787/?station=odegaard-helpdesk",
+      "file": "odegaard-helpdesk.png"
+    },
+    {
+      "id": "hub-info",
+      "name": "Husky Union Building \u2014 Info Desk",
+      "url": "http://172.16.0.2:8787/?station=hub-info",
+      "file": "hub-info.png"
+    },
+    {
+      "id": "gates-atrium",
+      "name": "Gates Center \u2014 Atrium",
+      "url": "http://172.16.0.2:8787/?station=gates-atrium",
+      "file": "gates-atrium.png"
+    },
+    {
+      "id": "uwpd-front",
+      "name": "UWPD / Campus Security \u2014 Front Desk",
+      "url": "http://172.16.0.2:8787/?station=uwpd-front",
+      "file": "uwpd-front.png"
+    },
+    {
+      "id": "allen-lobby",
+      "name": "Paul G. Allen Center \u2014 Lobby",
+      "url": "http://172.16.0.2:8787/?station=allen-lobby",
+      "file": "allen-lobby.png"
+    }
+  ]
+}

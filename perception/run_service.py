@@ -27,6 +27,7 @@ from frames import load_png, crop_norm
 from tracker import Tracker
 from events import EventShaper
 from supabase_store import SupabaseStore
+from dispatch import Dispatch
 
 EVENTS_JSONL = REPORTS_DIR / "events.jsonl"
 SIGHTINGS_JSONL = REPORTS_DIR / "sightings_dry_run.jsonl"
@@ -59,7 +60,9 @@ class Service:
         self.store = SupabaseStore()
         self.tracker = Tracker()
         self.shaper = EventShaper()
+        self.dispatch = Dispatch()
         self.last_wall = 0.0
+        self.last_dispatch_poll = 0.0
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         backend = getattr(self.detector, "name", type(self.detector).__name__)
         sb_mode = "live" if self.store.enabled else "dry-run"
@@ -88,6 +91,9 @@ class Service:
         meta = json.loads(jsn.read_text())
         sim_t = float(meta.get("sim_time_s", seq))
         pose = _pose_from_meta(meta)
+        hunt = self.dispatch.hunt_query()
+        status = "hunting" if hunt else "patrol"
+        self.dispatch.heartbeat(pose, status=status)
 
         n_events = 0
         geo_dets: list[tuple] = []
@@ -100,7 +106,7 @@ class Service:
                 (c.get("objects") or [] for c in meta.get("cameras", []) if c.get("idx") == idx),
                 [],
             )
-            for det in self.detector.detect(img, idx, sim_t, ref_dets=ref):
+            for det in self.detector.detect(img, idx, sim_t, ref_dets=ref, hunt_query=hunt):
                 geo = locate(det.bbox_norm, cam, pose, recog_x=det.recog_x)
                 geo["area_hint"] = area_hint(geo["x"], geo["y"])
                 geo_dets.append((det, geo))
@@ -169,6 +175,12 @@ class Service:
                             except OSError:
                                 pass
             self.store.flush_due(min_interval_s=5.0 if once else 30.0)
+            now = time.time()
+            if once or now - self.last_dispatch_poll >= 5.0:
+                self.dispatch.reclaim_unassigned()
+                self.dispatch.reconcile_matches()
+                self.dispatch.refresh_local_missions()
+                self.last_dispatch_poll = now
             if once:
                 break
             time.sleep(INBOX_POLL_S)

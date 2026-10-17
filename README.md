@@ -11,8 +11,10 @@ The complete autonomous campus rover simulation is in [`simulation/`](simulation
 
 The on-rover intelligence layer ([`perception/`](perception/)) runs
 Isaac-0.2-1B locally: camera frames -> detections -> stable object IDs ->
-geotags -> Supabase `sightings`, with a matching agent for the student web
-flow. See [perception/README.md](perception/README.md).
+geotags -> Supabase `sightings`. Desk QR codes (`perception/kiosk/qr/`) open a
+phone form; cloud dispatch sends the report to the closest live rover. See
+[perception/README.md](perception/README.md) and
+[perception/QR_AND_FLEET.md](perception/QR_AND_FLEET.md).
 
 On macOS, open `simulation/Start Rover.command` to launch the rover (set
 `PERCEPTION_INBOX` first to enable the perception bridge), or open

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>Campus Scout QR print sheet</title>
+<style>
+  body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; color: #102016; }
+  h1 { font-size: 20px; }
+  p { color: #44554a; max-width: 40rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+  figure { margin: 0; page-break-inside: avoid; border: 1px solid #ddd; padding: 8px; }
+  img { width: 100%; height: auto; }
+  figcaption { font-size: 12px; margin-top: 8px; }
+  @media print { button { display: none; } }
+</style></head><body>
+<h1>Campus Scout — print and tape these on desks</h1>
+<p>Generated for <code>http://172.16.0.2:8787</code>. If the public URL changes, re-run
+<code>python tools/make_qr.py --url …</code> and reprint.</p>
+<button onclick="window.print()">Print</button>
+<div class="grid"><figure><img src="suzzallo-circulation.png" alt="Suzzallo Library — Circulation Desk" /><figcaption>Suzzallo Library — Circulation Desk<br/><code>http://172.16.0.2:8787/?station=suzzallo-circulation</code></figcaption></figure><figure><img src="odegaard-helpdesk.png" alt="Odegaard Library — Help Desk" /><figcaption>Odegaard Library — Help Desk<br/><code>http://172.16.0.2:8787/?station=odegaard-helpdesk</code></figcaption></figure><figure><img src="hub-info.png" alt="Husky Union Building — Info Desk" /><figcaption>Husky Union Building — Info Desk<br/><code>http://172.16.0.2:8787/?station=hub-info</code></figcaption></figure><figure><img src="gates-atrium.png" alt="Gates Center — Atrium" /><figcaption>Gates Center — Atrium<br/><code>http://172.16.0.2:8787/?station=gates-atrium</code></figcaption></figure><figure><img src="uwpd-front.png" alt="UWPD / Campus Security — Front Desk" /><figcaption>UWPD / Campus Security — Front Desk<br/><code>http://172.16.0.2:8787/?station=uwpd-front</code></figcaption></figure><figure><img src="allen-lobby.png" alt="Paul G. Allen Center — Lobby" /><figcaption>Paul G. Allen Center — Lobby<br/><code>http://172.16.0.2:8787/?station=allen-lobby</code></figcaption></figure></div>
+</body></html>

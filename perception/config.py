@@ -43,13 +43,26 @@ MATCH_TEXT_MIN = float(os.environ.get("MATCH_TEXT_MIN", "0.35"))
 MAX_RANGE_M = float(os.environ.get("MAX_RANGE_M", "6.0"))        # sanity clamp on geotag range
 
 # Webots -> perception bridge
-INBOX_DIR = PERCEPTION_ROOT / "inbox"
-OUTBOX_DIR = PERCEPTION_ROOT / "state"
-REPORTS_DIR = PERCEPTION_ROOT / "reports"
+# Overridable so tests / second instances never share runtime state:
+#   PERCEPTION_INBOX_DIR, PERCEPTION_STATE_DIR, PERCEPTION_REPORTS_DIR
+INBOX_DIR = Path(os.environ.get("PERCEPTION_INBOX_DIR", PERCEPTION_ROOT / "inbox"))
+OUTBOX_DIR = Path(os.environ.get("PERCEPTION_STATE_DIR", PERCEPTION_ROOT / "state"))
+REPORTS_DIR = Path(os.environ.get("PERCEPTION_REPORTS_DIR", PERCEPTION_ROOT / "reports"))
 
 # Where the controller-side writer looks (teammate's machine).
 # Controller only activates when PERCEPTION_INBOX env var is set to the inbox path.
 CONTROLLER_HOOK_ENV = "PERCEPTION_INBOX"
+
+# Fleet identity + student kiosk (QR codes land on PUBLIC_APP_URL)
+ROVER_ID = os.environ.get("ROVER_ID", "mk1")
+ROVER_DISPLAY_NAME = os.environ.get("ROVER_DISPLAY_NAME", "Campus Scout MK1")
+PUBLIC_APP_URL = os.environ.get("PUBLIC_APP_URL", "http://localhost:8787").rstrip("/")
+KIOSK_PORT = int(os.environ.get("KIOSK_PORT", "8787"))
+HEARTBEAT_STALE_S = float(os.environ.get("HEARTBEAT_STALE_S", "45"))
+LOST_ITEMS_BUCKET = os.environ.get("LOST_ITEMS_BUCKET", "lost-item-queries")
+KIOSK_DIR = PERCEPTION_ROOT / "kiosk"
+# Minimum match_agent score before a report is auto-marked 'matched'.
+MATCH_MIN_SCORE = float(os.environ.get("MATCH_MIN_SCORE", "0.3"))
 
 
 @dataclass

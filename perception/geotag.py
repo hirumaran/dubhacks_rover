@@ -55,12 +55,27 @@ class RoverPose:
     sim_time_s: float
 
 
-def _load_origin():
+def load_origin():
+    """Mission WGS84 origin. Webots GPS (x,y) is meters east/north of this point."""
     try:
         m = json.loads(MISSION_PATH.read_text())
         return m["reference_lat_lon"]
     except (OSError, KeyError, ValueError):
         return [_LAT0, -122.3074]
+
+
+def world_xy_to_wgs84(x: float, y: float) -> tuple[float, float]:
+    lat0, lon0 = load_origin()
+    lat = lat0 + y * _DEG_PER_M_LAT
+    lon = lon0 + x * _DEG_PER_M_LON
+    return round(lat, 7), round(lon, 7)
+
+
+def wgs84_to_world_xy(lat: float, lon: float) -> tuple[float, float]:
+    lat0, lon0 = load_origin()
+    y = (lat - lat0) / _DEG_PER_M_LAT
+    x = (lon - lon0) / _DEG_PER_M_LON
+    return x, y
 
 
 def theta_from_u(u_norm: float, cam: CameraSpec) -> float:
@@ -109,15 +124,13 @@ def locate(
     x = pose.x + rng * math.cos(bearing)
     y = pose.y + rng * math.sin(bearing)
 
-    lat0, lon0 = _load_origin()
-    lat = lat0 + y * _DEG_PER_M_LAT
-    lon = lon0 + x * _DEG_PER_M_LON
+    lat, lon = world_xy_to_wgs84(x, y)
 
     return {
         "x": round(x, 3),
         "y": round(y, 3),
-        "lat": round(lat, 7),
-        "lon": round(lon, 7),
+        "lat": lat,
+        "lon": lon,
         "bearing_deg": round(math.degrees(bearing) % 360.0, 2),
         "range_m": round(rng, 2),
         "z_cam_m": round(z_cam, 3),

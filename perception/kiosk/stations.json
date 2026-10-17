@@ -1,0 +1,48 @@
+{
+  "product": "Campus Scout lost-item rover",
+  "notes": "Edit coordinates before printing QRs for a real building. lat/lon are WGS84. The QR encodes PUBLIC_APP_URL/?station=<id> so the report is already geotagged to this desk.",
+  "stations": [
+    {
+      "id": "suzzallo-circulation",
+      "name": "Suzzallo Library — Circulation Desk",
+      "lat": 47.65585,
+      "lon": -122.30895,
+      "hint": "Tape this on the circulation desk."
+    },
+    {
+      "id": "odegaard-helpdesk",
+      "name": "Odegaard Library — Help Desk",
+      "lat": 47.65662,
+      "lon": -122.31025,
+      "hint": "Help desk, ground floor."
+    },
+    {
+      "id": "hub-info",
+      "name": "Husky Union Building — Info Desk",
+      "lat": 47.65535,
+      "lon": -122.30495,
+      "hint": "Main information desk."
+    },
+    {
+      "id": "gates-atrium",
+      "name": "Gates Center — Atrium",
+      "lat": 47.65328,
+      "lon": -122.30505,
+      "hint": "Atrium tables / lost-and-found corner."
+    },
+    {
+      "id": "uwpd-front",
+      "name": "UWPD / Campus Security — Front Desk",
+      "lat": 47.65445,
+      "lon": -122.30255,
+      "hint": "Campus security intake."
+    },
+    {
+      "id": "allen-lobby",
+      "name": "Paul G. Allen Center — Lobby",
+      "lat": 47.65340,
+      "lon": -122.30580,
+      "hint": "CSE lobby lost-and-found."
+    }
+  ]
+}

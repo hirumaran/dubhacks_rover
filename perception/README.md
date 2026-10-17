@@ -2,9 +2,10 @@
 
 The on-rover intelligence layer of the lost-item rover. Follows the architecture
 flowchart: **camera every 5s -> local Isaac detect/describe/track -> stable
-object IDs -> geotag -> structured payload -> Supabase**. The web branch
-(elsewhere in git) calls Supabase via `match_agent.py` to answer "where is my
-bottle?".
+object IDs -> geotag -> structured payload -> Supabase**. Students scan a
+**desk QR** (`kiosk/qr/`) to report a lost item; cloud dispatch assigns the
+**closest live rover**. The web branch (elsewhere in git) can also call
+`match_agent.py`. Full QR/fleet manual: [QR_AND_FLEET.md](QR_AND_FLEET.md).
 
 ```
 [Webots / rover @ teammate A]
@@ -32,15 +33,24 @@ bottle?".
 | `isaac_detector.py` | Isaac-0.2-1B loaders + structured-output prompt + MockDetector |
 | `frames.py` | PNG load / downscale / normalized crops |
 | `geotag.py` | projection + range + lat/lon math (documented Webots conventions) |
+| `rover_geo.py` | rover WGS84 heartbeat math + closest-rover pick |
+| `dispatch.py` | lost-item ingest, fleet assign, `state/missions.json` |
 | `tracker.py` | stable IDs, IoU/text/spatial association, gone detection |
 | `events.py` | event shaping + heartbeat throttle |
 | `supabase_store.py` | storage uploads, inserts, offline outbox + flush |
-| `run_service.py` | watches `inbox/`, drives everything |
+| `run_service.py` | watches `inbox/`, drives everything, publishes rover GPS |
 | `match_agent.py` | query-side helper for the web branch |
+| `kiosk/` | phone form + `stations.json` + printable QR PNGs |
 | `supabase/schema.sql` | paste into Supabase SQL editor once |
+| `supabase/schema_dispatch.sql` | additive SQL if schema.sql already ran |
 | `tools/smoke_test.py` | full-pipeline test without Webots |
-| `tools/bridge_selftest.py` | fabricates 2 inbox ticks; verifies the Webots->service contract |
+| `tools/bridge_selftest.py` | fabricates 2 inbox ticks; verifies the Webots->service contract (hermetic, re-runnable) |
+| `tools/make_qr.py` | generate desk QR cards (`--lan` auto-detects this machine's IP) |
+| `tools/serve_kiosk.py` | mobile report server + `/api/status` for those QRs |
+| `tools/rover_locate.py` | print this rover's last lat/lon |
+| `tools/dispatch_selftest.py` | closest-rover + stale/reconcile gates + QR URL contract, no GPU |
 | `WALKTHROUGH.md` | **detailed build log: every brick, the math, contracts, evidence** |
+| `QR_AND_FLEET.md` | **QR product + fleet dispatch for teammates/agents** |
 | `../simulation/controllers/campus_rover/perception_hook.py` | controller-side frame writer |
 
 ## Setup (teammate's machine Webots-1 / Mac-with-weights)
@@ -94,6 +104,24 @@ Bridge-only check (two synthetic ticks, no Webots, no GPU):
 
 ```bash
 .venv/bin/python tools/bridge_selftest.py   # expects "[selftest] PASS"
+```
+
+## Student QR (librarians / campus security)
+
+```bash
+# 1. SQL: new project → schema.sql; existing → schema_dispatch.sql
+# 2. PUBLIC_APP_URL in .env = the URL a phone will open (or just use --lan)
+.venv/bin/python tools/make_qr.py --lan  # this machine's Wi-Fi IP + KIOSK_PORT
+.venv/bin/python tools/serve_kiosk.py    # phone form + /api/status polling
+.venv/bin/python run_service.py          # rover brain + heartbeat + hunt/reconcile
+```
+
+Print `kiosk/qr/print.html` or the per-desk PNGs. The phone polls
+`/api/status?id=` and flips to "Found it!" when a sighting matches. Details,
+fleet scale-up, and what agents must not rename: [QR_AND_FLEET.md](QR_AND_FLEET.md).
+
+```bash
+.venv/bin/python tools/dispatch_selftest.py   # expect PASS
 ```
 
 ## Web branch integration

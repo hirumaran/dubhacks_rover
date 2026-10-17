@@ -15,6 +15,46 @@ from config import SUPABASE_URL
 
 WORDS_RE = re.compile(r"[a-z]{3,}")
 
+# Common campus items: a student says "hydroflask", Isaac says "bottle".
+# Additive recall only — synonym hits never invent a match on their own; they
+# just unlock the overlap gate below. Extend freely; keep keys singular.
+QUERY_SYNONYMS: dict[str, set[str]] = {
+    "hydroflask": {"bottle", "flask", "water", "thermos", "tumbler"},
+    "flask": {"bottle", "hydroflask", "thermos"},
+    "thermos": {"bottle", "hydroflask", "flask", "tumbler"},
+    "tumbler": {"bottle", "hydroflask", "flask"},
+    "water": {"bottle", "hydroflask"},
+    "phone": {"iphone", "android", "cellphone", "mobile", "smartphone"},
+    "iphone": {"phone", "mobile", "smartphone"},
+    "android": {"phone", "mobile", "smartphone"},
+    "laptop": {"macbook", "notebook", "computer"},
+    "macbook": {"laptop", "notebook", "computer"},
+    "airpods": {"earbuds", "earbud", "buds", "headphones", "case"},
+    "earbuds": {"airpods", "buds", "headphones"},
+    "headphones": {"airpods", "earbuds", "buds", "headset"},
+    "backpack": {"bag", "rucksack", "knapsack"},
+    "bag": {"backpack", "purse", "tote", "handbag"},
+    "purse": {"bag", "handbag", "wallet"},
+    "wallet": {"purse", "cardholder"},
+    "keys": {"keychain", "keyring", "fob"},
+    "keychain": {"keys", "keyring"},
+    "glasses": {"sunglasses", "spectacles", "eyeglasses"},
+    "sunglasses": {"glasses", "spectacles"},
+    "jacket": {"coat", "hoodie", "sweater"},
+    "hoodie": {"jacket", "sweatshirt", "sweater"},
+    "bike": {"bicycle"},
+    "bicycle": {"bike"},
+    "charger": {"cable", "adapter", "power brick"},
+    "umbrella": set(),
+}
+
+
+def _synonyms(tokens: set[str]) -> set[str]:
+    out: set[str] = set()
+    for t in tokens:
+        out |= QUERY_SYNONYMS.get(t, set())
+    return out
+
 
 def _tokens(text: str) -> set[str]:
     return set(WORDS_RE.findall((text or "").lower()))
@@ -30,11 +70,16 @@ def _client():
 
 
 def find_matches(query_text: str, top_k: int = 5) -> list[dict]:
-    """Top-k candidate objects for a typed description."""
+    """Top-k candidate objects for a typed description.
+
+    Gate: label in the query, token overlap > 25%, or a known synonym hit
+    ("hydroflask" -> "bottle"). Score: overlap + label + color + recency.
+    """
     sb = _client()
     q_tokens = _tokens(query_text)
     if not q_tokens:
         return []
+    q_syn = _synonyms(q_tokens)
     rows = (
         sb.table("recent_sightings")
         .select("*")
@@ -50,14 +95,17 @@ def find_matches(query_text: str, top_k: int = 5) -> list[dict]:
         tokens = _tokens(blob)
         if not tokens:
             continue
-        label_hit = r["label"] in query_text.lower() or r["label"] in tokens
+        label_tokens = _tokens(r.get("label", ""))
+        label_hit = bool(label_tokens & q_tokens) or (r.get("label") or "") in query_text.lower()
         overlap = len(q_tokens & tokens) / max(1, len(q_tokens))
         color_hit = 1.0 if (r.get("color") and r["color"] in q_tokens) else 0.0
-        if not (label_hit or overlap > 0.25):
+        syn_hit = bool(q_syn & tokens)
+        if not (label_hit or overlap > 0.25 or syn_hit):
             continue
         age_h = _age_hours(r.get("created_at"), now)
         recency = math.exp(-age_h / 24.0)
-        score = round(0.5 * overlap + 0.2 * float(label_hit) + 0.1 * color_hit + 0.2 * recency, 3)
+        score = round(min(1.0, 0.5 * overlap + 0.2 * float(label_hit) + 0.1 * color_hit
+                          + 0.15 * float(syn_hit) + 0.2 * recency), 3)
         scored.append({**r, "match_score": score})
     scored.sort(key=lambda d: d["match_score"], reverse=True)
     dedup, seen = [], set()
@@ -86,24 +134,34 @@ def first_sighting(object_id: str) -> dict | None:
     return rows[0] if rows else None
 
 
-def log_lost_item(query_text: str, created_by: str | None = None, matches: list[dict] | None = None) -> str | None:
-    sb = _client()
-    best = (matches or [None])[0]
+def log_lost_item(
+    query_text: str,
+    created_by: str | None = None,
+    matches: list[dict] | None = None,
+    station_id: str | None = None,
+    query_image_url: str | None = None,
+) -> str | None:
+    """Web-branch helper. Prefer the kiosk `/api/report` path so closest-rover
+    dispatch runs; this still inserts + matches for teammates who call us directly.
+    """
+    from dispatch import Dispatch
     payload = {
-        "created_by": created_by,
         "query_text": query_text,
-        "status": "open",
+        "created_by": created_by,
+        "station_id": station_id,
+        "query_image_url": query_image_url,
     }
-    if best:
-        payload.update({
+    item = Dispatch().ingest_report(payload)
+    if matches:
+        best = matches[0]
+        extra = {
             "status": "matched",
             "matched_object_id": best["object_id"],
             "match_confidence": best["match_score"],
             "match_reason": f"matched on {best['label']} similarity {best['match_score']:.2f}",
-        })
-    res = sb.table("lost_items").insert(payload).execute()
-    data = res.data or []
-    return data[0]["id"] if data else None
+        }
+        Dispatch()._update_lost_item(item["id"], extra)
+    return item.get("id")
 
 
 def _age_hours(ts, now) -> float:

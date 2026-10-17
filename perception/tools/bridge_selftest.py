@@ -6,16 +6,33 @@ recognition objects and a bbox), then pushes it through Service.process_tick.
 
 Verifies: the inbox contract, per-camera handling, geotag from a real pose,
 tracking (stable IDs across two ticks), event shaping, dry-run persistence.
+
+Hermetic: runs against a throwaway temp dir (PERCEPTION_INBOX_DIR /
+PERCEPTION_STATE_DIR / PERCEPTION_REPORTS_DIR), so it never touches the real
+inbox/state/reports and always starts from an empty tracker. Re-runnable.
 """
 from __future__ import annotations
 import json
+import os
 import sys
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import tempfile
 import uuid
+
+
+@contextmanager
+def _sandbox():
+    with tempfile.TemporaryDirectory(prefix="perception_selftest_") as tmp:
+        root = Path(tmp)
+        os.environ["PERCEPTION_INBOX_DIR"] = str(root / "inbox")
+        os.environ["PERCEPTION_STATE_DIR"] = str(root / "state")
+        os.environ["PERCEPTION_REPORTS_DIR"] = str(root / "reports")
+        (root / "inbox").mkdir()
+        yield root
 
 
 def _png(w: int = 320, h: int = 240) -> bytes:
@@ -33,6 +50,11 @@ def _png(w: int = 320, h: int = 240) -> bytes:
 
 
 def main():
+    with _sandbox():
+        return _run()
+
+
+def _run():
     from config import INBOX_DIR
     from run_service import Service
 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f17" />
+  <title>Campus Scout — report a lost item</title>
+  <link rel="stylesheet" href="/kiosk.css" />
+</head>
+<body>
+  <main class="sheet">
+    <p class="eyebrow">Campus Scout</p>
+    <h1>Lost something?</h1>
+    <p class="lede" id="station-line">Scan this desk’s QR, describe the item (or snap a photo). The nearest rover gets the hunt.</p>
+
+    <form id="report" enctype="multipart/form-data">
+      <label>
+        What did you lose?
+        <textarea name="query_text" rows="4" required placeholder="green hydroflask, dented lid, last seen near the atrium couches"></textarea>
+      </label>
+      <label>
+        Photo (optional)
+        <input type="file" name="photo" accept="image/*" capture="environment" />
+      </label>
+      <label>
+        How can we reach you? (optional)
+        <input type="text" name="created_by" placeholder="email or phone" autocomplete="email" />
+      </label>
+      <input type="hidden" name="station_id" id="station_id" />
+      <button type="submit" id="go">Send to the rover</button>
+    </form>
+    <p class="status" id="status" hidden></p>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const station = params.get("station") || "";
+    document.getElementById("station_id").value = station;
+    const stations = window.KIOSK_STATIONS || {};
+    const info = stations[station];
+    if (info) {
+      document.getElementById("station-line").textContent =
+        "Reporting from " + info.name + ". Describe the item or add a photo — the closest Campus Scout rover will search nearby.";
+    }
+
+    const form = document.getElementById("report");
+    const status = document.getElementById("status");
+    let pollTimer = null;
+
+    function startPolling(id) {
+      clearInterval(pollTimer);
+      let tries = 0;
+      pollTimer = setInterval(async () => {
+        tries += 1;
+        if (tries > 72) { clearInterval(pollTimer); return; }  // ~6 min
+        try {
+          const res = await fetch("/api/status?id=" + encodeURIComponent(id));
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.status === "matched" || data.status === "resolved") {
+            status.textContent = "Found it! " + (data.match_reason || "The rover matched your item.");
+            status.classList.add("found");
+            clearInterval(pollTimer);
+          } else if (data.status === "hunting") {
+            status.textContent = (data.assigned_rover_id || "A rover") +
+              " is searching this building and nearby spots… keep this tab open.";
+          }
+        } catch (err) { /* keep polling */ }
+      }, 5000);
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("go");
+      btn.disabled = true;
+      status.hidden = false;
+      status.classList.remove("found");
+      status.textContent = "Sending…";
+      try {
+        const res = await fetch("/api/report", { method: "POST", body: new FormData(form) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not send");
+        const rover = data.assigned_rover_id || "a nearby rover";
+        const dist = data.distance_m != null ? " (~" + Math.round(data.distance_m) + " m away)" : "";
+        status.textContent = data.match_reason
+          ? data.match_reason
+          : "Got it. " + rover + dist + " is on the hunt. Keep this tab open — we’ll show the match here.";
+        if (data.match_reason) status.classList.add("found");
+        form.reset();
+        document.getElementById("station_id").value = station;
+        if (!data.match_reason && data.id) startPolling(data.id);
+      } catch (err) {
+        status.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
