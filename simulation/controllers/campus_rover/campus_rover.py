@@ -42,6 +42,11 @@ class CampusRover(Robot):
   for i in range(4):
    c=self.getDevice(f'camera_{i}');c.enable(128);c.recognitionEnable(128);self.cameras.append(c)
   self.emitter=self.getDevice('telemetry')
+  inbox=os.environ.get('PERCEPTION_INBOX')
+  self.hook=None
+  if inbox:
+   from perception_hook import PerceptionHook
+   self.hook=PerceptionHook(self.cameras,self.gps,self.compass,inbox)
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
   self.seen={r['sample_id']for r in self.records};self.new_captures=0;self.avoid_events=0
@@ -83,7 +88,9 @@ class CampusRover(Robot):
    return min(vals)if vals else 5.
   return sector(0,.40),sector(.65,.50),sector(-.65,.50)
  def tick(self):
-  now=self.getTime();p=self.gps.getValues();north=self.compass.getValues()
+  now=self.getTime()
+  if self.hook:self.hook.maybe(now)
+  p=self.gps.getValues();north=self.compass.getValues()
   if any(not math.isfinite(q)for q in p+north):self.drive(0,0);return
   xy=(p[0],p[1]);heading=math.atan2(north[0],north[1]);roll,pitch,_=self.imu.getRollPitchYaw()
   if self.lastxy:self.travel+=math.dist(xy,self.lastxy)
