@@ -63,17 +63,21 @@ while s.step(dt)!=-1:
  elif mode=='follow':
   eye=[rp[0]-math.cos(heading)*1.25+math.sin(heading)*.55,rp[1]-math.sin(heading)*1.25-math.cos(heading)*.55,.52];target=[rp[0],rp[1],.28];shot='FOLLOW'
  else:
-  angle=now*.18;radius=1.05 if age<2.0 else 1.15
-  eye=[rp[0]+math.cos(angle)*radius,rp[1]+math.sin(angle)*radius,.40 if age<2.0 else .44+.025*math.sin(now*.07)];target=[rp[0],rp[1],.26];shot='360 ORBIT'
+  angle=now*.18;radius=1.4 if age<2.0 else 1.5
+  eye=[rp[0]+math.cos(angle)*radius,rp[1]+math.sin(angle)*radius,.90 if age<2.0 else .92+.025*math.sin(now*.07)];target=[rp[0],rp[1],.42];shot='360 ORBIT'
  view.getField('position').setSFVec3f(eye);view.getField('orientation').setSFRotation(look_at(eye,target));visited_modes.add(shot)
  if now-last_board>.5:
   last_board=now;update_board(latest,phase)
  if now-last_status>.20:
   last_status=now
-  public={'simulation_time':round(now,2),'state':state.get('state','STARTING'),'captured':state.get('captures',0),'total':6,'distance_m':state.get('distance_m',0),'camera':mode,'shot':shot,'phase':phase if snapshot else'WAITING FOR FIRST SNAPSHOT','snapshots':state.get('snapshots',0),'next_snapshot_s':state.get('next_snapshot_s',5),'snapshot_interval_s':5,'latest_snapshot':snapshot,'latest':latest,'scene':'Reference-inspired Gates atrium','recognition':'simulated object recognition','live':True}
+  model_count=0
+  if state.get('vision_model_active'):
+   try:model_count=len(json.loads((DATA/'perception.json').read_text()).get('confirmed_items',[]))
+   except (OSError,ValueError):pass
+  public={'simulation_time':round(now,2),'state':state.get('state','STARTING'),'captured':model_count if state.get('vision_model_active') else state.get('captures',0),'total':state.get('total_items',0),'distance_m':state.get('distance_m',0),'camera':mode,'shot':shot,'phase':phase if snapshot else'WAITING FOR FIRST SNAPSHOT','snapshots':state.get('snapshots',0),'next_snapshot_s':state.get('next_snapshot_s',5),'snapshot_interval_s':5,'latest_snapshot':snapshot,'latest':latest,'scene':'Reference-inspired Gates atrium','vision_model_active':state.get('vision_model_active',False),'recognition':'Perceptron camera-only mode' if state.get('vision_model_active') else 'simulator reference labels','live':True}
   atomic_json(DATA/'state.json',public)
   s.setLabel(0,'CAMPUS SCOUT  /  GATES ATRIUM',.025,.035,.065,0xF1DEC0,.1,'Arial')
-  s.setLabel(1,f'{shot}    {state.get("state","STARTING")}    FOUND {state.get("captures",0)}/6',.025,.10,.05,0xE4D3B5,.1,'Arial')
+  s.setLabel(1,f'{shot}    {state.get("state","STARTING")}    FOUND {public['captured']}/{state.get("total_items",0)}',.025,.10,.05,0xE4D3B5,.1,'Arial')
   s.setLabel(2,'REFERENCE-INSPIRED INTERIOR   /   AUTONOMOUS SEARCH   /   PRESENTATION DEMO',.025,.94,.035,0xE4D3B5,.15,'Arial')
  if now-last_frame>=frame_interval-1e-7:
   last_frame=now;tmp=DATA/'frame.next.jpg';s.exportImage(str(tmp),82)
@@ -85,7 +89,7 @@ while s.step(dt)!=-1:
  if now>1.5 and not (LOG/'atrium_reference_view.png').exists():s.exportImage(str(LOG/'atrium_reference_view.png'),95)
  if 14<now<15 and not (LOG/'orbit_view.png').exists():s.exportImage(str(LOG/'orbit_view.png'),95)
  if limit and now>=limit and not end_requested:
-  summary={'simulated_seconds':round(now,2),'robot':state,'camera_shots':sorted(visited_modes),'captures':state.get('captures',0),'success_capture':state.get('captures',0)==6,'success_lap':state.get('lap',0)>=1,'snapshots':state.get('snapshots',0),'geometry':'approximate, inspired by two supplied references','recognition':'Webots Recognition (ground truth)'}
+  summary={'simulated_seconds':round(now,2),'robot':state,'camera_shots':sorted(visited_modes),'captures':state.get('captures',0),'success_capture':state.get('captures',0)==state.get('total_items',0),'success_lap':state.get('lap',0)>=1,'snapshots':state.get('snapshots',0),'geometry':'approximate, inspired by two supplied references','recognition':public['recognition']}
   atomic_json(LOG/'test_result.json',summary);s.exportImage(str(LOG/'test_end.png'),95);print('GATES_TEST_COMPLETE '+json.dumps(summary),flush=True);end_requested=True
  if end_requested:
   public['live']=False;atomic_json(DATA/'state.json',public);s.simulationQuit(0);break

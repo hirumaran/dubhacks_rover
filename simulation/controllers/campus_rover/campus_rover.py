@@ -61,6 +61,7 @@ class CampusRover(Robot):
   for m in self.left:m.setVelocity(vl)
   for m in self.right:m.setVelocity(vr)
  def visible(self):
+  if self.hook:return []  # Real-vision mode never substitutes simulator labels.
   out=[]
   for i,c in enumerate(self.cameras):
    for obj in c.getRecognitionObjects():

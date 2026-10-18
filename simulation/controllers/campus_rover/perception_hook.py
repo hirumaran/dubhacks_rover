@@ -17,6 +17,7 @@ never blocks driving.
 import json
 import math
 import os
+import uuid
 from pathlib import Path
 
 INTERVAL_S = float(os.environ.get("FRAME_INTERVAL_S", "5.0"))
@@ -31,8 +32,15 @@ class PerceptionHook:
         self.compass = compass
         self.inbox = Path(inbox_path)
         self.inbox.mkdir(parents=True, exist_ok=True)
-        self.next_at = 0.0
+        self.next_at = INTERVAL_S
+        self.sample_ms=int(gps.getSamplingPeriod()) or 64
+        self.armed=False
+        # Arm the high-resolution cameras shortly before each scheduled snapshot, at the
+        # GPS/compass sampling rate. An old 256 ms frame paired with a current heading is
+        # inaccurate during turns and corrupts triangulation.
+        for camera in self.cameras.values():camera.disable()
         self.seq = 0
+        self.session_id=uuid.uuid4().hex
         self.clean_inbox()
         print(f"PERCEPTION_BRIDGE ACTIVE -> {self.inbox} every {INTERVAL_S}s", flush=True)
 
@@ -45,11 +53,13 @@ class PerceptionHook:
                     pass
 
     def maybe(self, now: float):
-        # The first frames come before the cameras have rendered (a black image the model will
-        # happily "see" a phone in); start capturing once a few sampling periods have passed.
-        if now < max(self.next_at, WARMUP_S):
+        if now < self.next_at-max(.256,self.sample_ms*.003):return
+        if not self.armed:
+            for camera in self.cameras.values():camera.enable(self.sample_ms)
+            self.armed=True
             return
-        self.next_at = now + INTERVAL_S
+        if now+1e-7 < self.next_at:return
+        self.next_at += INTERVAL_S
         p = self.gps.getValues()
         if any(not math.isfinite(q) for q in p):
             return
@@ -63,13 +73,17 @@ class PerceptionHook:
             # Webots encodes natively; a pure-Python encoder would stall the controller at 1280x960.
             if cam.saveImage(str(self.inbox / f"frame_{seq:07d}_c{i}.jpg"), JPEG_QUALITY) != 0:
                 continue
-            cam_entries.append({"idx": i})
+            cam_entries.append({"idx": i, "width": cam.getWidth(), "height": cam.getHeight(), "hfov": cam.getFov()})
 
+        for camera in self.cameras.values():camera.disable()
+        self.armed=False
         meta = {
             "sim_time_s": round(float(now), 2),
             "gps": [round(v, 4) for v in p],
             "heading_rad": round(heading, 4),
             "seq": seq,
+            "session_id": self.session_id,
+            "sampling_period_ms": self.sample_ms,
             "cameras": cam_entries,
         }
         meta_path = self.inbox / f"frame_{seq:07d}.json"

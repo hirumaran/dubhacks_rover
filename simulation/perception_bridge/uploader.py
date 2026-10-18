@@ -8,12 +8,14 @@ server's duplicate check sees each new listing before the next image arrives.
 from __future__ import annotations
 
 import json
+import ssl
+import certifi
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-from config import INGEST_SECRET, REQUEST_TIMEOUT_S, RETRY_EVERY_S, STATE_DIR, IDENTIFY_URL
+from config import INGEST_SECRET, REQUEST_TIMEOUT_S, RETRY_EVERY_S, STATE_DIR, IDENTIFY_URL, DRY_RUN
 
 OUTBOX = STATE_DIR / "outbox"
 
@@ -24,14 +26,16 @@ class Uploader:
         self._last_retry = 0.0
 
     def _post(self, payload: dict) -> tuple[int, dict]:
+        if DRY_RUN:
+            payload = {**payload, "dry_run": True}
         req = urllib.request.Request(
             IDENTIFY_URL,
             data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json", "x-ingest-secret": INGEST_SECRET},
+            headers={"Content-Type": "application/json", "x-ingest-secret": INGEST_SECRET, "User-Agent": "CampusScout-PerceptionBridge/1.0"},
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_S) as res:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_S, context=ssl.create_default_context(cafile=certifi.where())) as res:
                 return res.status, json.loads(res.read() or b"{}")
         except urllib.error.HTTPError as e:
             try:

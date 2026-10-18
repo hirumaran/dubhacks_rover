@@ -1,4 +1,8 @@
-# Current five-second snapshot workflow
+# Actual Perceptron verification
+
+`perception_verification.json` records the current targeted tests using the actual hosted model, including blank/empty-room negatives, imported backpack/laptop positives, physical two-view backpack confirmation and the earlier Supabase demo write. Cloud deployment was left unchanged; the local Vision Demo forces dry run. No simulator instance labels enter the actual vision pipeline. The older reference-mode reports below cover a different six-item scene and do not measure current model accuracy.
+
+# Earlier reference-mode five-second snapshot workflow
 
 Verified in native Webots R2025a on October 17, 2026. The new 230.02-second bounded run saved **46 snapshots** at targets 5, 10, 15…230 simulation seconds, with maximum timing error **0.056 s** (one 64 ms controller tick). It saved **15 empty snapshots**, captured multiple distinct objects in **4 snapshots**, identified **all six unique item IDs**, and completed **one full patrol lap**. The robot continued navigating while the timer captured; object detection never triggered a capture.
 

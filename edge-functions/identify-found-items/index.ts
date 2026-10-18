@@ -41,10 +41,13 @@ import {
   fromUrl,
   type LoadedImage,
   tiles,
+  sceneInfo,
 } from "../_shared/images.ts";
 import { CATEGORIES, CATEGORY_GUIDE, COLORS } from "../_shared/items.ts";
 import { compareSightings, type Sighting } from "../_shared/rating.ts";
 import { askJson, type Box, detect, type Detection, image, locate, text, toDataUrl } from "../_shared/perceptron.ts";
+
+import {geometryReason,specificIdentity,blankPixels} from "../_shared/detection_quality.ts";
 
 const MAX_ITEMS = 12;
 // Detections smaller than this (pixels per side) are too small to describe or compare reliably.
@@ -70,6 +73,7 @@ const MAX_ITEM_AREA = 0.15;
 
 type Description = {
   what_it_is: string;
+  object_type: string;
   part_of_scene: boolean;
   clearly_visible: boolean;
   is_lost_item: boolean;
@@ -84,6 +88,7 @@ type Description = {
 const DESCRIPTION_SCHEMA = {
   type: "object",
   properties: {
+    object_type: {type:"string",description:"Specific portable item type, such as backpack or laptop. Use unknown if it cannot be identified. Never just object, rectangle or personal belonging."},
     what_it_is: { type: "string", description: "Plainly, what the object at the centre of the photo is." },
     part_of_scene: {
       type: "boolean",
@@ -111,6 +116,7 @@ const DESCRIPTION_SCHEMA = {
   },
   required: [
     "what_it_is",
+    "object_type",
     "part_of_scene",
     "clearly_visible",
     "is_lost_item",
@@ -207,7 +213,9 @@ async function detectItems(scene: LoadedImage, spec: TileSpec | null): Promise<D
 
 async function describe(scene: LoadedImage, det: Detection, crop: Uint8Array | null): Promise<Description> {
   const prompt = DESCRIBE_PROMPT;
-  const content = crop ? [image(toDataUrl(crop, "image/jpeg")), text(prompt)] : [
+  const content = crop ? [
+    image(toDataUrl(scene.bytes,scene.mime)),image(toDataUrl(crop,"image/jpeg")),
+    text(`${prompt}\nImage 1 is the full scene; the candidate box is (${Math.round(det.box.x1)},${Math.round(det.box.y1)})-(${Math.round(det.box.x2)},${Math.round(det.box.y2)}). Image 2 is a padded crop of that box and may include neighboring objects. Verify that the boxed object itself is a distinct portable item in BOTH images. Do not describe an adjacent object or guess a brand. Return object_type unknown unless its specific type is visually clear.`)] : [
     image(toDataUrl(scene.bytes, scene.mime)),
     text(
       `${prompt}\n\nThe item is inside the pixel box (${Math.round(det.box.x1)},${Math.round(det.box.y1)})` +
@@ -302,6 +310,7 @@ function preIdentifiedItems(v: unknown): { detection: Detection; info: Descripti
       detection: { mention: title, box },
       info: {
         what_it_is: title,
+        object_type: title,
         part_of_scene: false,
         clearly_visible: true,
         is_lost_item: true,
@@ -342,7 +351,7 @@ serve(async (body, req) => {
 
   const discoveredAt = str(body.discovered_at) ?? new Date().toISOString();
   if (Number.isNaN(Date.parse(discoveredAt))) throw new HttpError(400, "discovered_at must be an ISO 8601 timestamp");
-  const dryRun = body.dry_run === true;
+  const dryRun = Deno.env.get("LOCAL_ONLY") === "1" || body.dry_run === true;
   const minBoxPx = num(body.min_box_px) ?? 0;
   if (minBoxPx < 0 || minBoxPx > 2000) throw new HttpError(400, "min_box_px must be within 0..2000");
 
@@ -360,37 +369,26 @@ serve(async (body, req) => {
   const skipped: { label: string; box: Box; reason: string }[] = [];
   const preIdentified = preIdentifiedItems(body.items);
 
-  if (preIdentified) {
-    // ---- caller already identified these (e.g. a rover confirming an item seen in two views)
-    const crops = await Promise.all(
-      preIdentified.map((d) =>
-        cropToJpeg(scene, d.detection.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })
-      ),
-    );
-    items = preIdentified.map((d, i) => ({ ...d, crop: crops[i] }));
-  } else {
-    // ---- identify
-    const detections = dedupe(await detectItems(scene, tileSpec(body.detect_tiles)), minBoxPx);
-    const crops = await Promise.all(
-      detections.map((d) => cropToJpeg(scene, d.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })),
-    );
-    const results = await Promise.allSettled(detections.map((d, i) => describe(scene, d, crops[i])));
-    results.forEach((r, i) => {
-      const detection = detections[i];
-      if (r.status === "rejected") {
-        skipped.push({ label: detection.mention, box: detection.box, reason: String(r.reason?.message ?? r.reason) });
-      } else if (r.value.part_of_scene || !r.value.clearly_visible || !r.value.is_lost_item) {
-        const why = r.value.part_of_scene
-          ? "part of the scene"
-          : !r.value.clearly_visible
-          ? "not clearly visible"
-          : "not a personal belonging";
-        skipped.push({ label: `${detection.mention} (${r.value.what_it_is})`, box: detection.box, reason: why });
-      } else {
-        items.push({ detection, crop: crops[i], info: r.value });
-      }
-    });
-  }
+  const dims=await sceneInfo(scene);
+  if(!dims)throw new HttpError(415,"Image could not be decoded for validation; send JPEG or PNG");
+  if(blankPixels(dims.bitmap))return json({dry_run:dryRun,listed:[],identified:[],duplicates:[],skipped:[{reason:"blank or loading image"}]});
+  // Even caller-confirmed items must pass image/geometry and independent visual validation.
+  const proposed=preIdentified?preIdentified.map(p=>p.detection):dedupe(await detectItems(scene,tileSpec(body.detect_tiles)),minBoxPx);
+  const detections=proposed.filter(d=>{
+    const reason=geometryReason(d.box,dims.width,dims.height,minBoxPx);
+    if(reason)skipped.push({label:d.mention,box:d.box,reason});return !reason;
+  });
+  const crops=await Promise.all(detections.map(d=>cropToJpeg(scene,d.box,{minSide:CROP_MIN_SIDE_PX,upscaleTo:CROP_UPSCALE_PX})));
+  const results=await Promise.allSettled(detections.map((d,i)=>describe(scene,d,crops[i])));
+  results.forEach((r,i)=>{
+    const detection=detections[i];
+    if(r.status==='rejected')skipped.push({label:detection.mention,box:detection.box,reason:String(r.reason?.message??r.reason)});
+    else if(r.value.part_of_scene||!r.value.clearly_visible||!r.value.is_lost_item||!specificIdentity(r.value.object_type??'')){
+      skipped.push({label:detection.mention,box:detection.box,reason:r.value.part_of_scene?'part of scene':!r.value.clearly_visible?'not clearly visible':!r.value.is_lost_item?'not a personal belonging':'no specific visual identity'});
+    }else items.push({detection,crop:crops[i],info:r.value});
+  });
+  // Diagnostics and first-view detection do not query or modify private listing data.
+  if(dryRun)return json({dry_run:true,listed:[],identified:items.map(({detection,info})=>({...info,label:detection.mention,box:detection.box})),duplicates:[],skipped});
 
   // ---- drop items that are already listed nearby
   const where = { lat, lng, isDemo: body.is_demo, at: discoveredAt };

@@ -1,14 +1,11 @@
 {
   "GATES-001": {
-    "description": "Yellow rubber duck"
+    "description": "Backpack with shoulder straps and front pocket"
   },
   "GATES-002": {
-    "description": "Black and white soccer ball"
+    "description": "Open laptop with keyboard and screen"
   },
   "GATES-003": {
-    "description": "Black and white soccer ball"
-  },
-  "GATES-004": {
-    "description": "Clear plastic water bottle"
+    "description": "Hardcover book"
   }
 }

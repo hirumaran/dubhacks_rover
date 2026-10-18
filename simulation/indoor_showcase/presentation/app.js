@@ -82,8 +82,9 @@ function gallery(items, scans) {
     const id = document.createElement('small'); id.textContent = item.sample_id;
     const status = document.createElement('span'); status.className = 'listed';
     status.textContent = '✓ Seen at ' + clock(item.simulation_time_s) + ' · ' + item.direction;
-    const view = document.createElement('button'); view.textContent = 'View in 360° snapshot ↗';
+    const view = document.createElement('button'); view.textContent = item.frame_image ? 'View analyzed frame ↗' : 'View in 360° snapshot ↗';
     view.onclick = () => {
+      if(item.frame_image){window.open('data/'+item.frame_image,'_blank','noopener');return;}
       const scan = scans.find(s => s.snapshot_id === item.snapshot_id);
       if (scan) { pinnedScan = true; $('follow-latest').hidden = false; showScan(scan); $('panorama-wrap').scrollIntoView({behavior: 'smooth', block: 'center'}); }
     };
@@ -99,11 +100,23 @@ async function getJson(path) {
 }
 async function poll() {
   try {
-    const [state, items, scans] = await Promise.all([getJson('state.json'), getJson('items.json'), getJson('snapshots.json')]);
+    const [state, referenceItems, scans, model] = await Promise.all([getJson('state.json'), getJson('items.json'), getJson('snapshots.json'), getJson('perception.json').catch(() => null)]);
+    const vision=state.vision_model_active;const items=vision?(model?.confirmed_items||[]):referenceItems;
+    $('model-panel').hidden=!vision;
+    $('identification-note').textContent=vision?'Actual Perceptron vision · two-view confirmation · demo mode':'Reference mode uses simulator object labels.';
+    $('snapshot-note').textContent=vision?'Raw four-camera 360° capture · Model analysis is asynchronous · Captures use simulation time':'360° horizontal coverage · Simulator reference boxes · Captures use simulation time';
+    $('footer-note').textContent=vision?'Physical Webots rover · Simulated localization · Actual hosted Perceptron vision · Local demo gallery':'Physical Webots rover · Simulated localization and reference recognition · Local presentation gallery';
+    if(vision&&model){
+      $('model-status').textContent=model.status==='ok'?'Perceptron connected · '+model.requests_processed+' frames analyzed':('Backend '+model.status+': '+(model.error||''));
+      if(model.image)$('model-image').src='data/'+model.image;
+      $('model-caption').textContent=clock(model.simulation_time_s)+' · Camera '+model.camera+' · '+model.detections.length+' candidates · '+model.confirmed_items.length+' confirmed items · '+model.rejected_count+' rejected. Two calibrated views are required before listing.';
+      const boxes=$('model-boxes');boxes.replaceChildren();
+      for(const d of model.detections){const b=document.createElement('div');b.className='detection-box';const [x,y,w,h]=d.bbox;Object.assign(b.style,{left:x*100+'%',top:y*100+'%',width:w*100+'%',height:h*100+'%'});const label=document.createElement('span');label.textContent=d.description+' (candidate)';b.append(label);boxes.append(b);}
+    }
     const time = state.simulation_time || 0, live = state.live !== false;
     if (time < previousTime - 1) { previousScan = null; lastGallery = ''; lastHistory = ''; displayedScan = null; pinnedScan = false; }
     previousTime = time;
-    $('count').innerHTML = items.length + '<span>/06</span>';
+    $('count').innerHTML = items.length + '<span>/'+String(state.total||0).padStart(2,'0')+'</span>';
     $('clock').textContent = clock(time);
     $('connection').textContent = live ? 'LIVE SIMULATION' : 'SIMULATION STOPPED';
     $('live-dot').classList.toggle('offline', !live);
@@ -120,7 +133,7 @@ async function poll() {
       if (previousScan !== scan.snapshot_id) {
         if (live && age >= 0 && age < 1.2) {
           $('flash').classList.remove('fire'); void $('flash').offsetWidth; $('flash').classList.add('fire');
-          toast('360° snapshot saved · ' + itemCount(scan.detections.length) + ' identified');
+          toast(vision?'360° snapshot saved · model analysis runs independently':'360° snapshot saved · ' + itemCount(scan.detections.length) + ' identified');
         }
         previousScan = scan.snapshot_id; if (!pinnedScan) showScan(scan);
       }
@@ -142,6 +155,8 @@ async function poll() {
       $('progress-bar').style.width = '0'; $('step-capture').className = ''; $('step-upload').className = '';
       $('panorama-empty').hidden = false; $('panorama-wrap').hidden = true; $('detection-boxes').replaceChildren(); $('scan-detections').replaceChildren();
     }
+    if(vision){const latest=model?.detections?.[0]||items[items.length-1];if(latest)photo(latest);$('capture-badge').textContent='ACTUAL VISION';$('latest-name').textContent=latest?.description||'Awaiting a confirmed item';$('sample-id').textContent='PERCEPTRON · TWO-VIEW VALIDATION';$('upload-label').textContent=model?.status==='ok'?'Actual model results shown below':'Waiting for Perceptron response…';}
+    if(vision&&scans.length){$('scan-count').textContent=scans.length+' raw 360° captures · actual model results above';$('scan-detections').textContent='Raw four-camera capture. Actual Perceptron candidates and their analyzed high-resolution frame are shown above; simulator reference labels are disabled.';}
     gallery(items, scans);
     // Previous replay used object-triggered capture; keep the live view for this new timer workflow.
     $('replay').hidden = true; $('replay').pause(); $('world').hidden = false;

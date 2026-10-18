@@ -165,9 +165,10 @@ import bench_props
 from shapely.geometry import box as _rect
 from shapely.ops import unary_union
 props_seed=int(os.environ.get('PROPS_SEED','2026'))
-prop_nodes,benches,lost=bench_props.render(dense,unary_union([_rect(*f) for f in floor_blocks]),random.Random(props_seed),bench_count=4,
+prop_nodes,benches,lost=bench_props.render(dense,unary_union([_rect(*f) for f in floor_blocks]),random.Random(props_seed),bench_count=4,required_kinds=("backpack","laptop","book","bottle"),
  allowed=unary_union([_rect(*f) for f in floor_plate]).buffer(-.3),id_prefix='GATES',offsets=(1.2,1.5,1.8,2.1,2.5),margin=.25,min_gap_m=6)
 parts.extend(prop_nodes)
+mission['reference_lat_lon']=[47.6529035, -122.3045693];mission['reference_source']='https://www.openstreetmap.org/way/1491155067';mission['total_items']=len(lost);(ROOT/'maps/mission.json').write_text(json.dumps(mission,indent=2))
 (ROOT/'maps/items.json').write_text(json.dumps({it['id']:{'description':it['description']}for it in lost},indent=2)+'\n')
 (ROOT/'maps/lost_items.json').write_text(json.dumps({'seed':props_seed,'benches':[{'id':i,'x':round(x,2),'y':round(y,2),'yaw':round(t,3)}for i,(x,y,t) in enumerate(benches,1)],'items':lost},indent=2)+'\n')
 world='''#VRML_SIM R2025a utf8

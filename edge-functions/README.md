@@ -96,3 +96,8 @@ SUPABASE_URL=https://salsusdncqbtrkcqxdkg.supabase.co SUPABASE_SERVICE_ROLE_KEY=
   noisy.
 - `compare-items` doesn't store its rating, because `item_matches` has no column for it. Persisting it would need a
   migration (for example `visual_similarity integer`).
+
+
+## Hardened identification
+
+The identification function now rejects uniform/loading images before a model call, checks all boxes against decoded image dimensions/area, requires a specific identity and judges a crop alongside the complete scene. Pre-identified items do not bypass visual checks. Dry runs return validated detections before querying stored listings. Local regression controls are in `_shared/detection_quality_test.ts`.

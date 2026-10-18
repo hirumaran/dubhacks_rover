@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-17",
+  "runtime": "Webots R2025a, real hosted Perceptron Mk1.5, local hardened identification API",
+  "baseline_reproduced": {
+    "solid_blank_image": "deployed endpoint incorrectly identified a Small Dark Rectangular Object covering all 640x480 pixels",
+    "dry_run": true
+  },
+  "patched_model_controls": {
+    "blank": {
+      "identified_count": 0,
+      "titles": [],
+      "categories": [],
+      "dry_run": true
+    },
+    "empty_architecture": {
+      "identified_count": 0,
+      "titles": [],
+      "categories": [],
+      "dry_run": true
+    },
+    "backpack": {
+      "identified_count": 1,
+      "titles": [
+        "Black backpack with yellow buckles"
+      ],
+      "categories": [
+        "Bags"
+      ],
+      "dry_run": true
+    },
+    "laptop": {
+      "identified_count": 1,
+      "titles": [
+        "Black laptop on a wooden bench"
+      ],
+      "categories": [
+        "Electronics"
+      ],
+      "dry_run": true
+    }
+  },
+  "autonomous_two_view_confirmations": [
+    {
+      "title": "Black backpack with yellow zippers",
+      "baseline_m": 3.155,
+      "dry_run": true
+    },
+    {
+      "title": "black backpack with yellow zippers",
+      "baseline_m": 1.012,
+      "dry_run": true
+    }
+  ],
+  "supabase_connection": {
+    "auth_settings_http": 200,
+    "schema_read_http": 200,
+    "one_earlier_demo_ingest_http": 201,
+    "one_earlier_demo_listing_count": 1,
+    "cloud_deployed": false,
+    "current_demo_forced_dry_run": true,
+    "note": "The single demo insertion preceded the request to leave cloud deployment aside. Current local demo creates no listings."
+  },
+  "regression_checks": {
+    "bridge_selftest": "PASS",
+    "quality_checks": 11,
+    "camera_hook": "PASS: scheduled 5/10-second captures, 64ms image/pose timing, real FOV metadata, no scene labels in payload, bounded high-resolution camera duty",
+    "deno_quality_tests": 3,
+    "deno_typecheck": "PASS",
+    "ui_typecheck": "PASS",
+    "ui_tests": 5,
+    "local_only_blank_request_with_dry_run_false": "PASS: API overrides to dry_run=true and returns zero candidates"
+  },
+  "assets": [
+    {
+      "name": "Backpack",
+      "creator": "Quaternius",
+      "license": "CC0",
+      "source": "https://poly.pizza/m/vF7TuXCPDH"
+    },
+    {
+      "name": "Laptop",
+      "creator": "Kenney",
+      "license": "CC0",
+      "source": "https://poly.pizza/m/GnbwSUiVty"
+    }
+  ],
+  "limits": [
+    "Targeted regression controls, not a complete accuracy benchmark.",
+    "A full autonomous-lap recall score was not measured for the new scene.",
+    "Low-resolution, occluded, or ambiguous items can still be missed or misidentified.",
+    "Four RGB views form a raw 360-degree mosaic; changed high-resolution side-camera views are analyzed asynchronously.",
+    "Interior is approximate; localization is simulated."
+  ]
+}

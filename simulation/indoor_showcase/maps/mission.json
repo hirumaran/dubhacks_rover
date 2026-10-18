@@ -642,5 +642,10 @@
   "planner": "Ground-floor corridor patrol; reference-inspired approximate layout",
   "detector": "Webots camera Recognition ground truth",
   "localization": "Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim",
-  "total_items": 6
+  "total_items": 3,
+  "reference_lat_lon": [
+    47.6529035,
+    -122.3045693
+  ],
+  "reference_source": "https://www.openstreetmap.org/way/1491155067"
 }
