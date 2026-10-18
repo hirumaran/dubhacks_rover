@@ -15,7 +15,7 @@ export class HttpError extends Error {
 export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json", "X-Perception-Pipeline":"vision-guard-20261017" },
+    headers: { ...corsHeaders, "Content-Type": "application/json", "X-Perception-Pipeline":"vision-guard-20261017", "X-Item-Geotracking":"v1" },
   });
 }
 

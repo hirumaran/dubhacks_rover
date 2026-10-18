@@ -115,8 +115,12 @@ export type Sighting = { title: string; description: string; category: string; c
 const SIGHTING_RULES = `Both photos were taken by campus cameras near the same spot, possibly hours
 apart and from different angles or distances. Judge whether they show the SAME physical object,
 most likely an item still lying where it was left. Another copy of the same product nearby is a
-different object: look for matching marks, wear, attachments and surroundings. Allow for
-lighting, angle and distance. If there is too little detail to tell, say "unsure".`;
+different object: look for matching marks, wear, attachments and surroundings. The text descriptions
+are automatically generated and may misname colors, logos or features: judge the PIXELS, not
+conflicting text. A front view and a rear view can show different pockets/straps of the same bag.
+Allow for lighting, exposure, angle and distance. A color difference under different lighting,
+or straps/pockets visible in only one angle, is not by itself proof of a different object.
+If there is too little common visible detail to tell, say "unsure" rather than "different".`;
 
 /** Asks Perceptron whether a new sighting shows the same object as an existing listing. */
 export async function compareSightings(

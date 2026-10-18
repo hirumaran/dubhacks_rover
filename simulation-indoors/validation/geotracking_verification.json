@@ -1,0 +1,24 @@
+{
+  "real_perceptron_camera_crop_comparisons": true,
+  "isolated_private_test_state": true,
+  "reverse_angle_verdict": "different",
+  "reverse_angle_outcome": "deferred conflicting reverse view without another listing",
+  "same_image_verdict": "same_item",
+  "same_track_after_restart": true,
+  "separate_local_items": 1,
+  "exact_coordinates_published": false,
+  "database_writes": false,
+  "local_status": "enabled, dry-run",
+  "supabase_cloud_deployed": false,
+  "cloud_requirement": "Apply migration 202610170004_item_geotracking.sql and deploy identify-found-items using project management access. Application keys cannot do this.",
+  "unit_and_integration_checks": {
+    "python_geo_association": "PASS: persistence, visual identity, nearby distinct items, close conflicting anchor, offline deferral",
+    "legacy_endpoint_live_post_guard": "PASS: blocked before POST; queued request succeeds on compatible endpoint",
+    "existing_bridge_and_camera_hook": "PASS",
+    "deno_quality_and_geo_tests": 6,
+    "ui_database_and_app_tests": 11,
+    "typescript_typecheck": "PASS",
+    "public_gallery_exact_coordinates": "absent"
+  },
+  "privacy": "Precise coordinates and reference crops stay in private bridge state and service-role-only database tables. Webcam schema placeholders are not item locations."
+}
