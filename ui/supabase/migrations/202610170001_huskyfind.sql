@@ -1,0 +1,85 @@
+create extension if not exists pgcrypto;
+create table public.profiles (id uuid primary key references auth.users on delete cascade, display_name text not null default 'Husky', university_email text, campus text not null default 'UW Seattle', avatar_url text, notifications_enabled boolean not null default true, university_verified boolean not null default false, created_at timestamptz not null default now());
+create table public.rovers (id uuid primary key default gen_random_uuid(), name text not null, status text not null, operating_zone text, last_seen_at timestamptz);
+create table public.found_items (id uuid primary key default gen_random_uuid(), title text not null, description text not null, category text not null, color text not null, image_path text not null, image_paths text[] not null default '{}', approximate_location text not null, latitude double precision not null check(latitude between -90 and 90), longitude double precision not null check(longitude between -180 and 180), source text not null check(source in ('community','rover')), rover_id uuid references public.rovers, status text not null default 'available' check(status in ('available','claimed','returned')), pickup_location text, discovered_at timestamptz not null default now(), created_at timestamptz not null default now(), is_demo boolean not null default false);
+create table public.missing_reports (id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references public.profiles on delete cascade, title text not null check(length(title) between 1 and 150), description text not null, category text not null, color text not null, image_path text, last_seen_location text not null, latitude double precision not null check(latitude between -90 and 90), longitude double precision not null check(longitude between -180 and 180), last_seen_at timestamptz not null, status text not null default 'active' check(status in ('active','resolved','closed')), created_at timestamptz not null default now());
+create table public.search_requests (id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references public.profiles on delete cascade, missing_report_id uuid not null references public.missing_reports on delete cascade, rover_id uuid references public.rovers, target_location text not null, status text not null default 'queued' check(status in ('queued','assigned','searching','completed','no_match_found','interrupted')), started_at timestamptz, completed_at timestamptz, created_at timestamptz not null default now(), unique(missing_report_id));
+create table public.item_matches (id uuid primary key default gen_random_uuid(), missing_report_id uuid not null references public.missing_reports on delete cascade, found_item_id uuid not null references public.found_items on delete cascade, match_score integer not null, match_reasons text[] not null, status text not null default 'active' check(status in ('active','dismissed')), created_at timestamptz not null default now(), unique(missing_report_id,found_item_id));
+create table public.claims (id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references public.profiles on delete cascade, found_item_id uuid not null references public.found_items on delete cascade, verification_details jsonb not null, evidence_path text, status text not null default 'pending' check(status in ('pending','under_review','approved','rejected')), created_at timestamptz not null default now(), unique(user_id,found_item_id));
+create table public.saved_items (user_id uuid not null default auth.uid() references public.profiles on delete cascade, found_item_id uuid not null references public.found_items on delete cascade, created_at timestamptz not null default now(), primary key(user_id,found_item_id));
+create table public.notifications (id uuid primary key default gen_random_uuid(), user_id uuid not null references public.profiles on delete cascade, title text not null, message text not null, related_item_id uuid references public.found_items on delete cascade, related_report_id uuid references public.missing_reports on delete cascade, read_at timestamptz, created_at timestamptz not null default now());
+create table public.push_tokens (user_id uuid not null default auth.uid() references public.profiles on delete cascade, token text not null, primary key(user_id,token));
+create table public.listing_reports (id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references public.profiles on delete cascade, found_item_id uuid not null references public.found_items on delete cascade, reason text not null, created_at timestamptz not null default now());
+create index on public.found_items(discovered_at desc);
+create index on public.found_items(category,is_demo,status);
+create index on public.missing_reports(user_id,status);
+create index on public.search_requests(user_id);
+create index on public.claims(user_id);
+create index on public.notifications(user_id,created_at desc);
+create index on public.item_matches(found_item_id);
+create function public.create_profile() returns trigger language plpgsql security definer set search_path='' as $$ begin insert into public.profiles(id,display_name,university_email) values(new.id,coalesce(new.raw_user_meta_data->>'display_name','Husky'),new.email); return new; end $$;
+create trigger on_user_created after insert on auth.users for each row execute function public.create_profile();
+insert into public.profiles(id,university_email) select id,email from auth.users on conflict do nothing;
+-- Reviewer authorization is managed in app_metadata by trusted administrators only.
+create function public.is_reviewer() returns boolean language sql stable set search_path='' as $$ select coalesce(auth.jwt()->'app_metadata'->>'role'='reviewer',false) $$;
+do $$ declare t text; begin foreach t in array array['profiles','rovers','found_items','missing_reports','search_requests','item_matches','claims','saved_items','notifications','push_tokens','listing_reports'] loop execute format('alter table public.%I enable row level security',t); end loop; end $$;
+create policy own_profile on public.profiles for select to authenticated using(id=auth.uid());
+create policy edit_profile on public.profiles for update to authenticated using(id=auth.uid()) with check(id=auth.uid());
+revoke update on public.profiles from authenticated;
+grant update(display_name,campus,avatar_url,notifications_enabled) on public.profiles to authenticated;
+create policy read_items on public.found_items for select to authenticated using(is_demo=coalesce((auth.jwt()->>'is_anonymous')::boolean,false));
+create policy read_rovers on public.rovers for select to authenticated using(true);
+create policy own_missing on public.missing_reports for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
+create policy own_search on public.search_requests for select to authenticated using(user_id=auth.uid());
+create policy request_search on public.search_requests for insert to authenticated with check(user_id=auth.uid() and status='queued' and rover_id is null and started_at is null and completed_at is null and exists(select 1 from public.missing_reports m where m.id=missing_report_id and m.user_id=auth.uid()));
+create policy read_matches on public.item_matches for select to authenticated using(exists(select 1 from public.missing_reports m where m.id=missing_report_id and m.user_id=auth.uid()));
+create policy dismiss_matches on public.item_matches for update to authenticated using(exists(select 1 from public.missing_reports m where m.id=missing_report_id and m.user_id=auth.uid())) with check(status='dismissed');
+revoke update on public.item_matches from authenticated;
+grant update(status) on public.item_matches to authenticated;
+create policy read_claims on public.claims for select to authenticated using(user_id=auth.uid() or public.is_reviewer());
+create policy submit_claim on public.claims for insert to authenticated with check(user_id=auth.uid() and status='pending' and exists(select 1 from public.found_items f where f.id=found_item_id and f.status='available') and (evidence_path is null or evidence_path like auth.uid()::text || '/%'));
+create policy review_claim on public.claims for update to authenticated using(public.is_reviewer()) with check(public.is_reviewer());
+revoke update on public.claims from authenticated;
+grant update(status) on public.claims to authenticated;
+create policy own_saved on public.saved_items for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid() and exists(select 1 from public.found_items f where f.id=found_item_id));
+create policy own_notifications on public.notifications for select to authenticated using(user_id=auth.uid());
+create policy read_notification on public.notifications for update to authenticated using(user_id=auth.uid());
+revoke update on public.notifications from authenticated;
+grant update(read_at) on public.notifications to authenticated;
+create policy own_tokens on public.push_tokens for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
+create policy submit_correction on public.listing_reports for insert to authenticated with check(user_id=auth.uid());
+create policy review_corrections on public.listing_reports for select to authenticated using(public.is_reviewer() or user_id=auth.uid());
+-- Matching runs on the server, including while the application is closed.
+create function public.recheck_report(report_id uuid) returns void language plpgsql security definer set search_path='' as $$
+declare r public.missing_reports; f public.found_items; points integer; reasons text[]; inserted_id uuid; demo boolean;
+begin
+select * into r from public.missing_reports where id=report_id and status='active'; if not found then return; end if;
+select coalesce(is_anonymous,false) into demo from auth.users where id=r.user_id;
+for f in select * from public.found_items where status='available' and is_demo=demo loop
+points:=0; reasons:='{}';
+if r.category=f.category then points:=points+35; reasons:=array_append(reasons,'Same category'); end if;
+if length(trim(r.color))>0 and lower(trim(r.color))=lower(trim(f.color)) then points:=points+20; reasons:=array_append(reasons,'Similar color'); end if;
+if sqrt(power((r.latitude-f.latitude)*111320,2)+power((r.longitude-f.longitude)*75000,2))<600 then points:=points+20; reasons:=array_append(reasons,'Nearby location'); end if;
+if f.discovered_at>=r.last_seen_at and f.discovered_at<r.last_seen_at+interval '7 days' then points:=points+10; reasons:=array_append(reasons,'Found after you last saw it'); end if;
+if exists(select 1 from regexp_split_to_table(lower(r.description),'[^a-z]+') word where length(word)>=4 and position(word in lower(f.description))>0) then points:=points+15; reasons:=array_append(reasons,'Similar description'); end if;
+if points>=50 then
+insert into public.item_matches(missing_report_id,found_item_id,match_score,match_reasons) values(r.id,f.id,points,reasons) on conflict do nothing returning id into inserted_id;
+if inserted_id is not null then insert into public.notifications(user_id,title,message,related_item_id,related_report_id) values(r.user_id,'Possible item match',f.title || ' · ' || f.approximate_location,f.id,r.id); end if;
+end if;
+end loop; end $$;
+revoke all on function public.recheck_report(uuid) from public,anon,authenticated;
+create function public.match_changed() returns trigger language plpgsql security definer set search_path='' as $$ declare r record; begin if tg_table_name='missing_reports' then perform public.recheck_report(new.id); else for r in select id from public.missing_reports where status='active' loop perform public.recheck_report(r.id); end loop; end if; return new; end $$;
+create trigger match_new_report after insert on public.missing_reports for each row execute function public.match_changed();
+create trigger match_new_item after insert on public.found_items for each row execute function public.match_changed();
+create function public.notify_status() returns trigger language plpgsql security definer set search_path='' as $$ begin if old.status is distinct from new.status then if tg_table_name='claims' then insert into public.notifications(user_id,title,message,related_item_id) values(new.user_id,'Claim update',replace(new.status,'_',' '),new.found_item_id); else insert into public.notifications(user_id,title,message,related_report_id) values(new.user_id,'Rover search update',new.target_location || ': ' || replace(new.status,'_',' '),new.missing_report_id); end if; end if; return new; end $$;
+create trigger claim_notification after update on public.claims for each row execute function public.notify_status();
+create trigger search_notification after update on public.search_requests for each row execute function public.notify_status();
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values ('found-photos','found-photos',true,10485760,array['image/jpeg','image/png','image/webp']),('missing-photos','missing-photos',false,10485760,array['image/jpeg','image/png','image/webp']),('ownership-evidence','ownership-evidence',false,10485760,array['image/jpeg','image/png','image/webp']),('avatars','avatars',true,5242880,array['image/jpeg','image/png','image/webp']);
+create policy upload_own_photo on storage.objects for insert to authenticated with check(bucket_id in ('missing-photos','ownership-evidence','avatars') and (storage.foldername(name))[1]=auth.uid()::text);
+create policy read_private_photo on storage.objects for select to authenticated using((bucket_id in ('missing-photos','ownership-evidence','avatars') and (storage.foldername(name))[1]=auth.uid()::text) or (bucket_id='ownership-evidence' and public.is_reviewer()));
+create policy delete_own_photo on storage.objects for delete to authenticated using(bucket_id in ('missing-photos','ownership-evidence','avatars') and (storage.foldername(name))[1]=auth.uid()::text);
+alter publication supabase_realtime add table public.found_items,public.missing_reports,public.item_matches,public.search_requests,public.claims,public.notifications;
+-- Self-service account deletion also removes private storage references and application data.
+create function public.delete_my_account() returns void language plpgsql security definer set search_path='' as $$ begin if auth.uid() is null then raise exception 'Authentication required'; end if; delete from auth.users where id=auth.uid(); end $$;
+revoke all on function public.delete_my_account() from public,anon;
+grant execute on function public.delete_my_account() to authenticated;

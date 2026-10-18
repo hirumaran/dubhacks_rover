@@ -16,6 +16,9 @@ whether a lost and a found item are the same object. The rover feeds them throug
 [`simulation/perception_bridge/`](simulation/perception_bridge/README.md), which
 sends only camera images and the rover's GPS/compass pose.
 
+The student app (HuskyFind, Expo/React Native) is in [`ui/`](ui/README.md). It reads the same
+Supabase project: found listings, matches, missing reports and claims.
+
 On macOS, open `simulation/Start Rover.command` to launch the rover (set
 `PERCEPTION_INBOX` first to enable the perception bridge), or open
 `simulation/worlds/uw_autonomous.wbt` in Webots R2025a or newer.
