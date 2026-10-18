@@ -1,6 +1,6 @@
 # Campus Scout — Gates atrium showcase
 
-A native Webots indoor simulation with a physical **203.2 × 203.2 mm (8 × 8 inch)** six-wheel rover, autonomous ground-floor patrol, 360° orbit/follow cameras, and a local snapshot-and-item presentation gallery. A synchronized 360° capture runs every five simulation seconds, regardless of detections.
+A native Webots indoor simulation with a physical **700 × 600 mm footprint, 925 mm tall (about 28 × 24 × 36 inches)** six-wheel rover with a roof-integrated camera housing, autonomous ground-floor patrol, 360° orbit/follow cameras, and a local snapshot-and-item presentation gallery. A synchronized 360° capture runs every five simulation seconds, regardless of detections.
 
 The interior is **an approximate interpretation of the supplied Gates atrium photo and floor-plan screenshot**, not a surveyed digital twin. It echoes the stacked glass balconies, steel-and-oak stairs, cyan skylight, timber frontage, gray tile, purple seating and adjoining corridor wings. The original reference images are not embedded or published. The rover remains on the ground floor; it does not climb the stairs or operate elevators.
 
@@ -73,3 +73,7 @@ GATES_TEST_SECONDS=245 GATES_RECORD=1 /Applications/Webots.app/Contents/MacOS/we
 ```
 
 Use a fresh gallery for new capture validation. `GATES_RECORD=1` exports native rendered frames every 0.128 simulated seconds to `recordings/frames/`. Convert them with FFmpeg at `-framerate 7.8125`; this preserves simulation timing. Camera rendering can be slower than real time on some machines. Ordinary runs do not retain frame sequences.
+
+## Rover size revision
+
+The indoor rover now has a 0.70 × 0.60 m footprint and 0.925 m overall height, with 0.10 m wheel radius and 0.54 m track. A weighted lower chassis supports the taller cabinet; cameras sit in a low roof housing with no extended mast or front arm. The cameras sit flush at the roof edges, with the same approximately 0.90 m optical height, fields of view and tilt, preserving the bench-seat view. Calibrated body-relative offsets are exported with each frame so two-view confirmation uses the correct camera origin. The lidar sits in an unobstructed lower sensor belt. Physical collision boxes, drive conversion and showcase framing match the larger robot. `tools/IndoorScout.base.proto` is the dedicated rebuild template.

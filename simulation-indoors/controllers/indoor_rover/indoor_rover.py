@@ -53,7 +53,7 @@ class CampusRover(Robot):
    for idx,name in [(1,'perception_left'),(3,'perception_right')]:
     d=self.getDevice(name)
     if d:d.enable(256);cams[idx]=d
-   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox)
+   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox,MISSION.get("camera_mounts_m"))
   self.vision_only=bool(self.hook) and os.environ.get('SHOW_REFERENCE_LABELS','0')!='1'
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
@@ -71,7 +71,7 @@ class CampusRover(Robot):
   atomic_json(GALLERY/'snapshots.json',self.snapshots)
   print(f'GATES_SCOUT READY | indoor route {MISSION["length_m"]:.1f}m | 6 wheel motors | 4 recognition cameras | lidar',flush=True)
  def drive(self,v,w):
-  r=MISSION['wheel_radius_m'];track=MISSION['track_width_m'];vl=clamp((v-w*track/2)/r,-17,17);vr=clamp((v+w*track/2)/r,-17,17)
+  r=MISSION['wheel_radius_m'];track=MISSION['track_width_m'];vl=clamp((v-w*track/2)/r,-12,12);vr=clamp((v+w*track/2)/r,-12,12)
   for m in self.left:m.setVelocity(vl)
   for m in self.right:m.setVelocity(vr)
  def snapshot(self,now,scheduled):

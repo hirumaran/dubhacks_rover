@@ -158,7 +158,7 @@ class Bridge:
             hfov=camera_specs.get(cam,{}).get('hfov')
             if hfov is not None and not 0.1<float(hfov)<3.1:raise ValueError('invalid camera hfov')
             published=[]
-            for frame, item in self.confirmer.observe(pose, cam, png, width, accepted,hfov=hfov):
+            for frame, item in self.confirmer.observe(pose.at_offset(camera_specs.get(cam,{}).get('offset_m',[0,0,0])), cam, png, width, accepted,hfov=hfov):
                 listing = self.uploader.send(
                     {**self.payload(frame, pose, captured_at), "dry_run": config.DRY_RUN,
                      "items": [{k: item[k] for k in ("box", "title", "description", "category", "color")}]},

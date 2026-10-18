@@ -26,7 +26,8 @@ WARMUP_S = 1.0
 
 
 class PerceptionHook:
-    def __init__(self, cameras, gps, compass, inbox_path):
+    def __init__(self, cameras, gps, compass, inbox_path, mounts=None):
+        self.mounts = mounts or {}
         self.cameras = cameras  # {camera index: Camera}; 1 = left, 3 = right, as the bridge numbers them
         self.gps = gps
         self.compass = compass
@@ -73,7 +74,7 @@ class PerceptionHook:
             # Webots encodes natively; a pure-Python encoder would stall the controller at 1280x960.
             if cam.saveImage(str(self.inbox / f"frame_{seq:07d}_c{i}.jpg"), JPEG_QUALITY) != 0:
                 continue
-            cam_entries.append({"idx": i, "width": cam.getWidth(), "height": cam.getHeight(), "hfov": cam.getFov()})
+            cam_entries.append({"idx": i, "width": cam.getWidth(), "height": cam.getHeight(), "hfov": cam.getFov(), "offset_m": self.mounts.get(str(i), [0,0,0])})
 
         for camera in self.cameras.values():camera.disable()
         self.armed=False

@@ -151,13 +151,10 @@ dense=[checkpoints[0]]
 for a,b in zip(checkpoints,checkpoints[1:]):
  n=max(1,math.ceil(math.dist(a,b)/.5))
  dense.extend(tuple(a[j]+(b[j]-a[j])*k/n for j in [0,1])for k in range(1,n+1))
-mission={'map':'Reference-inspired Gates atrium and corridor','length_m':round(sum(math.dist(a,b)for a,b in zip(checkpoints,checkpoints[1:])),3),'waypoints':dense,'wheel_radius_m':.0271,'track_width_m':.1772,'cruise_speed_m_s':.40,'loop':True,'planner':'Ground-floor corridor patrol; reference-inspired approximate layout','detector':'Webots camera Recognition ground truth','localization':'Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim','total_items':6}
+mission={'map':'Reference-inspired Gates atrium and corridor','length_m':round(sum(math.dist(a,b)for a,b in zip(checkpoints,checkpoints[1:])),3),'waypoints':dense,'wheel_radius_m':.10,'track_width_m':.54,'cruise_speed_m_s':.40,'loop':True,'planner':'Ground-floor corridor patrol; reference-inspired approximate layout','detector':'Webots camera Recognition ground truth','localization':'Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim','total_items':6,'robot_dimensions_m':[.70,.60,.925],'camera_height_m':.90,'camera_mounts_m':{'0': [0.343, 0, 0.9], '1': [0, 0.257, 0.9], '2': [-0.343, 0, 0.9], '3': [0, -0.257, 0.9]}}
 (ROOT/'maps/mission.json').write_text(json.dumps(mission,indent=2))
-# Reuse the validated six-wheel geometry, retaining the actual 8-inch footprint.
-proto=(ROOT.parent/'protos/CampusScout.proto').read_text().replace('PROTO CampusScout','PROTO IndoorScout').replace('controller "campus_rover"','controller "indoor_rover"').replace('width 1280 height 960','width 640 height 480').replace('Recognition { maxRange 4.5 ','Recognition { maxRange 3 ').replace('fieldOfView 0.87','fieldOfView 1.64')  # benches are 1.2 m away indoors: wide perception lens
-proto=proto.replace('Emitter { name "telemetry" channel 37 }','''LED { translation -.01 0 .22 name "photo_flash" color [ 1 1 1 ] children [ PointLight { location 0 0 .03 intensity 1 radius 2 attenuation 0 0 1 } Shape { appearance PBRAppearance { baseColor 1 1 1 emissiveColor 0 0 0 } geometry Sphere { radius .008 subdivision 1 } } ] }
-Emitter { name "telemetry" channel 39 }''')
-(ROOT/'protos/IndoorScout.proto').write_text(proto)
+# Dedicated indoor-size rover; do not regenerate the earlier 8-inch mast geometry.
+(ROOT/'protos/IndoorScout.proto').write_text((ROOT/'tools/IndoorScout.base.proto').read_text())
 # Lost items: real Webots object models left on benches beside the patrol route (bench_props.py).
 import os,sys
 sys.path.insert(0,str(next(p for p in [ROOT/'tools',ROOT.parent/'tools'] if (p/'bench_props.py').exists())))

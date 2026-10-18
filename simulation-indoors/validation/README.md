@@ -1,3 +1,7 @@
+# Larger indoor rover
+
+`rover_size_revision.json` records the 0.70 × 0.60 m chassis patrol test and roof-edge camera checks. The rover completed a full lap in the 230-second bounded test, traveling 88.7 m without a detour or stop. Its cameras retain the 0.90 m optical height with calibrated mounting offsets and no extended arm. Earlier item-count results below belong to prior geometry.
+
 # Actual Perceptron verification
 
 `perception_verification.json` records the current targeted tests using the actual hosted model, including blank/empty-room negatives, imported backpack/laptop positives, physical two-view backpack confirmation and the earlier Supabase demo write. Cloud deployment was left unchanged; the local Vision Demo forces dry run. No simulator instance labels enter the actual vision pipeline. The older reference-mode reports below cover a different six-item scene and do not measure current model accuracy.

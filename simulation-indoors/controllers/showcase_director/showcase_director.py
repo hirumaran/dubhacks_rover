@@ -61,10 +61,10 @@ while s.step(dt)!=-1:
  if mode=='atrium' or now<2.5:
   eye=[0,-17.5,1.7];target=[0,2.5,3.3];shot='ATRIUM'
  elif mode=='follow':
-  eye=[rp[0]-math.cos(heading)*1.25+math.sin(heading)*.55,rp[1]-math.sin(heading)*1.25-math.cos(heading)*.55,.52];target=[rp[0],rp[1],.28];shot='FOLLOW'
+  eye=[rp[0]-math.cos(heading)*1.9+math.sin(heading)*.55,rp[1]-math.sin(heading)*1.9-math.cos(heading)*.55,1.1];target=[rp[0],rp[1],.48];shot='FOLLOW'
  else:
-  angle=now*.18;radius=1.4 if age<2.0 else 1.5
-  eye=[rp[0]+math.cos(angle)*radius,rp[1]+math.sin(angle)*radius,.90 if age<2.0 else .92+.025*math.sin(now*.07)];target=[rp[0],rp[1],.42];shot='360 ORBIT'
+  angle=now*.18;radius=1.9 if age<2.0 else 2.1
+  eye=[rp[0]+math.cos(angle)*radius,rp[1]+math.sin(angle)*radius,1.2 if age<2.0 else 1.25+.025*math.sin(now*.07)];target=[rp[0],rp[1],.48];shot='360 ORBIT'
  view.getField('position').setSFVec3f(eye);view.getField('orientation').setSFRotation(look_at(eye,target));visited_modes.add(shot)
  if now-last_board>.5:
   last_board=now;update_board(latest,phase)
