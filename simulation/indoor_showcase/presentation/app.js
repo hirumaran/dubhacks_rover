@@ -81,7 +81,7 @@ function gallery(items, scans) {
     const name = document.createElement('h3'); name.textContent = item.description || titles[item.category];
     const id = document.createElement('small'); id.textContent = item.sample_id;
     const status = document.createElement('span'); status.className = 'listed';
-    status.textContent = '✓ Seen at ' + clock(item.simulation_time_s) + ' · ' + item.direction;
+    status.textContent = '✓ Seen at ' + clock(item.simulation_time_s) + ' · ' + item.direction + (item.sighting_count>1?' · '+item.sighting_count+' sightings':'');
     const view = document.createElement('button'); view.textContent = item.frame_image ? 'View analyzed frame ↗' : 'View in 360° snapshot ↗';
     view.onclick = () => {
       if(item.frame_image){window.open('data/'+item.frame_image,'_blank','noopener');return;}

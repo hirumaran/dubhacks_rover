@@ -23,7 +23,7 @@ class PublicStatus:
      if original is item:
       rows=listing.get('listed',[])or listing.get('identified',[])or listing.get('duplicates',[])
       if listing.get('status')=='ok'and rows:
-       row=rows[0];identity=row.get('id')or row.get('existing_found_item_id')or f'confirmed-{key}-{i}'
-       self.items[identity]={**det,'sample_id':identity,'confirmed':True,'dry_run':listing.get('dry_run',False)}
+       row=rows[0];identity=row.get('id')or row.get('existing_found_item_id')or item.get('_track_id') or f'confirmed-{key}-{i}'
+       self.items[identity]={**det,'sample_id':identity,'confirmed':True,'dry_run':listing.get('dry_run',False),'sighting_count':row.get('sighting_count')or item.get('_sighting_count',1)}
   state={'model':'Perceptron Mk1.5','status':result.get('status'),'error':result.get('error'),'simulation_time_s':pose.sim_time_s,'camera':cam,'image':frame,'detections':dets,'rejected_count':rejected,'confirmed_items':list(self.items.values()),'requests_processed':self.count,'demo':True}
   target=self.root/'perception.json';tmp=target.with_suffix('.tmp');tmp.write_text(json.dumps(state,indent=2));os.replace(tmp,target)

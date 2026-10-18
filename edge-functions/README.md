@@ -101,3 +101,17 @@ SUPABASE_URL=https://salsusdncqbtrkcqxdkg.supabase.co SUPABASE_SERVICE_ROLE_KEY=
 ## Hardened identification
 
 The identification function now rejects uniform/loading images before a model call, checks all boxes against decoded image dimensions/area, requires a specific identity and judges a crop alongside the complete scene. Pre-identified items do not bypass visual checks. Dry runs return validated detections before querying stored listings. Local regression controls are in `_shared/detection_quality_test.ts`.
+
+## Item-location duplicate prevention
+
+Apply `ui/supabase/migrations/202610170004_item_geotracking.sql` before deploying the updated identifier. Deployment requires Supabase project management access; ordinary application keys cannot apply migrations. The local loopback demo does not deploy cloud changes.
+
+A confirmed one-item request may include `item_location`: `{latitude, longitude, accuracy_m, scope, tracker_id, sighting_id}`. Both IDs are UUIDs; keep `sighting_id` unchanged on a network retry. `scope` must distinguish sites/floors. The camera bridge supplies the triangulated item position and persistent tracker ID. Do not use dummy webcam coordinates for this field.
+
+`found_item_geotracks` and `found_item_geosightings` are server-only, RLS-enabled tables with no anonymous/student grants. Exact coordinates are not added to public listing responses. Proximity selects comparison candidates; Perceptron must report `same_item` with a score of at least 85 before a sighting updates an existing listing. Uncertain comparisons require review. Matching type/color is insufficient.
+
+The SQL commit function serializes the brief final write and refuses a new listing when another request inserted an unchecked nearby candidate. Repeated sighting UUIDs cannot create another listing or increment counts twice. The API retries visual comparison on a stale candidate set and returns 409 if it cannot resolve the race safely. Returned/claimed items and other demo/site scopes are excluded. Existing approximate rows are checked as a legacy fallback.
+
+Local persistent tracking uses the authenticated `compare_geotracked_item` operation, which compares two cropped camera images and returns a visual verdict without querying or writing Supabase. It is not an identity bypass for listing creation; the cloud function revalidates images independently.
+
+A same-type sighting within one meter of an existing anchor that conflicts with its visual description is held for review. This prevents a black/brown lighting change or a front/back view from automatically producing another listing. Different object types can still coexist at the same location. A visually different same-type item farther away can receive its own track.

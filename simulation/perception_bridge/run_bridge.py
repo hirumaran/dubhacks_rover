@@ -32,6 +32,7 @@ from pose import Pose
 from uploader import Uploader
 from quality import image_quality_reason,candidate_reason
 from public_status import PublicStatus
+from geotracker import GeoTracker
 
 TICK_RE = re.compile(r"^frame_(\d+)\.json$")
 CAM_RE = re.compile(r"^frame_(\d+)_c(\d+)\.(?:jpg|png)$")
@@ -68,6 +69,7 @@ class Bridge:
         self.public=PublicStatus()
         if not config.IS_DEMO:sys.exit("Webots ingestion requires IS_DEMO=true")
         self.session_id=None
+        self.geotracker=GeoTracker()
         self.gate = ChangeGate()
         self.confirmer = Confirmer() if config.CONFIRM_VIEWS >= 2 else None
         cols, _, rows = config.DETECT_TILES.partition("x")
@@ -159,13 +161,22 @@ class Bridge:
             if hfov is not None and not 0.1<float(hfov)<3.1:raise ValueError('invalid camera hfov')
             published=[]
             for frame, item in self.confirmer.observe(pose.at_offset(camera_specs.get(cam,{}).get('offset_m',[0,0,0])), cam, png, width, accepted,hfov=hfov):
+                def compare(payload):
+                    code,body=self.uploader._post(payload)
+                    if code>=400:raise OSError('Geotracked item comparison failed')
+                    return body
+                track,track_reason=self.geotracker.associate(item['_confirmation']['point_local_m'],item,frame,compare)
+                if track is None:
+                    log({'seq':seq,'camera':cam,'deferred':track_reason});continue
+                item['_track_id']=track['track_id'];item['_sighting_count']=track['sighting_count']
+                item_location=self.geotracker.metadata(track)
                 listing = self.uploader.send(
-                    {**self.payload(frame, pose, captured_at), "dry_run": config.DRY_RUN,
+                    {**self.payload(frame, pose, captured_at), "dry_run": config.DRY_RUN, "item_location":item_location,
                      "items": [{k: item[k] for k in ("box", "title", "description", "category", "color")}]},
-                    key=f"{self.session_id or 'legacy'}_{seq:07d}_c{cam}_confirmed")
+                    key=f"{item_location['sighting_id']}_confirmed")
                 print(f"[bridge] seq {seq} cam {cam} confirmed '{item.get('title')}' in two views -> "
                       f"{summarize(listing)}", flush=True)
-                log({"seq": seq, "camera": cam, "confirmed": item.get("title"), "confirmation":item.get("_confirmation"), "pose": where, "result": listing})
+                log({"seq": seq, "camera": cam, "confirmed": item.get("title"), "confirmation":item.get("_confirmation"), "track_id":track["track_id"], "tracking":track_reason, "pose": where, "result": listing})
                 published.append((item,listing))
             self.public.publish(seq,cam,pose,png,accepted,len(seen)-len(accepted),result,published)
         sent = len(to_send)

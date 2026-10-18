@@ -25,7 +25,6 @@ PENDING_DIR = STATE_DIR / "pending"
 MIN_BASELINE_M = 0.8      # views closer than this can't triangulate
 MAX_RANGE_M = 8.0         # farther than this, the camera is guessing
 EXPIRE_M = 12.0           # pending sightings this far behind the rover are dropped
-CONFIRMED_RADIUS_M = 1.0  # one listing per object position
 STOPWORDS = {"the", "and", "with", "small", "large", "object", "item", "on", "of", "a", "an", "dark", "light"}
 
 
@@ -70,7 +69,6 @@ class Confirmer:
         for old in PENDING_DIR.iterdir():
             old.unlink(missing_ok=True)
         self.pending: list[Sighting] = []
-        self.confirmed: list[tuple[tuple[float, float], set[str]]] = []
         self._n = 0
 
     def _same_item(self, a: Sighting, b: Sighting) -> bool:
@@ -104,9 +102,8 @@ class Confirmer:
                 p, point = match
                 self.pending.remove(p)
                 p.image.unlink(missing_ok=True)
-                if any(math.dist(point, c) < CONFIRMED_RADIUS_M and bool(type_words(item)&kinds) for c,kinds in self.confirmed):
-                    continue  # already listed from earlier views
-                self.confirmed.append((point,type_words(item)))
+                # Durable GeoTracker combines this point with a visual identity comparison.
+                # Do not suppress two nearby, different objects solely by type/location.
                 item['_confirmation']={'point_local_m':[round(v,3)for v in point],'baseline_m':round(math.dist((p.x,p.y),(s.x,s.y)),3),'type':sorted(type_words(item))}
                 confirmed.append((image, item))
             else:

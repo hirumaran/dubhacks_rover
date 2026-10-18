@@ -96,10 +96,8 @@ seed 2026 (not a score for the current scene): campus 7/7 items found (6 named c
   to send less.
 - **Speed.** A sim running faster than real time outpaces the detector; with `SKIP_STALE=true` the
   bridge then skips views and can miss benches. Run in real time, or set `SKIP_STALE=false`.
-- **Location.** Listings use the rover's position, not each item's. Items are within a few
-  metres of the rover, and matching treats anything under 600 m as nearby.
-- **Duplicates.** The server compares each new item with available listings of the same
-  category within ~150 m from the last 24 h and skips it if Perceptron rates it the same object.
+- **Location.** Tracked listings use a two-view estimate of the item position. Untracked legacy inputs carry only the observer position. Public coordinates stay approximate.
+- **Duplicates.** Precise tracked items use private nearby anchors and visual identity, without a 24-hour expiry. Older untracked rows use the approximate-location fallback until visually matched and attached to a private track.
   First-view detection can run across cameras in parallel; confirmed listing requests run sequentially.
 - When the actual bridge hook is active, the showcase disables reference labels. Without the hook, Webots Recognition remains a clearly labeled reference mode.
 
@@ -128,3 +126,25 @@ npx deno check --node-modules-dir=none edge-functions/identify-found-items/index
 Blank-frame and architectural negative controls, imported-backpack and laptop positive controls, a physical two-view backpack confirmation and one authenticated Supabase demo photo/listing insertion were tested. These are targeted regression controls, not a claim of perfect detection across all views. See the indoor project's `validation/perception_verification.json` for measured results.
 
 For a local end-to-end demo without cloud deployment, use `simulation-indoors/Start Vision Demo.command`. It runs the patched Edge Function on loopback with `LOCAL_ONLY=1` (forced dry run), calls the real hosted Perceptron API, and starts the bridge, Webots and presentation. It requires the private bridge, Edge Function and UI `.env` files; do not commit them. The legacy `perception/run_service.py` and `tools/bridge_selftest.py` instructions do not apply to this repository version.
+
+## Private item geotracking
+
+Confirmed items now carry an **estimated item position**, triangulated from camera boxes and the rover's calibrated camera poses, rather than the rover's location alone. This is software geotagging; it does not attach a physical GPS tracker to an item.
+
+The bridge persists item UUIDs, position anchors, reference crops, last-seen times and sighting counts under `state/geotracking/` (gitignored, private permissions). Restarting Webots or the bridge does not discard those anchors. Nearby items of the same type are compared by the real Perceptron model. A verified same-item match retains its UUID; a different item receives a new UUID. Uncertain/failed comparisons are deferred instead of creating a possible duplicate. Location or a matching color alone cannot identify a physical item.
+
+The default site scope derives from mission name and geographic origin. Set `ITEM_TRACKING_SCOPE` to a stable site/floor ID when using separate indoor floors or coordinate maps. Estimated position accuracy defaults to 2 m and can be configured with `ITEM_POSITION_ACCURACY_M`; this is an assumed uncertainty, not a measured GPS specification. Do not share a scope between unrelated maps.
+
+For live posting, deploy `ui/supabase/migrations/202610170004_item_geotracking.sql` and the updated `identify-found-items` function together. Exact positions live in service-role-only tables; public listing coordinates remain approximate. A repeated observation updates the existing listing's `last_seen_at` and `sighting_count`. A unique sighting ID makes retries idempotent. The database rejects a stale duplicate-check snapshot when another ingestion inserts a nearby item concurrently, requiring a fresh visual comparison before a new row is allowed. Available tracked items are checked beyond the old 24-hour window.
+
+The bridge checks the endpoint's geotracking capability before live tracked posting. An old cloud function or missing migration cannot silently accept a tracked request as an ordinary new listing. Local Vision Demo remains forced dry-run and uses the durable local tracker without database writes. Webcam-only scans do not supply an item location: the existing zero-valued schema placeholders are never treated as an item geotag.
+
+Additional checks:
+
+```sh
+simulation/perception_bridge/.venv/bin/python simulation/perception_bridge/tools/geotracker_selftest.py
+npx deno test --node-modules-dir=none edge-functions/_shared/geotracking_test.ts
+cd ui && npm test
+```
+
+A same-type sighting within one meter of an existing anchor that conflicts with its visual description is held for review. This prevents a black/brown lighting change or a front/back view from automatically producing another listing. Different object types can still coexist at the same location. A visually different same-type item farther away can receive its own track.
