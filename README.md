@@ -1,5 +1,13 @@
 # dubhacks_rover
 
+## Scan to open the app
+
+<a href="https://huskyfind-uw.expo.app"><img src="assets/huskyfind-qr.png" alt="QR code that opens the HuskyFind app" width="170" /></a>
+
+Point a phone camera at the QR — or open **<https://huskyfind-uw.expo.app>** — to launch HuskyFind in
+the browser. No install, no dev server, no Expo Go. Tap **Explore Demo** for the seeded student flow;
+the three-minute judge walkthrough is in [`ui/docs/JUDGING.md`](ui/docs/JUDGING.md).
+
 **Use a real webcam:** see [`webcam/README.md`](webcam/README.md), or double-click `webcam/Start Webcam.command`. Open http://127.0.0.1:8769/ for real Perceptron image detection with manual or five-second scans; no Webots or database uploads are required.
 
 **Run the end-to-end demo:** see [DEMO.md](DEMO.md) (rover finds an item, HuskyFind reports the match).

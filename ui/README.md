@@ -13,19 +13,13 @@ Native iOS/Android lost-and-found app for UW Seattle, built with Expo SDK 57, Re
 
 Run `npm run typecheck`, `npm test`, and `npm run export:native` for validation. A native JavaScript export is not a signed app binary or a device UI test. Android local builds require Android Studio; local iOS builds require macOS/Xcode. EAS build profiles are included for cloud builds.
 
-## Hosted web build
+## Hosted app (judges)
 
-A static export of the app is served from the `gh-pages` branch at
-<https://hirumaran.github.io/dubhacks_rover/> (the root README shows a QR for judges).
-Refresh it after app changes:
-
-```bash
-EXPO_WEB_BASE_URL=/dubhacks_rover npm run export:web
-# publish ui/dist-web to the gh-pages branch root
-```
-
-`EXPO_WEB_BASE_URL` is read by `app.config.ts` and only affects the web export's asset
-and route prefix; local development is unchanged.
+The permanent app is <https://huskyfind-uw.expo.app> (Expo EAS Hosting, project
+`@alagud/huskyfind`); the root README shows its QR. Publish updates with
+`npm run publish:judging` and judges just refresh — see [docs/JUDGING.md](docs/JUDGING.md).
+`EXPO_WEB_BASE_URL` in `app.config.ts` remains for static exports built under a subpath
+(legacy `gh-pages` deployment) and is unused by local development.
 
 ## Supabase setup
 
