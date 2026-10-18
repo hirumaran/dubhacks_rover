@@ -1,0 +1,142 @@
+UNSUPPORTED (log once): POSSIBLE ISSUE: unit 0 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable
+INFO: indoor_rover: Starting controller: python3 -u indoor_rover.py
+INFO: showcase_director: Starting controller: python3 -u showcase_director.py
+GATES_SCOUT READY | indoor route 77.8m | 6 wheel motors | 4 recognition cameras | lidar
+PATROL 0.1s | PATROL | waypoint 1/158 | distance 0.0m | found 0
+PATROL 0.6s | PATROL | waypoint 1/158 | distance 0.1m | found 0
+SNAPSHOT SCAN-78f66d-00001 | scheduled 5.0s actual 5.056s | 360 degrees | 1 items: Rust-colored backpack GATES-001
+SHOWCASE PHOTO SCAN-78f66d-00001: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00002 | scheduled 10.0s actual 10.048s | 360 degrees | 1 items: Rust-colored backpack GATES-001
+PATROL 10.3s | PATROL | waypoint 9/158 | distance 3.9m | found 1
+SHOWCASE PHOTO SCAN-78f66d-00002: flash -> presentation gallery
+PATROL 10.8s | PATROL | waypoint 9/158 | distance 4.0m | found 1
+SNAPSHOT SCAN-78f66d-00003 | scheduled 15.0s actual 15.040s | 360 degrees | 2 items: Rust-colored backpack GATES-001, Purple-covered book GATES-002
+SHOWCASE PHOTO SCAN-78f66d-00003: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00004 | scheduled 20.0s actual 20.032s | 360 degrees | 2 items: Rust-colored backpack GATES-001, Purple-covered book GATES-002
+PATROL 20.0s | PATROL | waypoint 15/158 | distance 7.0m | found 2
+SHOWCASE PHOTO SCAN-78f66d-00004: flash -> presentation gallery
+PATROL 20.5s | PATROL | waypoint 15/158 | distance 7.2m | found 2
+SNAPSHOT SCAN-78f66d-00005 | scheduled 25.0s actual 25.024s | 360 degrees | 1 items: Purple-covered book GATES-002
+SHOWCASE PHOTO SCAN-78f66d-00005: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00006 | scheduled 30.0s actual 30.016s | 360 degrees | 1 items: Navy blue backpack GATES-003
+PATROL 30.3s | PATROL | waypoint 23/158 | distance 11.1m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00006: flash -> presentation gallery
+PATROL 30.8s | PATROL | waypoint 24/158 | distance 11.3m | found 3
+SNAPSHOT SCAN-78f66d-00007 | scheduled 35.0s actual 35.008s | 360 degrees | 1 items: Navy blue backpack GATES-003
+SHOWCASE PHOTO SCAN-78f66d-00007: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00008 | scheduled 40.0s actual 40.000s | 360 degrees | 1 items: Navy blue backpack GATES-003
+PATROL 40.0s | PATROL | waypoint 31/158 | distance 15.1m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00008: flash -> presentation gallery
+PATROL 40.5s | PATROL | waypoint 31/158 | distance 15.3m | found 3
+SNAPSHOT SCAN-78f66d-00009 | scheduled 45.0s actual 45.056s | 360 degrees | 1 items: Navy blue backpack GATES-003
+SHOWCASE PHOTO SCAN-78f66d-00009: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00010 | scheduled 50.0s actual 50.048s | 360 degrees | 1 items: Navy blue backpack GATES-003
+PATROL 50.2s | PATROL | waypoint 37/158 | distance 18.1m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00010: flash -> presentation gallery
+PATROL 50.8s | PATROL | waypoint 38/158 | distance 18.3m | found 3
+SNAPSHOT SCAN-78f66d-00011 | scheduled 55.0s actual 55.040s | 360 degrees | 1 items: Navy blue backpack GATES-003
+SHOWCASE PHOTO SCAN-78f66d-00011: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00012 | scheduled 60.0s actual 60.032s | 360 degrees | 1 items: Navy blue backpack GATES-003
+PATROL 60.5s | PATROL | waypoint 45/158 | distance 22.2m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00012: flash -> presentation gallery
+PATROL 61.0s | PATROL | waypoint 46/158 | distance 22.4m | found 3
+SNAPSHOT SCAN-78f66d-00013 | scheduled 65.0s actual 65.024s | 360 degrees | 1 items: Purple-covered book GATES-002
+SHOWCASE PHOTO SCAN-78f66d-00013: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00014 | scheduled 70.0s actual 70.016s | 360 degrees | 2 items: Rust-colored backpack GATES-001, Purple-covered book GATES-002
+PATROL 70.2s | PATROL | waypoint 53/158 | distance 26.0m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00014: flash -> presentation gallery
+PATROL 70.7s | PATROL | waypoint 53/158 | distance 26.1m | found 3
+SNAPSHOT SCAN-78f66d-00015 | scheduled 75.0s actual 75.008s | 360 degrees | 1 items: Purple-covered book GATES-002
+SHOWCASE PHOTO SCAN-78f66d-00015: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00016 | scheduled 80.0s actual 80.000s | 360 degrees | 1 items: Purple-covered book GATES-002
+PATROL 80.4s | PATROL | waypoint 60/158 | distance 29.8m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00016: flash -> presentation gallery
+PATROL 81.0s | PATROL | waypoint 61/158 | distance 30.0m | found 3
+SNAPSHOT SCAN-78f66d-00017 | scheduled 85.0s actual 85.056s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00017: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00018 | scheduled 90.0s actual 90.048s | 360 degrees | 0 items:
+PATROL 90.2s | PATROL | waypoint 68/158 | distance 33.8m | found 3
+SHOWCASE PHOTO SCAN-78f66d-00018: flash -> presentation gallery
+PATROL 90.7s | PATROL | waypoint 69/158 | distance 33.9m | found 3
+SNAPSHOT SCAN-78f66d-00019 | scheduled 95.0s actual 95.040s | 360 degrees | 1 items: Teal water bottle GATES-004
+SHOWCASE PHOTO SCAN-78f66d-00019: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00020 | scheduled 100.0s actual 100.032s | 360 degrees | 1 items: Teal water bottle GATES-004
+PATROL 100.4s | PATROL | waypoint 76/158 | distance 37.9m | found 4
+SHOWCASE PHOTO SCAN-78f66d-00020: flash -> presentation gallery
+PATROL 100.9s | PATROL | waypoint 77/158 | distance 38.1m | found 4
+SNAPSHOT SCAN-78f66d-00021 | scheduled 105.0s actual 105.024s | 360 degrees | 1 items: Teal water bottle GATES-004
+SHOWCASE PHOTO SCAN-78f66d-00021: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00022 | scheduled 110.0s actual 110.016s | 360 degrees | 0 items:
+PATROL 110.1s | PATROL | waypoint 84/158 | distance 41.8m | found 4
+SHOWCASE PHOTO SCAN-78f66d-00022: flash -> presentation gallery
+PATROL 110.7s | PATROL | waypoint 84/158 | distance 42.0m | found 4
+SNAPSHOT SCAN-78f66d-00023 | scheduled 115.0s actual 115.008s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00023: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00024 | scheduled 120.0s actual 120.000s | 360 degrees | 0 items:
+PATROL 120.4s | PATROL | waypoint 92/158 | distance 45.7m | found 4
+SHOWCASE PHOTO SCAN-78f66d-00024: flash -> presentation gallery
+PATROL 120.9s | PATROL | waypoint 92/158 | distance 45.9m | found 4
+SNAPSHOT SCAN-78f66d-00025 | scheduled 125.0s actual 125.056s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00025: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00026 | scheduled 130.0s actual 130.048s | 360 degrees | 0 items:
+PATROL 130.1s | PATROL | waypoint 100/158 | distance 49.6m | found 4
+SHOWCASE PHOTO SCAN-78f66d-00026: flash -> presentation gallery
+PATROL 130.6s | PATROL | waypoint 101/158 | distance 49.8m | found 4
+SNAPSHOT SCAN-78f66d-00027 | scheduled 135.0s actual 135.040s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00027: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00028 | scheduled 140.0s actual 140.032s | 360 degrees | 1 items: Olive green backpack GATES-005
+PATROL 140.4s | PATROL | waypoint 108/158 | distance 53.3m | found 5
+SHOWCASE PHOTO SCAN-78f66d-00028: flash -> presentation gallery
+PATROL 140.9s | PATROL | waypoint 108/158 | distance 53.5m | found 5
+SNAPSHOT SCAN-78f66d-00029 | scheduled 145.0s actual 145.024s | 360 degrees | 1 items: Olive green backpack GATES-005
+SHOWCASE PHOTO SCAN-78f66d-00029: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00030 | scheduled 150.0s actual 150.016s | 360 degrees | 1 items: Olive green backpack GATES-005
+PATROL 150.1s | PATROL | waypoint 115/158 | distance 56.9m | found 5
+SHOWCASE PHOTO SCAN-78f66d-00030: flash -> presentation gallery
+PATROL 150.6s | PATROL | waypoint 116/158 | distance 57.1m | found 5
+SNAPSHOT SCAN-78f66d-00031 | scheduled 155.0s actual 155.008s | 360 degrees | 1 items: Olive green backpack GATES-005
+SHOWCASE PHOTO SCAN-78f66d-00031: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00032 | scheduled 160.0s actual 160.000s | 360 degrees | 0 items:
+PATROL 160.3s | PATROL | waypoint 124/158 | distance 61.0m | found 5
+SHOWCASE PHOTO SCAN-78f66d-00032: flash -> presentation gallery
+PATROL 160.8s | PATROL | waypoint 124/158 | distance 61.2m | found 5
+SNAPSHOT SCAN-78f66d-00033 | scheduled 165.0s actual 165.056s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00033: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00034 | scheduled 170.0s actual 170.048s | 360 degrees | 1 items: Red-covered book GATES-006
+PATROL 170.0s | PATROL | waypoint 131/158 | distance 64.9m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00034: flash -> presentation gallery
+PATROL 170.6s | PATROL | waypoint 132/158 | distance 65.2m | found 6
+SNAPSHOT SCAN-78f66d-00035 | scheduled 175.0s actual 175.040s | 360 degrees | 1 items: Red-covered book GATES-006
+SHOWCASE PHOTO SCAN-78f66d-00035: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00036 | scheduled 180.0s actual 180.032s | 360 degrees | 1 items: Red-covered book GATES-006
+PATROL 180.3s | PATROL | waypoint 140/158 | distance 69.1m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00036: flash -> presentation gallery
+PATROL 180.8s | PATROL | waypoint 140/158 | distance 69.3m | found 6
+SNAPSHOT SCAN-78f66d-00037 | scheduled 185.0s actual 185.024s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00037: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00038 | scheduled 190.0s actual 190.016s | 360 degrees | 0 items:
+PATROL 190.0s | PATROL | waypoint 147/158 | distance 73.0m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00038: flash -> presentation gallery
+PATROL 190.5s | PATROL | waypoint 148/158 | distance 73.2m | found 6
+SNAPSHOT SCAN-78f66d-00039 | scheduled 195.0s actual 195.008s | 360 degrees | 0 items:
+SHOWCASE PHOTO SCAN-78f66d-00039: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00040 | scheduled 200.0s actual 200.000s | 360 degrees | 0 items:
+PATROL 200.3s | PATROL | waypoint 155/158 | distance 76.8m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00040: flash -> presentation gallery
+PATROL 200.8s | PATROL | waypoint 155/158 | distance 77.0m | found 6
+PATROL LAP 1 COMPLETE
+SNAPSHOT SCAN-78f66d-00041 | scheduled 205.0s actual 205.056s | 360 degrees | 1 items: Rust-colored backpack GATES-001
+SHOWCASE PHOTO SCAN-78f66d-00041: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00042 | scheduled 210.0s actual 210.048s | 360 degrees | 1 items: Rust-colored backpack GATES-001
+PATROL 210.5s | PATROL | waypoint 6/158 | distance 81.0m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00042: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00043 | scheduled 215.0s actual 215.040s | 360 degrees | 1 items: Rust-colored backpack GATES-001
+SHOWCASE PHOTO SCAN-78f66d-00043: flash -> presentation gallery
+SNAPSHOT SCAN-78f66d-00044 | scheduled 220.0s actual 220.032s | 360 degrees | 2 items: Rust-colored backpack GATES-001, Purple-covered book GATES-002
+PATROL 220.2s | PATROL | waypoint 13/158 | distance 84.4m | found 6
+SHOWCASE PHOTO SCAN-78f66d-00044: flash -> presentation gallery
+PATROL 220.7s | PATROL | waypoint 13/158 | distance 84.4m | found 6
+SNAPSHOT SCAN-78f66d-00045 | scheduled 225.0s actual 225.024s | 360 degrees | 1 items: Purple-covered book GATES-002
+SHOWCASE PHOTO SCAN-78f66d-00045: flash -> presentation gallery
+INFO: indoor_rover: Terminating.
+INFO: showcase_director: Terminating.

@@ -1,0 +1,68 @@
+UNSUPPORTED (log once): POSSIBLE ISSUE: unit 0 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable
+INFO: indoor_rover: Starting controller: python3 -u indoor_rover.py
+INFO: showcase_director: Starting controller: python3 -u showcase_director.py
+GATES_SCOUT READY | indoor route 77.8m | 6 wheel motors | 4 recognition cameras | lidar
+PATROL 0.1s | PATROL | waypoint 1/158 | distance 0.0m | found 0
+PATROL 0.6s | PATROL | waypoint 1/158 | distance 0.1m | found 0
+CAPTURE GATES-001 backpack | camera 0 | sim 4.0s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-001: flash -> presentation gallery
+PATROL 10.3s | PATROL | waypoint 7/158 | distance 3.1m | found 1
+PATROL 10.8s | PATROL | waypoint 7/158 | distance 3.3m | found 1
+PATROL 20.0s | PATROL | waypoint 13/158 | distance 6.1m | found 1
+PATROL 20.5s | PATROL | waypoint 13/158 | distance 6.3m | found 1
+PATROL 30.3s | PATROL | waypoint 21/158 | distance 10.2m | found 1
+PATROL 30.8s | PATROL | waypoint 22/158 | distance 10.4m | found 1
+CAPTURE GATES-003 backpack | camera 0 | sim 36.5s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-003: flash -> presentation gallery
+PATROL 40.0s | PATROL | waypoint 27/158 | distance 13.3m | found 2
+PATROL 40.5s | PATROL | waypoint 27/158 | distance 13.5m | found 2
+PATROL 50.2s | PATROL | waypoint 34/158 | distance 16.6m | found 2
+PATROL 50.8s | PATROL | waypoint 34/158 | distance 16.6m | found 2
+PATROL 60.5s | PATROL | waypoint 41/158 | distance 20.5m | found 2
+PATROL 61.0s | PATROL | waypoint 42/158 | distance 20.7m | found 2
+PATROL 70.2s | PATROL | waypoint 49/158 | distance 24.4m | found 2
+PATROL 70.7s | PATROL | waypoint 49/158 | distance 24.6m | found 2
+CAPTURE GATES-002 book | camera 0 | sim 79.8s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-002: flash -> presentation gallery
+PATROL 80.4s | PHOTO_PAUSE | waypoint 55/158 | distance 27.6m | found 3
+PATROL 81.0s | PHOTO_PAUSE | waypoint 55/158 | distance 27.6m | found 3
+PATROL 90.2s | PATROL | waypoint 62/158 | distance 31.1m | found 3
+PATROL 90.7s | PATROL | waypoint 62/158 | distance 31.3m | found 3
+PATROL 100.4s | PATROL | waypoint 70/158 | distance 35.2m | found 3
+PATROL 100.9s | PATROL | waypoint 70/158 | distance 35.5m | found 3
+CAPTURE GATES-004 bottle | camera 0 | sim 108.0s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-004: flash -> presentation gallery
+PATROL 110.1s | PATROL | waypoint 76/158 | distance 38.3m | found 4
+PATROL 110.7s | PATROL | waypoint 76/158 | distance 38.6m | found 4
+PATROL 120.4s | PATROL | waypoint 84/158 | distance 42.5m | found 4
+PATROL 120.9s | PATROL | waypoint 84/158 | distance 42.7m | found 4
+PATROL 130.1s | PATROL | waypoint 91/158 | distance 46.1m | found 4
+PATROL 130.6s | PATROL | waypoint 92/158 | distance 46.4m | found 4
+PATROL 140.4s | PATROL | waypoint 100/158 | distance 50.3m | found 4
+PATROL 140.9s | PATROL | waypoint 100/158 | distance 50.5m | found 4
+PATROL 150.1s | PATROL | waypoint 107/158 | distance 53.7m | found 4
+PATROL 150.6s | PATROL | waypoint 108/158 | distance 53.9m | found 4
+CAPTURE GATES-005 backpack | camera 0 | sim 154.2s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-005: flash -> presentation gallery
+PATROL 160.3s | PATROL | waypoint 113/158 | distance 56.6m | found 5
+PATROL 160.8s | PATROL | waypoint 113/158 | distance 56.8m | found 5
+PATROL 170.0s | PATROL | waypoint 121/158 | distance 60.6m | found 5
+PATROL 170.6s | PATROL | waypoint 121/158 | distance 60.8m | found 5
+PATROL 180.3s | PATROL | waypoint 129/158 | distance 64.7m | found 5
+PATROL 180.8s | PATROL | waypoint 129/158 | distance 64.9m | found 5
+CAPTURE GATES-006 book | camera 0 | sim 189.0s | item crop saved, no location metadata
+SHOWCASE PHOTO GATES-006: flash -> presentation gallery
+PATROL 190.0s | PHOTO_PAUSE | waypoint 135/158 | distance 68.1m | found 6
+PATROL 190.5s | PATROL | waypoint 135/158 | distance 68.1m | found 6
+PATROL 200.3s | PATROL | waypoint 143/158 | distance 71.9m | found 6
+PATROL 200.8s | PATROL | waypoint 143/158 | distance 72.1m | found 6
+PATROL 210.5s | PATROL | waypoint 150/158 | distance 75.7m | found 6
+PATROL LAP 1 COMPLETE
+PATROL 220.2s | PATROL | waypoint 1/158 | distance 79.7m | found 6
+PATROL 220.7s | PATROL | waypoint 2/158 | distance 79.9m | found 6
+PATROL 230.5s | PATROL | waypoint 9/158 | distance 83.5m | found 6
+PATROL 231.0s | PATROL | waypoint 9/158 | distance 83.6m | found 6
+PATROL 240.2s | PATROL | waypoint 15/158 | distance 86.7m | found 6
+PATROL 240.7s | PATROL | waypoint 16/158 | distance 86.9m | found 6
+INFO: indoor_rover: Terminating.
+INFO: showcase_director: Terminating.

@@ -1,0 +1,44 @@
+[
+  {
+    "sample_id": "GATES-001",
+    "category": "backpack",
+    "simulation_time_s": 4.03,
+    "image": "captures/GATES-001.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "GATES-003",
+    "category": "backpack",
+    "simulation_time_s": 36.48,
+    "image": "captures/GATES-003.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "GATES-002",
+    "category": "book",
+    "simulation_time_s": 79.81,
+    "image": "captures/GATES-002.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "GATES-004",
+    "category": "bottle",
+    "simulation_time_s": 107.97,
+    "image": "captures/GATES-004.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "GATES-005",
+    "category": "backpack",
+    "simulation_time_s": 154.18,
+    "image": "captures/GATES-005.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  },
+  {
+    "sample_id": "GATES-006",
+    "category": "book",
+    "simulation_time_s": 188.99,
+    "image": "captures/GATES-006.png",
+    "detector": "Webots camera recognition (simulation ground truth)"
+  }
+]

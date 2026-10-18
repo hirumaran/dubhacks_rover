@@ -1,0 +1,32 @@
+# Python and editor caches
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+
+# Webots local workspace state
+simulation/worlds/.*.wbproj
+simulation/worlds/.*.wbproj.*
+
+# Runtime outputs. Reference evidence is retained under validation/.
+logs/
+simulation/gallery/captures/*
+!simulation/gallery/captures/.gitkeep
+
+# Indoor showcase generated workspace and runtime media
+simulation/indoor_showcase/worlds/.*.wbproj*
+simulation/indoor_showcase/presentation/data/*
+!simulation/indoor_showcase/presentation/data/.gitkeep
+simulation/indoor_showcase/recordings/
+
+# Perception pipeline runtime
+perception/inbox/
+perception/state/
+perception/reports/
+perception/.env
+
+# Standalone indoor project on sarath
+simulation-indoors/worlds/.*.wbproj*
+simulation-indoors/presentation/data/*
+!simulation-indoors/presentation/data/.gitkeep
+simulation-indoors/recordings/
