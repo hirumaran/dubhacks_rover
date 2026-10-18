@@ -77,3 +77,5 @@ Use a fresh gallery for new capture validation. `GATES_RECORD=1` exports native 
 ## Rover size revision
 
 The indoor rover now has a 0.70 × 0.60 m footprint and 0.925 m overall height, with 0.10 m wheel radius and 0.54 m track. A weighted lower chassis supports the taller cabinet; cameras sit in a low roof housing with no extended mast or front arm. The cameras sit flush at the roof edges, with the same approximately 0.90 m optical height, fields of view and tilt, preserving the bench-seat view. Calibrated body-relative offsets are exported with each frame so two-view confirmation uses the correct camera origin. The lidar sits in an unobstructed lower sensor belt. Physical collision boxes, drive conversion and showcase framing match the larger robot. `tools/IndoorScout.base.proto` is the dedicated rebuild template.
+
+The vision bridge now keeps private, persistent item geotracks across restarts. Repeat sightings use the same gallery identity and update their sighting count after a Perceptron visual match. Public gallery data contains no exact coordinates. See `simulation/perception_bridge/README.md` for cloud migration and site/floor scope setup.

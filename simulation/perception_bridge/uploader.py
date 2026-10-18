@@ -28,6 +28,16 @@ class Uploader:
     def _post(self, payload: dict) -> tuple[int, dict]:
         if DRY_RUN:
             payload = {**payload, "dry_run": True}
+        if payload.get('item_location') and not payload.get('dry_run'):
+            # Check before posting: an older cloud function would silently ignore precise tracking.
+            try:
+                health = urllib.request.urlopen(urllib.request.Request(IDENTIFY_URL,method='GET',headers={'User-Agent':'CampusScout-PerceptionBridge/1.0'}),timeout=REQUEST_TIMEOUT_S,context=ssl.create_default_context(cafile=certifi.where()))
+            except urllib.error.HTTPError as response:
+                health=response
+            try:
+                if health.headers.get('X-Item-Geotracking')!='v1':
+                    raise OSError('Deploy the item-geotracking migration and Edge Function before live posting.')
+            finally:health.close()
         req = urllib.request.Request(
             IDENTIFY_URL,
             data=json.dumps(payload).encode(),

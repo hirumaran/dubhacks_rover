@@ -47,6 +47,7 @@ import { CATEGORIES, CATEGORY_GUIDE, COLORS } from "../_shared/items.ts";
 import { compareSightings, type Sighting } from "../_shared/rating.ts";
 import { askJson, type Box, detect, type Detection, image, locate, text, toDataUrl } from "../_shared/perceptron.ts";
 
+import {parseItemGeo,samePhysicalItem,uncertainIdentity,closeAnchorConflict,type ItemGeo} from "../_shared/geotracking.ts";
 import {geometryReason,specificIdentity,blankPixels} from "../_shared/detection_quality.ts";
 
 const MAX_ITEMS = 12;
@@ -60,7 +61,7 @@ const CROP_UPSCALE_PX = 448;
 const DUP_RADIUS_M = 150;
 const DUP_WINDOW_H = 24;
 const DUP_MAX_CANDIDATES = 5;
-const DUP_MIN_SIMILARITY = 70;
+const DUP_MIN_SIMILARITY = 85;
 
 // Open-ended: no fixed list of item names, so anything a person might leave behind can be found.
 // The describe step then drops whatever isn't a personal belonging.
@@ -265,7 +266,7 @@ async function findDuplicate(
     .returns<Listing[]>();
   if (error) throw new Error(`Duplicate lookup failed: ${error.message}`);
 
-  // A failed comparison counts as "not a duplicate": listing twice beats losing an item.
+  // Ambiguous or failed comparisons are deferred rather than creating a possible duplicate.
   const rated = await Promise.allSettled(data.map(async (c) => ({
     id: c.id,
     r: await compareSightings(
@@ -280,12 +281,55 @@ async function findDuplicate(
   for (const x of rated) {
     if (x.status !== "fulfilled") continue;
     const { id, r } = x.value;
-    const same = r.verdict === "same_item" || r.verdict === "likely_same";
+    const same = samePhysicalItem(r);
     if (same && r.similarity >= DUP_MIN_SIMILARITY && (!best || r.similarity > best.similarity)) {
       best = { id, similarity: r.similarity };
     }
   }
+  if (!best && rated.some(x=>x.status==='rejected'||(x.status==='fulfilled'&&uncertainIdentity(x.value.r)))) {
+    throw new HttpError(409,'Duplicate identity is uncertain; keep this sighting for review instead of posting again.');
+  }
   return best;
+}
+
+/** Precise, private item positions + Perceptron identity + atomic/idempotent listing commit. */
+async function publishTracked(supabase:SupabaseClient, info:Description, photo:LoadedImage, scene:LoadedImage,
+ geo:ItemGeo, meta:Record<string,unknown>):Promise<{action:string;item:Record<string,unknown>}> {
+ const uploaded:string[]=[];let uncertainCommit=false;let row:Record<string,unknown>|null=null;
+ const cleanup=async()=>{if(uploaded.length)await supabase.storage.from('found-photos').remove(uploaded);};
+ try {
+  for(let attempt=0;attempt<3;attempt++) {
+   const {data,error}=await supabase.rpc('nearby_item_geotracks',{p_lat:geo.latitude,p_lng:geo.longitude,p_scope:geo.scope,p_demo:meta.is_demo,p_radius:geo.accuracy_m});
+   if(error)throw new HttpError(503,'Geotracking migration is required or the private location lookup is unavailable.');
+   const nearby=(data??[]) as (Listing&{distance_m:number})[];
+   if(nearby.length>20)throw new HttpError(409,'Too many nearby items for a reliable duplicate check; review this sighting.');
+   const comparisons=await Promise.allSettled(nearby.map(async c=>({candidate:c,r:await compareSightings(info,photo,c,await fromFoundImagePath(supabase,c.image_path),c.distance_m)})));
+   const matches=comparisons.filter((x):x is PromiseFulfilledResult<{candidate:Listing&{distance_m:number};r:Awaited<ReturnType<typeof compareSightings>>}>=>x.status==='fulfilled'&&samePhysicalItem(x.value.r)).map(x=>x.value).sort((a,b)=>b.r.similarity-a.r.similarity);
+   let duplicateId:string|null=matches[0]?.candidate.id??null;
+   if(!duplicateId&&comparisons.some(x=>x.status==='rejected'||(x.status==='fulfilled'&&(uncertainIdentity(x.value.r)||closeAnchorConflict(info,x.value.candidate,x.value.candidate.distance_m)))))throw new HttpError(409,'Nearby item identity needs review; no new listing created.');
+   // Older rows have only approximate coordinates; visually check them once, then attach a private track.
+   if(!duplicateId){const old=await findDuplicate(supabase,info,photo,{lat:geo.latitude,lng:geo.longitude,isDemo:meta.is_demo as boolean,at:meta.discovered_at as string});duplicateId=old?.id??null;}
+   if(!row) {
+    row={...meta,id:crypto.randomUUID(),title:info.title,description:info.description,category:info.category,color:info.color,image_path:'',image_paths:[]};
+   }
+   if(!duplicateId&&!row.image_path) {
+    const upload=async(img:LoadedImage)=>{
+     const path=`${meta.source}/${String(meta.discovered_at).slice(0,10)}/${crypto.randomUUID()}.${img.mime==='image/png'?'png':'jpg'}`;
+     const {error}=await supabase.storage.from('found-photos').upload(path,img.bytes,{contentType:img.mime});
+     if(error)throw new Error('Could not store tracked item photo.');uploaded.push(path);return path;
+    };
+    row.image_path=await upload(photo);row.image_paths=[await upload(scene)];
+   }
+   uncertainCommit=true;
+   const {data:committed,error:commitError}=await supabase.rpc('commit_item_geosighting',{p_sighting:geo.sighting_id,p_tracker:geo.tracker_id,p_row:row,p_geo:geo,p_duplicate:duplicateId,p_checked:nearby.map(x=>x.id)});
+   if(commitError)throw new HttpError(503,'Geotracking write failed; retry with the same sighting ID.');
+   uncertainCommit=false;
+   if(committed.action==='retry')continue;
+   if(committed.action!=='created')await cleanup();
+   return committed;
+  }
+  throw new HttpError(409,'Nearby listings changed during comparison; retry this sighting.');
+ }catch(error){if(!uncertainCommit)await cleanup();throw error;}
 }
 
 /** Validates `items`: listings the caller already identified (from an earlier dry run). */
@@ -333,7 +377,20 @@ serve(async (body, req) => {
     throw new HttpError(401, "Missing or wrong x-ingest-secret");
   }
 
+  if(body.operation==='compare_geotracked_item') {
+    const fresh=body.fresh as Record<string,unknown>,existing=body.existing as Record<string,unknown>;
+    const read=(v:Record<string,unknown>)=>{
+      if(!v||['title','description','category','color','image_base64'].some(k=>typeof v[k]!=='string'||!String(v[k]).trim()))throw new HttpError(400,'Comparison needs both item descriptions and camera crops.');
+      return {info:{title:String(v.title),description:String(v.description),category:String(v.category),color:String(v.color)},photo:fromBase64(String(v.image_base64))};
+    };
+    const a=read(fresh),b=read(existing),distance=Number(body.distance_m);
+    if(!Number.isFinite(distance)||distance<0||distance>10)throw new HttpError(400,'Comparison distance must be between 0 and 10 meters.');
+    const rating=await compareSightings(a.info,a.photo,b.info,b.photo,distance);
+    return json({dry_run:true,rating,same_item:samePhysicalItem(rating),needs_review:uncertainIdentity(rating)});
+  }
   // ---- validate input
+  let itemGeo:ItemGeo|null;
+  try{itemGeo=parseItemGeo(body.item_location);}catch(e){throw new HttpError(400,String((e as Error).message));}
   const sources = [str(body.image_path), str(body.image_url), str(body.image_base64)].filter(Boolean);
   if (sources.length !== 1) throw new HttpError(400, "Send exactly one of image_path, image_url, image_base64");
 
@@ -390,6 +447,15 @@ serve(async (body, req) => {
   // Diagnostics and first-view detection do not query or modify private listing data.
   if(dryRun)return json({dry_run:true,listed:[],identified:items.map(({detection,info})=>({...info,label:detection.mention,box:detection.box})),duplicates:[],skipped});
 
+  if(itemGeo) {
+    if(items.length>1)throw new HttpError(400,'Send one confirmed item per item_location.');
+    if(!items.length)return json({dry_run:false,listed:[],duplicates:[],skipped});
+    const it=items[0];
+    const saved=await publishTracked(supabase,it.info,it.crop?{bytes:it.crop,mime:'image/jpeg'}:scene,scene,itemGeo,
+      {source,rover_id:roverId??null,is_demo:body.is_demo,discovered_at:discoveredAt,approximate_location:location});
+    return json({dry_run:false,listed:saved.action==='created'?[{...saved.item,label:it.detection.mention,box:it.detection.box}]:[],
+      duplicates:saved.action==='created'?[]:[{existing_found_item_id:saved.item.id,label:it.detection.mention,box:it.detection.box,sighting_count:saved.item.sighting_count,last_seen_at:saved.item.last_seen_at}],skipped},saved.action==='created'?201:200);
+  }
   // ---- drop items that are already listed nearby
   const where = { lat, lng, isDemo: body.is_demo, at: discoveredAt };
   const dupChecks = await Promise.all(

@@ -10,6 +10,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       { androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "" },
     ],
   ],
+  experiments: {
+    ...(config.experiments || {}),
+    // Static web builds hosted under a subpath (e.g. GitHub Pages) set this.
+    ...(process.env.EXPO_WEB_BASE_URL
+      ? { baseUrl: process.env.EXPO_WEB_BASE_URL }
+      : {}),
+  },
   extra: {
     ...config.extra,
     eas: {
