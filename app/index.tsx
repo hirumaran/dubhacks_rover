@@ -1,7 +1,7 @@
 import { exchangeCode } from "../src/lib/auth";
 import React, { useState } from "react";
 import { Alert, Text, View } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { LocateFixed, MapPin, Sparkles } from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
@@ -12,6 +12,8 @@ WebBrowser.maybeCompleteAuthSession();
 export default function Welcome() {
   const { session } = useSession();
   const [busy, setBusy] = useState(false);
+  const demoEnabled = process.env.EXPO_PUBLIC_ENABLE_DEMO_AUTH === "true";
+  const uwEnabled = !!process.env.EXPO_PUBLIC_UW_SSO_PROVIDER_ID;
   if (session) return <Redirect href="/(tabs)" />;
   async function login(demo: boolean) {
     setBusy(true);
@@ -22,7 +24,6 @@ export default function Welcome() {
         );
       if (demo) {
         check(await supabase.auth.signInAnonymously());
-        check(await supabase.rpc("initialize_demo"));
       } else {
         const providerId = process.env.EXPO_PUBLIC_UW_SSO_PROVIDER_ID;
         if (!providerId)
@@ -146,20 +147,32 @@ export default function Welcome() {
           </Text>
         </View>
         <View style={{ gap: 12 }}>
+          {demoEnabled && (
+            <Button
+              title={busy ? "Opening your campus…" : "Explore Demo"}
+              onPress={() => login(true)}
+              disabled={busy}
+            />
+          )}
           <Button
-            title={busy ? "Connecting…" : "Continue with UW NetID"}
-            onPress={() => login(false)}
+            title="Sign in to HuskyFind"
+            onPress={() => router.push("/sign-in")}
+            secondary={demoEnabled}
             disabled={busy}
           />
-          <Button
-            title="Explore Demo"
-            onPress={() => login(true)}
-            secondary
-            disabled={busy}
-          />
+          {uwEnabled && (
+            <Button
+              title={busy ? "Connecting…" : "Continue with UW NetID"}
+              onPress={() => login(false)}
+              secondary
+              disabled={busy}
+            />
+          )}
           <Text style={[s.small, { textAlign: "center" }]}>
-            Made for Huskies. Built around community.{"\n"}Demo uses a separate,
-            anonymous Supabase account.
+            Made for Huskies. Built around community.
+            {demoEnabled
+              ? "\nDemo uses a separate anonymous account."
+              : "\nSign in with your team's HuskyFind account."}
           </Text>
         </View>
       </View>

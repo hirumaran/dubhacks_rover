@@ -1,14 +1,24 @@
 import { useEffect } from "react";
-import * as Notifications from "expo-notifications";
+import type {
+  NotificationResponse,
+  EventSubscription,
+} from "expo-notifications";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { useSession } from "../lib/session";
 export default function PushNavigation() {
   const { session } = useSession();
   useEffect(() => {
-    if (!session) return;
+    if (!session || Constants.appOwnership === "expo") return;
+    let active = true;
+    let subscription: EventSubscription | undefined;
     let lastId: string | undefined;
-    function open(response: Notifications.NotificationResponse | null) {
-      if (!response || lastId === response.notification.request.identifier)
+    function open(response: NotificationResponse | null) {
+      if (
+        !active ||
+        !response ||
+        lastId === response.notification.request.identifier
+      )
         return;
       lastId = response.notification.request.identifier;
       const data = response.notification.request.content.data || {};
@@ -19,10 +29,21 @@ export default function PushNavigation() {
         router.push(`/item/${data.itemId}`);
       else router.push("/(tabs)/activity");
     }
-    void Notifications.getLastNotificationResponseAsync().then(open);
-    const subscription =
-      Notifications.addNotificationResponseReceivedListener(open);
-    return () => subscription.remove();
+    void import("expo-notifications")
+      .then(async (Notifications) => {
+        const response = await Notifications.getLastNotificationResponseAsync();
+        if (!active) return;
+        open(response);
+        subscription =
+          Notifications.addNotificationResponseReceivedListener(open);
+      })
+      .catch((error) =>
+        console.warn("Notification navigation unavailable:", error.message),
+      );
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
   }, [session?.user.id]);
   return null;
 }

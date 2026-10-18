@@ -13,6 +13,7 @@
     "android": { "package": "edu.huskyfind.mobile" },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
       "expo-notifications",
       [
         "expo-image-picker",

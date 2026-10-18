@@ -1,19 +1,14 @@
 import React from "react";
 import MapView, { Marker, MapPressEvent } from "react-native-maps";
-import { campus, FoundItem } from "../lib/types";
+import { campus } from "../lib/types";
+import { CampusMapProps } from "./CampusMap.types";
 export default function CampusMap({
   items = [],
   pin,
   onPin,
   onSelect,
   center,
-}: {
-  items?: FoundItem[];
-  pin?: { latitude: number; longitude: number };
-  onPin?: (p: { latitude: number; longitude: number }) => void;
-  onSelect?: (i: FoundItem) => void;
-  center?: { latitude: number; longitude: number };
-}) {
+}: CampusMapProps) {
   return (
     <MapView
       key={center ? `${center.latitude},${center.longitude}` : "campus"}

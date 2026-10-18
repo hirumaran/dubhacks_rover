@@ -1,14 +1,15 @@
 # HuskyFind
 
-Native iOS/Android lost-and-found app for UW Seattle, built with Expo SDK 55, React Native, TypeScript, Expo Router, NativeWind, Supabase, TanStack Query, React Native Maps, Reanimated, and Lucide.
+Native iOS/Android lost-and-found app for UW Seattle, built with Expo SDK 57, React Native, TypeScript, Expo Router, NativeWind, Supabase, TanStack Query, React Native Maps, Reanimated, and Lucide.
 
 ## Run
 
-1. Use Node 22.13+ or Node 24 LTS and run `npm ci`.
+1. Run `npm ci`. The project installs Node 24.19 locally; all npm app/check scripts use that supported runtime automatically.
 2. Copy `.env.example` to `.env` with your Supabase URL and publishable key. This workspace already has the supplied values in its ignored `.env`.
 3. Complete the Supabase setup below.
-4. Run `npm start` and open an SDK 55 compatible Expo Go client or development build on iOS/Android.
-5. Choose **Explore Demo** to create a real Supabase anonymous account and initialize demo reports, matches, a queued search, and a sample claim.
+   For SDK 57 Expo Go on physical iPhone, run `npm run login:expo`, manually open its newly printed URL in your computer's browser, and leave the terminal running until login completes. Sign into the same Expo account in Expo Go. This is separate from the in-app Supabase demo login.
+4. Run `npm run start:tunnel` and scan its new QR code with SDK 57-compatible Expo Go on iPhone or Android. Keep the terminal open.
+5. Tap **Explore Demo**. It creates a real anonymous Supabase account and prepares sample listings, a missing report, matches, a queued search, and a claim before opening Discover. No test-account setup is needed. **Sign in to HuskyFind** remains available for existing email/password accounts.
 
 Run `npm run typecheck`, `npm test`, and `npm run export:native` for validation. A native JavaScript export is not a signed app binary or a device UI test. Android local builds require Android Studio; local iOS builds require macOS/Xcode. EAS build profiles are included for cloud builds.
 
@@ -24,13 +25,13 @@ supabase db push
 
 Follow the login browser instructions. If prompted for the database password, enter it locally. Alternatively, run the SQL files under `supabase/migrations` in filename order using the project's Supabase SQL Editor. Never put privileged keys in mobile environment variables.
 
-Enable **Anonymous Sign-Ins** under Authentication / Sign In / Providers. Add `huskyfind://auth/callback` to allowed redirect URLs. Migrations create the tables, private/public storage buckets, RLS policies, matching triggers, notifications, and realtime publication entries.
+Anonymous Sign-Ins is enabled on this project. Set `EXPO_PUBLIC_ENABLE_DEMO_AUTH=true` in `.env` (also the template default) to show Explore Demo. Email/password sign-in remains available through the email provider. If configuring institutional SSO in the future, add `huskyfind://auth/callback` to allowed redirect URLs. Migrations create the tables, private/public storage buckets, RLS policies, matching triggers, notifications, and realtime publication entries.
 
-Demo photos are illustrative Unsplash samples, not actual recovered property. Anonymous accounts see only `is_demo=true` records; institutional users see only real listings. Demo rover searches stay queued until a trusted service changes their database status. Anonymous accounts cannot be recovered after sign-out.
+Demo photos are illustrative Unsplash samples, not actual recovered property. Anonymous accounts see only `is_demo=true` records; other authenticated accounts see only real listings. Demo access is enabled by default in the environment template. Set `EXPO_PUBLIC_ENABLE_DEMO_AUTH=false` to hide it in deployments that do not offer demo access. Regular tester accounts may initially see an empty feed because the seeded listings are demo-only. Rover searches stay queued until a trusted service changes their status.
 
 ## UW authentication
 
-NetID sign-in remains explicitly unavailable until UW approves and registers an institutional integration. Configure an approved Supabase SSO provider and set `EXPO_PUBLIC_UW_SSO_PROVIDER_ID`. The app opens a secure browser and exchanges a PKCE authorization code; it never collects UW passwords. Configure issuer, audience, and signature validation in the identity provider/Supabase integration. `university_verified` is administrator-controlled and is never derived from editable user metadata. Test end-to-end with UW-issued configuration before release.
+NetID sign-in is hidden until UW approves and registers an institutional integration. Configure an approved Supabase SSO provider and set `EXPO_PUBLIC_UW_SSO_PROVIDER_ID`. The app opens a secure browser and exchanges a PKCE authorization code; it never collects UW passwords. Configure issuer, audience, and signature validation in the identity provider/Supabase integration. `university_verified` is administrator-controlled and is never derived from editable user metadata. Test end-to-end with UW-issued configuration before release.
 
 ## Permissions and service integration
 
@@ -61,7 +62,7 @@ The webhook checks its secret and reads the canonical record and user preference
 
 ## Maps
 
-Apple Maps is used on iOS. Android standalone builds need a restricted Google Maps SDK key in `GOOGLE_MAPS_API_KEY`; `app.config.ts` adds it to the native build. Restrict it to the package and signing certificate. Device location is requested only when centering the map and is not stored.
+Apple Maps is used on iOS. Android standalone builds need a restricted Google Maps SDK key in `GOOGLE_MAPS_API_KEY`; the React Native Maps config plugin in `app.config.ts` adds it to the native build. Restrict it to the package and signing certificate. Device location is requested only when centering the map and is not stored.
 
 ## Structure
 
@@ -76,10 +77,20 @@ Before public release, validate both platforms on real devices, test RLS across 
 
 ## Validation status
 
-TypeScript checking, five automated tests (including migrations and RLS in local PGlite with mocked Supabase auth/storage schemas), and iOS/Android Hermes bundle exports pass. Hosted Supabase deployment and physical-device UI testing still require project login and device access. `npm audit` reports 42 inherited dependency advisories (18 moderate, 24 high) after compatible fixes; resolving remaining advisories requires reviewing upstream Expo/NativeWind dependency upgrades before a public release. Do not use `npm audit fix --force` blindly because its proposed versions break the pinned Expo stack.
+TypeScript checking, five automated tests (including migrations and RLS in local PGlite with mocked Supabase auth/storage schemas), and iOS/Android Hermes bundle exports pass. The hosted schema is deployed and backend health checks pass. Live anonymous authentication, seeded data, matching, and account cleanup are verified against Supabase. Physical-device UI testing still requires phones. `npm audit` reports inherited dependency advisories; resolving remaining advisories requires reviewing upstream Expo/NativeWind dependency upgrades before a public release. Do not use `npm audit fix --force` blindly because its proposed versions break the pinned Expo stack.
 
 Search dispatchers must filter `search_requests.is_demo = false` before assigning physical hardware. The database derives demo flags from the owning auth account, preventing clients from presenting demo searches as real missions.
 
 ## Teammate database reference
 
 See [Supabase schema and integration guide](docs/SUPABASE_SCHEMA.md) for every table and field, relationships, access policies, storage buckets, triggers, and rover/backend integration rules.
+
+For iPhone/Android setup, tester accounts, and installable build prerequisites, see [Testing HuskyFind](docs/TESTING.md).
+
+## If Expo Go stays on “Opening project”
+
+Stop Metro with Ctrl+C, then run `npm run start:tunnel` and scan the newly generated QR code. Campus/shared Wi-Fi can prevent phones from reaching the computer's LAN address even when both devices are on the same network. The ngrok tunnel helper is included locally. SDK 57 scripts explicitly select Expo Go (`--go`) and use a tunnel. The CLI and physical-iPhone Expo Go must be signed into the same Expo account. Keep the terminal running while testing; the first native bundle after clearing the cache can take a minute.
+
+Use `npm run start:lan` on networks that permit device-to-device traffic, or `npm run start:web` for a browser preview. The browser preview has a campus location list in place of the native interactive map; device push remains native-only. A React Native DevTools download warning uses Expo's fallback tools and does not itself stop the app from loading.
+
+The browser startup regression check (`npm run smoke:browser`) has also passed against the live backend: welcome → demo authentication → populated Discover feed → search → save/unsave → Activity → Profile → restored session, with no uncaught runtime errors. This uses an isolated test account that is deleted afterward; physical iOS/Android UI testing remains a separate check.

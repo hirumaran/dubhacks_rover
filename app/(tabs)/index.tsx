@@ -144,7 +144,7 @@ export default function Discover() {
             <State loading />
           ) : feed.isError && items.length ? (
             <State error={feed.error} retry={() => feed.fetchNextPage()} />
-          ) : null
+          ) : undefined
         }
       />
     </Page>
