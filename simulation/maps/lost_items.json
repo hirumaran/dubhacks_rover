@@ -1,0 +1,99 @@
+{
+  "seed": 2026,
+  "benches": [
+    {
+      "id": 1,
+      "x": 22.92,
+      "y": -141.91,
+      "yaw": -0.79
+    },
+    {
+      "id": 2,
+      "x": 40.6,
+      "y": -142.24,
+      "yaw": -0.073
+    },
+    {
+      "id": 3,
+      "x": 43.81,
+      "y": -153.09,
+      "yaw": 3.068
+    },
+    {
+      "id": 4,
+      "x": 23.79,
+      "y": -159.5,
+      "yaw": -2.359
+    },
+    {
+      "id": 5,
+      "x": 39.62,
+      "y": -131.99,
+      "yaw": 2.351
+    },
+    {
+      "id": 6,
+      "x": 32.77,
+      "y": -166.97,
+      "yaw": -2.359
+    }
+  ],
+  "items": [
+    {
+      "id": "CS-001",
+      "kind": "book",
+      "description": "Hardcover book",
+      "bench": 1,
+      "x": 23.52,
+      "y": -141.54
+    },
+    {
+      "id": "CS-002",
+      "kind": "book",
+      "description": "Hardcover book",
+      "bench": 2,
+      "x": 40.81,
+      "y": -141.51
+    },
+    {
+      "id": "CS-003",
+      "kind": "toy",
+      "description": "Yellow rubber duck",
+      "bench": 2,
+      "x": 40.78,
+      "y": -142.4
+    },
+    {
+      "id": "CS-004",
+      "kind": "toy",
+      "description": "Yellow rubber duck",
+      "bench": 3,
+      "x": 43.66,
+      "y": -152.4
+    },
+    {
+      "id": "CS-005",
+      "kind": "bottle",
+      "description": "Clear plastic water bottle",
+      "bench": 5,
+      "x": 38.88,
+      "y": -132.45
+    },
+    {
+      "id": "CS-006",
+      "kind": "toy",
+      "description": "Yellow rubber duck",
+      "bench": 6,
+      "x": 33.07,
+      "y": -167.6
+    },
+    {
+      "id": "CS-007",
+      "kind": "book",
+      "description": "Hardcover book",
+      "bench": 6,
+      "x": 32.16,
+      "y": -166.57
+    }
+  ]
+}

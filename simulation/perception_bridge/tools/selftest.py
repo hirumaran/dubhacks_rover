@@ -51,6 +51,10 @@ def main() -> int:
         "ROVER_ID": "00000000-0000-0000-0000-000000000001",
         "IS_DEMO": "true",
         "DRY_RUN": "false",
+        "SEND_CAMERAS": "0,1,2,3",
+        "MOVE_MIN_M": "6.0",
+        "DETECT_TILES": "3x1",
+        "DETECT_BAND": "0.25,0.75",
         "PERCEPTION_INBOX": str(tmp / "inbox"),
         "PERCEPTION_STATE": str(tmp / "state"),
         "PERCEPTION_REPORTS": str(tmp / "reports"),
@@ -96,14 +100,24 @@ def main() -> int:
     step("parked, same views", 0, 0.0, 0.0, 0.0)
     views[0] = scene()
     step("parked, camera 0 view changed", 1, 0.0, 0.0, 0.0)
-    step("crept 0.5 m", 0, 0.5, 0.0, 0.0)
-    step("drove 3 m", 4, 3.0, 0.0, 0.0)
-    step("turned 30 deg in place", 4, 3.0, 0.0, math.radians(30))
+    step("drove 3 m (under 6 m)", 0, 3.0, 0.0, 0.0)
+    step("drove 7 m", 4, 7.0, 0.0, 0.0)
+    step("turned 30 deg in place", 4, 7.0, 0.0, math.radians(30))
+
+    # Behind: three ticks waiting -> only the newest is processed.
+    before = len(received)
+    tick(20.0, 0.0, math.radians(30))
+    tick(30.0, 0.0, math.radians(30))
+    tick(40.0, 0.0, math.radians(30))
+    bridge.run(once=True)
+    sent_seqs = {r["discovered_at"] for r in received[before:]}
+    checks.append((f"behind: sent {len(received) - before} from {len(sent_seqs)} tick(s), expected 4 from 1",
+                   len(received) - before == 4 and len(sent_seqs) == 1 and not any(inbox.iterdir())))
 
     # Server outage: the request is queued, then delivered on the next pass.
     fail_next["n"] = 1
     before = len(received)
-    tick(10.0, 0.0, math.radians(30))
+    tick(50.0, 0.0, math.radians(30))
     bridge.run(once=True)  # camera 0 hits the 503 and is queued; the next pass retries it
     queued_ok = len(received) - before == 4 and bridge.uploader.pending() == 0
     checks.append((f"outage: {len(received) - before}/4 delivered after retry, {bridge.uploader.pending()} queued",
@@ -111,14 +125,15 @@ def main() -> int:
 
     # The request itself: pure vision + pose, correct location, demo flag, secret.
     r = received[-1]
-    lat, lon = LAT0 + 0.0 * DEG_PER_M_LAT, LON0 + 10.0 * DEG_PER_M_LON
+    lat, lon = LAT0 + 0.0 * DEG_PER_M_LAT, LON0 + 50.0 * DEG_PER_M_LON
     checks += [
         ("secret header sent", r["secret"] == "test-secret"),
         ("only image + pose fields", set(r) == {"secret", "image_base64", "approximate_location", "latitude",
                                                 "longitude", "source", "rover_id", "is_demo", "discovered_at",
-                                                "dry_run"}),
+                                                "dry_run", "min_box_px", "detect_tiles"}),
         ("lat/lon from GPS", abs(r["latitude"] - lat) < 1e-9 and abs(r["longitude"] - lon) < 1e-9),
         ("demo + rover source", r["is_demo"] is True and r["source"] == "rover"),
+        ("detection tiles requested", r["detect_tiles"] == {"cols": 3, "rows": 1, "band": [0.25, 0.75]}),
         ("inbox emptied", not any(inbox.iterdir())),
     ]
 

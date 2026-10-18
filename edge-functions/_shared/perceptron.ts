@@ -50,11 +50,11 @@ type DetectResponse = {
   finish_reason: "complete" | "max_tokens";
 };
 
-/** POST /v1/detect: boxes (in image pixels) for the given categories. */
-export async function detect(imageUrl: string, categories: string[]): Promise<Detection[]> {
+/** POST /v1/detect: boxes (in image pixels) for the given categories, or for everything when none are given. */
+export async function detect(imageUrl: string, categories: string[] = []): Promise<Detection[]> {
   const res = await post<DetectResponse>("/detect", {
     media: { type: "image", image_url: imageUrl },
-    categories,
+    ...(categories.length ? { categories } : {}),
     // Non-"none" lets category detection inspect extra image regions, which helps with small items.
     config: { output: "box", reasoning_effort: "low" },
   });
@@ -69,6 +69,43 @@ export async function detect(imageUrl: string, categories: string[]): Promise<De
         y2: d.point_box!.bottom_right.y,
       },
     }));
+}
+
+/** A box on Perceptron's normalized 0-1000 grid. */
+export type NormDetection = { mention: string; x1: number; y1: number; x2: number; y2: number };
+
+const BOX_RE = /<point_box([^>]*)>\s*\((\d+),\s*(\d+)\)\s*\((\d+),\s*(\d+)\)\s*<\/point_box>/g;
+const mentionOf = (attrs: string) => /mention="([^"]*)"/.exec(attrs)?.[1];
+
+/** Parses `point_box` annotations, with children inheriting their collection's mention. */
+export function parseBoxes(content: string): NormDetection[] {
+  const out: NormDetection[] = [];
+  const add = (text: string, fallback: string) => {
+    for (const m of text.matchAll(BOX_RE)) {
+      out.push({ mention: mentionOf(m[1]) ?? fallback, x1: +m[2], y1: +m[3], x2: +m[4], y2: +m[5] });
+    }
+  };
+  const rest = content.replace(/<collection([^>]*)>([\s\S]*?)<\/collection>/g, (_, attrs: string, body: string) => {
+    add(body, mentionOf(attrs) ?? "object");
+    return "";
+  });
+  add(rest, "object");
+  return out;
+}
+
+/** Asks Mk1.5 an open-ended grounding question; returns its boxes on the 0-1000 grid. */
+export async function locate(imageUrl: string, prompt: string, maxTokens = 1024): Promise<NormDetection[]> {
+  const res = await post<ChatResponse>("/chat/completions", {
+    model: MODEL,
+    messages: [{ role: "user", content: [image(imageUrl), text(prompt)] }],
+    max_completion_tokens: maxTokens,
+    vision_config: { annotation_format: "box" },
+  });
+  const choice = res.choices[0];
+  if (!choice || choice.finish_reason !== "stop") {
+    throw new Error(`Perceptron answer incomplete (finish_reason=${choice?.finish_reason})`);
+  }
+  return parseBoxes(choice.message.content ?? "");
 }
 
 type ChatResponse = {

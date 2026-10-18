@@ -1,0 +1,63 @@
+{
+  "seed": 2026,
+  "benches": [
+    {
+      "id": 1,
+      "x": 7.3,
+      "y": -8.8,
+      "yaw": -1.571
+    },
+    {
+      "id": 2,
+      "x": 5.2,
+      "y": -2.68,
+      "yaw": 3.142
+    },
+    {
+      "id": 3,
+      "x": -1.86,
+      "y": 11.84,
+      "yaw": -0.785
+    },
+    {
+      "id": 4,
+      "x": -2.8,
+      "y": 1.51,
+      "yaw": -3.142
+    }
+  ],
+  "items": [
+    {
+      "id": "GATES-001",
+      "kind": "toy",
+      "description": "Yellow rubber duck",
+      "bench": 1,
+      "x": 6.64,
+      "y": -8.92
+    },
+    {
+      "id": "GATES-002",
+      "kind": "ball",
+      "description": "Black and white soccer ball",
+      "bench": 3,
+      "x": -1.44,
+      "y": 11.92
+    },
+    {
+      "id": "GATES-003",
+      "kind": "ball",
+      "description": "Black and white soccer ball",
+      "bench": 4,
+      "x": -2.95,
+      "y": 1.35
+    },
+    {
+      "id": "GATES-004",
+      "kind": "bottle",
+      "description": "Clear plastic water bottle",
+      "bench": 4,
+      "x": -3.02,
+      "y": 2.29
+    }
+  ]
+}

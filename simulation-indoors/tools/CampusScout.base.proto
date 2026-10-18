@@ -56,10 +56,15 @@ GPS { name "gps" accuracy .003 }
 Compass { name "compass" }
 InertialUnit { name "imu" }
 Lidar { translation .04 0 .170 name "lidar" fieldOfView 6.283185307 horizontalResolution 180 numberOfLayers 1 verticalFieldOfView .01 near .04 minRange .04 maxRange 5 noise .005 type "fixed" }
-Camera { translation -.015 0 .21 rotation 0 0 1 0.00000000 name "camera_0" width 320 height 240 fieldOfView 1.64 near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 .21 rotation 0 0 1 1.57079633 name "camera_1" width 320 height 240 fieldOfView 1.64 near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 .21 rotation 0 0 1 3.14159265 name "camera_2" width 320 height 240 fieldOfView 1.64 near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 .21 rotation 0 0 1 4.71238898 name "camera_3" width 320 height 240 fieldOfView 1.64 near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+# Camera mast: a raised view over bench seats and low obstacles.
+Pose { translation -.015 0 0.515 children [ Shape { appearance PBRAppearance { baseColor .15 .15 .16 roughness .6 metalness .4 } geometry Cylinder { radius .01 height 0.770 } } ] } Pose { translation -.015 0 0.900 children [ Shape { appearance PBRAppearance { baseColor .1 .1 .11 roughness .5 metalness .3 } geometry Cylinder { radius .035 height .05 } } ] }
+Camera { translation -.015 0 0.9 rotation -0.000000 1.000000 0.000000 0.200000 name "camera_0" width 1280 height 960 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 4.5 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation -.015 0 0.9 rotation -0.099340 0.099340 0.990082 1.580763 name "camera_1" width 1280 height 960 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 4.5 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation -.015 0 0.9 rotation -0.099833 0.000000 0.995004 3.141593 name "camera_2" width 1280 height 960 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 4.5 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation -.015 0 0.9 rotation -0.099340 -0.099340 0.990082 4.702422 name "camera_3" width 1280 height 960 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 4.5 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+# Perception cameras: narrow 50 deg lenses looking left/right at bench-seat height for item recognition.
+Camera { translation -.015 0 0.9 rotation -0.084593 0.084593 0.992818 1.578004 name "perception_left" width 1920 height 1440 fieldOfView 0.87 near .02 far 60 antiAliasing TRUE }
+Camera { translation -.015 0 0.9 rotation -0.084593 -0.084593 0.992818 4.705181 name "perception_right" width 1920 height 1440 fieldOfView 0.87 near .02 far 60 antiAliasing TRUE }
 Emitter { name "telemetry" channel 37 }
  ] boundingObject Pose { translation 0 0 .087 children [ Box { size .178 .136 .078 } ] }
  physics Physics { density -1 mass .95 centerOfMass [ 0 0 .070 ] } selfCollision FALSE }

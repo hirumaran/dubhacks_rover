@@ -63,27 +63,69 @@ export function fromFoundImagePath(supabase: SupabaseClient, path: string): Prom
   return path.startsWith("https://") ? fromUrl(path) : fromStorage(supabase, "found-photos", path);
 }
 
-/**
- * Crops `box` (plus padding) out of the image and re-encodes it as JPEG.
- * Returns null when the format can't be decoded here (imagescript has no WebP decoder),
- * so callers can fall back to the full image.
- */
-export async function cropToJpeg(img: LoadedImage, box: Box, padding = 0.15): Promise<Uint8Array | null> {
-  let decoded: Image;
+async function decoded(img: LoadedImage): Promise<Image | null> {
   try {
     const d = await decode(img.bytes, true);
-    if (!(d instanceof Image)) return null;
-    decoded = d;
+    return d instanceof Image ? d : null;
   } catch {
     return null;
   }
+}
 
-  const padX = (box.x2 - box.x1) * padding, padY = (box.y2 - box.y1) * padding;
-  const x1 = Math.max(0, Math.floor(box.x1 - padX));
-  const y1 = Math.max(0, Math.floor(box.y1 - padY));
-  const x2 = Math.min(decoded.width, Math.ceil(box.x2 + padX));
-  const y2 = Math.min(decoded.height, Math.ceil(box.y2 + padY));
+/**
+ * Crops `box` (plus padding) out of the image and re-encodes it as JPEG.
+ * The crop is widened to at least `minSide` pixels so small items keep some context, and
+ * upscaled so its longer side is at least `upscaleTo`. Returns null when the format can't be
+ * decoded here (imagescript has no WebP decoder), so callers can fall back to the full image.
+ */
+export async function cropToJpeg(
+  img: LoadedImage,
+  box: Box,
+  { padding = 0.15, minSide = 0, upscaleTo = 0 } = {},
+): Promise<Uint8Array | null> {
+  const full = await decoded(img);
+  if (!full) return null;
+
+  const cx = (box.x1 + box.x2) / 2, cy = (box.y1 + box.y2) / 2;
+  const halfW = Math.max((box.x2 - box.x1) * (0.5 + padding), minSide / 2);
+  const halfH = Math.max((box.y2 - box.y1) * (0.5 + padding), minSide / 2);
+  const x1 = Math.max(0, Math.floor(cx - halfW)), y1 = Math.max(0, Math.floor(cy - halfH));
+  const x2 = Math.min(full.width, Math.ceil(cx + halfW)), y2 = Math.min(full.height, Math.ceil(cy + halfH));
   if (x2 - x1 < 8 || y2 - y1 < 8) return null;
 
-  return await decoded.crop(x1, y1, x2 - x1, y2 - y1).encodeJPEG(88);
+  const crop = full.crop(x1, y1, x2 - x1, y2 - y1);
+  const longest = Math.max(crop.width, crop.height);
+  if (upscaleTo && longest < upscaleTo) crop.resize(Math.round(crop.width * upscaleTo / longest), Image.RESIZE_AUTO);
+  return await crop.encodeJPEG(88);
+}
+
+export type Tile = { bytes: Uint8Array; x: number; y: number; w: number; h: number };
+
+/**
+ * Splits the image into `cols` x `rows` overlapping JPEG tiles covering the horizontal band
+ * between `band[0]` and `band[1]` (fractions of the height). Small, distant objects take up a
+ * larger share of a tile than of the whole frame, which is what lets the detector find them.
+ */
+export async function tiles(
+  img: LoadedImage,
+  cols: number,
+  rows: number,
+  band: [number, number],
+  overlap = 0.2,
+): Promise<Tile[] | null> {
+  const full = await decoded(img);
+  if (!full) return null;
+  const top = Math.round(full.height * band[0]), bandH = Math.round(full.height * (band[1] - band[0]));
+  const tw = Math.ceil(full.width / (cols - (cols - 1) * overlap));
+  const th = Math.ceil(bandH / (rows - (rows - 1) * overlap));
+  const out: Tile[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = Math.min(full.width - tw, Math.round(c * tw * (1 - overlap)));
+      const y = top + Math.min(bandH - th, Math.round(r * th * (1 - overlap)));
+      const w = Math.min(tw, full.width), h = Math.min(th, bandH);
+      out.push({ bytes: await full.clone().crop(x, y, w, h).encodeJPEG(90), x, y, w, h });
+    }
+  }
+  return out;
 }

@@ -3,6 +3,11 @@
 
 
 EXTERNPROTO "../protos/CampusScout.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/toys/protos/RubberDuck.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/balls/protos/SoccerBall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/school_furniture/protos/Book.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/drinks/protos/WaterBottle.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/street_furniture/protos/Bench.proto"
 
 WorldInfo { title "Campus Scout | UW OSM autonomous search" info [ "OSM data (c) OpenStreetMap contributors, ODbL 1.0" "Real UW Quad footprints and paths; flat terrain; approximate building heights" ] basicTimeStep 16 FPS 30 coordinateSystem "ENU" gpsCoordinateSystem "local" randomSeed 42 contactProperties [ ContactProperties { material1 "tire" coulombFriction .7 forceDependentSlip .005 bounce 0 softERP .3 softCFM .0001 bumpSound "" rollSound "" slideSound "" } ] }
 
@@ -732,16 +737,30 @@ Solid { translation 132.69 -103.03 0 name "tree(134)" children [ Pose { translat
 
 DEF ROVER CampusScout { translation 14.537754265591502 -153.02333823684603 .003 rotation 0 0 1 0.7803755812855565 }
 
-DEF ITEM_1 Solid { translation 16.070267299582753 -150.5914863086549 .005 rotation 0 0 1 0.7803755812855565 name "sample_backpack_1" model "backpack|CS-001" recognitionColors [ .65 .22 .12 ] children [ Pose { translation 0 0 0.17 children [ Shape { appearance PBRAppearance { baseColor .65 .22 .12 roughness 0.85 metalness 0 } geometry Box { size .14 .26 .34 } } ] } Pose { translation 0.082 0 0.11 children [ Shape { appearance PBRAppearance { baseColor .76 .47 .25 roughness 0.85 metalness 0 } geometry Box { size .03 .20 .12 } } ] } Pose { translation 0 0 0.36 children [ Shape { appearance PBRAppearance { baseColor .12 .13 .12 roughness 0.85 metalness 0 } geometry Cylinder { radius .04 height .012 } } ] } ] boundingObject Pose { translation 0 0 0.17 children [ Box { size .14 .26 .34 } ] } }
+DEF BENCH_1 Bench { translation 22.916 -141.915 0 rotation 0 0 1 -0.79042 name "bench_1" }
 
-DEF ITEM_2 Solid { translation 22.101552902498483 -146.4497965597648 .005 rotation 0 0 1 0.7803755812855565 name "sample_book_2" model "book|CS-002" recognitionColors [ .24 .16 .5 ] children [ Pose { translation 0 0 0.018 children [ Shape { appearance PBRAppearance { baseColor .24 .16 .5 roughness 0.85 metalness 0 } geometry Box { size .24 .17 .036 } } ] } Pose { translation 0 0 0.021 children [ Shape { appearance PBRAppearance { baseColor .93 .91 .8 roughness 0.85 metalness 0 } geometry Box { size .225 .16 .022 } } ] } ] boundingObject Pose { translation 0 0 0.018 children [ Box { size .24 .17 .036 } ] } }
+DEF ITEM_1 Solid { translation 23.519 -141.536 0.54 rotation 0 0 1 -2.9336 name "lost_book_1" model "book|CS-001" recognitionColors [ 0.45 0.2 0.2 ] children [ Book { translation 0 0 0.012 rotation 0 1 0 1.5708 name "book_1" color 0.9 0.8 0.3 } ] }
 
-DEF ITEM_3 Solid { translation 29.714734805930103 -137.08339590074632 .005 rotation 0 0 1 0.7803755812855565 name "sample_bottle_3" model "bottle|CS-003" recognitionColors [ .08 .53 .57 ] children [ Pose { translation 0 0 0.125 children [ Shape { appearance PBRAppearance { baseColor .08 .53 .57 roughness 0.85 metalness 0 } geometry Cylinder { radius .04 height .25 } } ] } Pose { translation 0 0 0.26 children [ Shape { appearance PBRAppearance { baseColor .15 .17 .17 roughness 0.85 metalness 0 } geometry Cylinder { radius .027 height .025 } } ] } ] boundingObject Pose { translation 0 0 0.125 children [ Cylinder { radius .04 height .25 } ] } }
+DEF BENCH_2 Bench { translation 40.601 -142.239 0 rotation 0 0 1 -0.07324 name "bench_2" }
 
-DEF ITEM_4 Solid { translation 42.83134211441706 -130.2843036610505 .005 rotation 0 0 1 -1.6440376488163406 name "sample_backpack_4" model "backpack|CS-004" recognitionColors [ .12 .21 .45 ] children [ Pose { translation 0 0 0.17 children [ Shape { appearance PBRAppearance { baseColor .12 .21 .45 roughness 0.85 metalness 0 } geometry Box { size .14 .26 .34 } } ] } Pose { translation 0.082 0 0.11 children [ Shape { appearance PBRAppearance { baseColor .76 .47 .25 roughness 0.85 metalness 0 } geometry Box { size .03 .20 .12 } } ] } Pose { translation 0 0 0.36 children [ Shape { appearance PBRAppearance { baseColor .12 .13 .12 roughness 0.85 metalness 0 } geometry Cylinder { radius .04 height .012 } } ] } ] boundingObject Pose { translation 0 0 0.17 children [ Box { size .14 .26 .34 } ] } }
+DEF ITEM_2 Solid { translation 40.806 -141.505 0.54 rotation 0 0 1 0.0708 name "lost_book_2" model "book|CS-002" recognitionColors [ 0.45 0.2 0.2 ] children [ Book { translation 0 0 0.012 rotation 0 1 0 1.5708 name "book_2" color 0.9 0.8 0.3 } ] }
 
-DEF ITEM_5 Solid { translation 42.29846042637744 -155.31240860542357 .005 rotation 0 0 1 -1.6440376488163406 name "sample_book_5" model "book|CS-005" recognitionColors [ .66 .25 .25 ] children [ Pose { translation 0 0 0.018 children [ Shape { appearance PBRAppearance { baseColor .66 .25 .25 roughness 0.85 metalness 0 } geometry Box { size .24 .17 .036 } } ] } Pose { translation 0 0 0.021 children [ Shape { appearance PBRAppearance { baseColor .93 .91 .8 roughness 0.85 metalness 0 } geometry Box { size .225 .16 .022 } } ] } ] boundingObject Pose { translation 0 0 0.018 children [ Box { size .24 .17 .036 } ] } }
+DEF ITEM_3 Solid { translation 40.776 -142.404 0.54 rotation 0 0 1 2.0823 name "lost_toy_3" model "toy|CS-003" recognitionColors [ 1 0.8 0 ] children [ RubberDuck { translation 0 0 0.04 rotation 0 0 1 0 name "toy_3" scale 2 density 0 } ] }
 
-DEF TEST_OBSTACLE Solid { translation 25.19749450492537 -142.47014260566746 .15 name "test_obstacle" children [ Shape { appearance PBRAppearance { baseColor .83 .52 .12 roughness 0.85 metalness 0 } geometry Box { size .24 .24 .3 } } ] boundingObject Box { size .24 .24 .3 } }
+DEF BENCH_3 Bench { translation 43.815 -153.094 0 rotation 0 0 1 3.06835 name "bench_3" }
+
+DEF ITEM_4 Solid { translation 43.663 -152.399 0.54 rotation 0 0 1 0.0953 name "lost_toy_4" model "toy|CS-004" recognitionColors [ 1 0.8 0 ] children [ RubberDuck { translation 0 0 0.04 rotation 0 0 1 0 name "toy_4" scale 2 density 0 } ] }
+
+DEF BENCH_4 Bench { translation 23.795 -159.500 0 rotation 0 0 1 -2.35925 name "bench_4" }
+
+DEF BENCH_5 Bench { translation 39.618 -131.993 0 rotation 0 0 1 2.35117 name "bench_5" }
+
+DEF ITEM_5 Solid { translation 38.877 -132.448 0.54 rotation 0 0 1 -0.8160 name "lost_bottle_5" model "bottle|CS-005" recognitionColors [ 0.75 0.85 0.95 ] children [ WaterBottle { translation 0 0 0.0 rotation 0 0 1 0 name "bottle_5" mass 0 } ] }
+
+DEF BENCH_6 Bench { translation 32.775 -166.975 0 rotation 0 0 1 -2.35925 name "bench_6" }
+
+DEF ITEM_6 Solid { translation 33.071 -167.599 0.54 rotation 0 0 1 -0.3064 name "lost_toy_6" model "toy|CS-006" recognitionColors [ 1 0.8 0 ] children [ RubberDuck { translation 0 0 0.04 rotation 0 0 1 0 name "toy_6" scale 2 density 0 } ] }
+
+DEF ITEM_7 Solid { translation 32.160 -166.569 0.54 rotation 0 0 1 1.5825 name "lost_book_7" model "book|CS-007" recognitionColors [ 0.45 0.2 0.2 ] children [ Book { translation 0 0 0.012 rotation 0 1 0 1.5708 name "book_7" color 0.25 0.55 0.3 } ] }
 
 DEF MISSION_MONITOR Robot { name "Mission monitor" supervisor TRUE controller "mission_supervisor" children [ Receiver { name "telemetry" channel 37 } ] }

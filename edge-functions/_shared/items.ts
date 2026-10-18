@@ -21,7 +21,7 @@ export const COLORS = [
 ];
 
 export const CATEGORY_GUIDE =
-  `Category guide: phones, laptops, chargers, headphones, calculators -> Electronics. Bottles,
+  `Category guide: phones, laptops, chargers, headphones, calculators, computer mice -> Electronics. Bottles,
 tumblers, mugs -> Water Bottles. Backpacks, totes, purses, lunch boxes -> Bags. Keys and key
 rings -> Keys. Jackets, hats, scarves, gloves -> Clothing. Wallets, ID cards, glasses, jewelry,
 watches, umbrellas -> Accessories. Anything else -> Other.`;

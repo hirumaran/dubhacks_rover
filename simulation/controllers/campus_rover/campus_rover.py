@@ -46,7 +46,12 @@ class CampusRover(Robot):
   self.hook=None
   if inbox:
    from perception_hook import PerceptionHook
-   self.hook=PerceptionHook(self.cameras,self.gps,self.compass,inbox)
+   # Narrow high-resolution side cameras feed item recognition (same left=1/right=3 numbering).
+   cams={}
+   for idx,name in [(1,'perception_left'),(3,'perception_right')]:
+    d=self.getDevice(name)
+    if d:d.enable(256);cams[idx]=d
+   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox)
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
   self.seen={r['sample_id']for r in self.records};self.new_captures=0;self.avoid_events=0
@@ -62,9 +67,9 @@ class CampusRover(Robot):
     model=obj.getModel()
     if '|'not in model:continue
     kind,sid=model.split('|',1)
-    if kind not in ('backpack','book','bottle')or sid in self.seen:continue
+    if kind not in ('bottle','book','ball','toy')or sid in self.seen:continue  # items left on benches (tools/bench_props.py)
     p=obj.getPosition();dist=math.sqrt(sum(q*q for q in p));bw,bh=obj.getSizeOnImage()
-    if dist<1.65 and bw>=10 and bh>=4 and bw*bh>=100:out.append((dist,i,obj,kind,sid))
+    if dist<4.2 and bw>=10 and bh>=4 and bw*bh>=100:out.append((dist,i,obj,kind,sid))  # benches sit 2-3 m off the route
   return sorted(out,key=lambda v:v[0])
  def inspect(self,now):
   if self.pending is None:return

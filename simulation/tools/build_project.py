@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build an OSM-derived Webots campus, graph route and physical rover. Re-run with the map-build venv."""
 from pathlib import Path
-import json, math, heapq, re, xml.etree.ElementTree as ET
+import json, math, heapq, os, random, re, xml.etree.ElementTree as ET
 from pyproj import Proj
 import native_osm
 ROOT=Path(__file__).resolve().parents[1]
@@ -51,7 +51,11 @@ mission={'map':'OpenStreetMap / UW Seattle Quad','map_date':'2026-10-17','projec
 def app(c):return f'PBRAppearance {{ baseColor {c} roughness 0.85 metalness 0 }}'
 def shape(size,c):return f'Shape {{ appearance {app(c)} geometry Box {{ size {size} }} }}'
 def pose(x,y,z,s):return f'Pose {{ translation {x} {y} {z} children [ {s} ] }}'
-def camera_rot(yaw):return f'0 0 1 {yaw:.8f}'
+MAST_Z,CAMERA_PITCH=.90,.20  # cameras on a 0.9 m mast, tilted ~11 deg down to see onto bench seats
+def camera_rot(yaw,pitch=CAMERA_PITCH):
+ # axis-angle of Rz(yaw)*Ry(pitch); a Webots camera looks along +x, positive pitch tilts it down
+ cz,sz,cy,sy=math.cos(yaw/2),math.sin(yaw/2),math.cos(pitch/2),math.sin(pitch/2);w,x,y,z=cz*cy,-sz*sy,cz*sy,sz*cy
+ ang=2*math.acos(max(-1,min(1,w)));s=math.sqrt(max(1e-12,1-w*w));return f'{x/s:.6f} {y/s:.6f} {z/s:.6f} {ang:.6f}'
 # All geometry uses x forward, y left, z up in ENU.
 parts=[pose(0,0,.087,shape('.178 .136 .078','.26 .17 .40')),pose(0,0,.130,shape('.180 .138 .006','.88 .89 .85')),pose(0,0,.134,shape('.15 .108 .002','.31 .23 .44')),pose(0,0,.043,shape('.174 .124 .004','.45 .5 .5'))]
 for y in [-.069,.069]:
@@ -68,8 +72,14 @@ for side,sign in [('left',1),('right',-1)]:
  boundingObject USE TIRE_{wheel} physics Physics {{ density -1 mass .045 }} }} }}''')
 parts.extend(['GPS { name "gps" accuracy .003 }','Compass { name "compass" }','InertialUnit { name "imu" }',
 '''Lidar { translation .04 0 .170 name "lidar" fieldOfView 6.283185307 horizontalResolution 180 numberOfLayers 1 verticalFieldOfView .01 near .04 minRange .04 maxRange 5 noise .005 type "fixed" }'''])
+# Camera mast: a raised view over bench seats and low obstacles.
+parts.append(f'Pose {{ translation -.015 0 {(.13+MAST_Z)/2:.3f} children [ Shape {{ appearance {app(".15 .15 .16")} geometry Cylinder {{ radius .01 height {MAST_Z-.13:.3f} }} }} ] }}')
+parts.append(f'Pose {{ translation -.015 0 {MAST_Z:.3f} children [ Shape {{ appearance {app(".1 .1 .11")} geometry Cylinder {{ radius .035 height .05 }} }} ] }}')
+# Perception cameras: narrow 50 deg lenses looking left/right at bench-seat height for item recognition.
+for name,yaw in [('perception_left',math.pi/2),('perception_right',3*math.pi/2)]:
+ parts.append(f'Camera {{ translation -.015 0 {MAST_Z} rotation {camera_rot(yaw,.17)} name "{name}" width 1920 height 1440 fieldOfView 0.87 near .02 far 60 antiAliasing TRUE }}')
 for i in range(4):
- parts.append(f'''Camera {{ translation -.015 0 .21 rotation {camera_rot(i*math.pi/2)} name "camera_{i}" width 320 height 240 fieldOfView 1.64 near .02 far 60 recognition Recognition {{ maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE }} }}''')
+ parts.append(f'''Camera {{ translation -.015 0 {MAST_Z} rotation {camera_rot(i*math.pi/2)} name "camera_{i}" width 1280 height 960 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition {{ maxRange 4.5 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE }} }}''')
 parts.append('Emitter { name "telemetry" channel 37 }')
 robot='''#VRML_SIM R2025a utf8
 # Campus Scout physical six-wheel concept; dimensions in meters.
@@ -134,27 +144,12 @@ for typ,txt in blocks(raw):
  if converted:
   world.append(converted);counts[typ]=counts.get(typ,0)+1
 world.append(f'DEF ROVER CampusScout {{ translation {start[0]} {start[1]} .003 rotation 0 0 1 {theta} }}')
-# Props lie beside the planned route. Their locations are only in world generation, not the robot controller.
-def along(d):
- for a,b in zip(pts,pts[1:]):
-  seg=math.dist(a,b)
-  if d<=seg:
-   f=d/seg;dx=(b[0]-a[0])/seg;dy=(b[1]-a[1])/seg
-   return (a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f),(-dy,dx),math.atan2(dy,dx)
-  d-=seg
- return pts[-1],(0,1),theta
-for i,(kind,d,col) in enumerate([('backpack',2.8,'.65 .22 .12'),('book',10,'.24 .16 .5'),('bottle',22,'.08 .53 .57'),('backpack',43,'.12 .21 .45'),('book',68,'.66 .25 .25')]):
- p,n,ang=along(d);side=1 if i%2==0 else -1;x=p[0]+n[0]*.65*side;y=p[1]+n[1]*.65*side
- if kind=='backpack':
-  children=[pose(0,0,.17,shape('.14 .26 .34',col)),pose(.082,0,.11,shape('.03 .20 .12','.76 .47 .25')),pose(0,0,.36,f'Shape {{ appearance {app(".12 .13 .12")} geometry Cylinder {{ radius .04 height .012 }} }}')];bo=pose(0,0,.17,'Box { size .14 .26 .34 }')
- elif kind=='book':
-  children=[pose(0,0,.018,shape('.24 .17 .036',col)),pose(0,0,.021,shape('.225 .16 .022','.93 .91 .8'))];bo=pose(0,0,.018,'Box { size .24 .17 .036 }')
- else:
-  children=[pose(0,0,.125,f'Shape {{ appearance {app(col)} geometry Cylinder {{ radius .04 height .25 }} }}'),pose(0,0,.26,f'Shape {{ appearance {app(".15 .17 .17")} geometry Cylinder {{ radius .027 height .025 }} }}')];bo=pose(0,0,.125,'Cylinder { radius .04 height .25 }')
- world.append(f'''DEF ITEM_{i+1} Solid {{ translation {x} {y} .005 rotation 0 0 1 {ang} name "sample_{kind}_{i+1}" model "{kind}|CS-{i+1:03}" recognitionColors [ {col} ] children [ {' '.join(children)} ] boundingObject {bo} }}''')
-# A real static obstacle in the route exercises lidar avoidance (not a lost item).
-p,n,ang=along(15)
-world.append(f'''DEF TEST_OBSTACLE Solid {{ translation {p[0]} {p[1]} .15 name "test_obstacle" children [ {shape('.24 .24 .3','.83 .52 .12')} ] boundingObject Box {{ size .24 .24 .3 }} }}''')
+# Lost items: real Webots object models left on benches beside the route (bench_props.py).
+import bench_props
+props_seed=int(os.environ.get('PROPS_SEED','2026'))
+prop_nodes,benches,lost=bench_props.render(pts,bench_props.campus_blocked('\n\n'.join(world)),random.Random(props_seed))
+world.extend(prop_nodes);world[2:2]=[f'EXTERNPROTO "{u}"' for u in bench_props.EXTERNPROTOS]
+(ROOT/'maps/lost_items.json').write_text(json.dumps({'seed':props_seed,'benches':[{'id':i,'x':round(x,2),'y':round(y,2),'yaw':round(t,3)}for i,(x,y,t) in enumerate(benches,1)],'items':lost},indent=2)+'\n')
 world.append('DEF MISSION_MONITOR Robot { name "Mission monitor" supervisor TRUE controller "mission_supervisor" children [ Receiver { name "telemetry" channel 37 } ] }')
 (ROOT/'worlds/uw_autonomous.wbt').write_text('\n\n'.join(world)+'\n')
 meta={'attribution':'© OpenStreetMap contributors','license':'ODbL 1.0','license_url':'https://www.openstreetmap.org/copyright','download_url':'https://api.openstreetmap.org/api/0.6/map?bbox=-122.3100,47.6569,-122.3048,47.6604','download_date':'2026-10-17','bounds':b,'importer':'Webots R2025a official OSM importer','active_world_counts':counts,'patrol_length_m':length,'limits':['Flat terrain; no surveyed elevations','OSM footprints and pedestrian topology; estimated building heights','Rover suspension rigid; skid steering','Recognition is simulator ground truth, not machine learning']}

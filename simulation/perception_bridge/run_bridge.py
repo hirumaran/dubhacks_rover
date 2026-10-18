@@ -19,6 +19,7 @@ import json
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,7 +31,7 @@ from pose import Pose
 from uploader import Uploader
 
 TICK_RE = re.compile(r"^frame_(\d+)\.json$")
-CAM_RE = re.compile(r"^frame_(\d+)_c(\d+)\.png$")
+CAM_RE = re.compile(r"^frame_(\d+)_c(\d+)\.(?:jpg|png)$")
 EVENTS_LOG = config.REPORTS_DIR / "events.jsonl"
 
 
@@ -62,6 +63,9 @@ class Bridge:
             sys.exit("ROVER_ID is not set: register this rover in the `rovers` table and put its id in .env")
         config.INBOX_DIR.mkdir(parents=True, exist_ok=True)
         self.gate = ChangeGate()
+        cols, _, rows = config.DETECT_TILES.partition("x")
+        self.tiles = {} if config.DETECT_TILES == "1x1" else {
+            "detect_tiles": {"cols": int(cols), "rows": int(rows or 1), "band": config.DETECT_BAND}}
         self.uploader = Uploader()
         mode = "DRY RUN" if config.DRY_RUN else "live"
         print(f"[bridge] {mode} | demo={config.IS_DEMO} | inbox {config.INBOX_DIR} -> {config.IDENTIFY_URL}", flush=True)
@@ -86,6 +90,8 @@ class Bridge:
             "is_demo": config.IS_DEMO,
             "discovered_at": captured_at,
             "dry_run": config.DRY_RUN,
+            "min_box_px": config.MIN_BOX_PX,
+            **self.tiles,
         }
 
     def process_tick(self, seq: int, meta_path: Path) -> int:
@@ -94,31 +100,51 @@ class Bridge:
         captured_at = datetime.fromtimestamp(meta_path.stat().st_mtime, timezone.utc).isoformat()
         pngs = sorted(
             (int(m.group(2)), p)
-            for p in config.INBOX_DIR.glob(f"frame_{seq:07d}_c*.png")
+            for p in config.INBOX_DIR.glob(f"frame_{seq:07d}_c*")
             if (m := CAM_RE.match(p.name))
         )
-        sent = 0
+        to_send = []
         for cam, png in pngs:
+            if cam not in config.SEND_CAMERAS:
+                continue
             with Image.open(png) as img:
                 img.load()
             send, reason = self.gate.check(cam, pose, img)
             if send:
-                result = self.uploader.send(self.payload(png, pose, captured_at), key=f"{seq:07d}_c{cam}")
+                to_send.append((cam, png, reason))
                 self.gate.mark_sent(cam, pose, img)
-                sent += 1
-                print(f"[bridge] seq {seq} cam {cam} ({reason}) -> {summarize(result)}", flush=True)
-                log({"seq": seq, "camera": cam, "reason": reason, "result": result})
             else:
                 log({"seq": seq, "camera": cam, "skipped": reason})
+        # Cameras face different directions, so they never see the same item: send them together.
+        with ThreadPoolExecutor(max_workers=max(1, len(to_send))) as pool:
+            results = pool.map(
+                lambda c: self.uploader.send(self.payload(c[1], pose, captured_at), key=f"{seq:07d}_c{c[0]}"), to_send)
+            for (cam, _, reason), result in zip(to_send, results):
+                print(f"[bridge] seq {seq} cam {cam} ({reason}) -> {summarize(result)}", flush=True)
+                log({"seq": seq, "camera": cam, "reason": reason, "pose": [round(pose.x, 2), round(pose.y, 2), round(pose.heading_rad, 4)], "result": result})
+        sent = len(to_send)
         for _, png in pngs:
             png.unlink(missing_ok=True)
         meta_path.unlink(missing_ok=True)
         self.gate.save()
         return sent
 
+    def drop_tick(self, seq: int, meta_path: Path) -> None:
+        for p in config.INBOX_DIR.glob(f"frame_{seq:07d}_c*"):
+            p.unlink(missing_ok=True)
+        meta_path.unlink(missing_ok=True)
+
     def run(self, once: bool = False) -> None:
         while True:
-            for seq, meta_path in self.pending_ticks():
+            ticks = self.pending_ticks()
+            # When behind, only the newest view matters: older ticks show where the rover was.
+            if config.SKIP_STALE and len(ticks) > 1:
+                for seq, meta_path in ticks[:-1]:
+                    self.drop_tick(seq, meta_path)
+                    log({"seq": seq, "skipped": "stale tick"})
+                print(f"[bridge] behind: skipped {len(ticks) - 1} stale tick(s), processing seq {ticks[-1][0]}", flush=True)
+                ticks = ticks[-1:]
+            for seq, meta_path in ticks:
                 try:
                     self.process_tick(seq, meta_path)
                 except (OSError, ValueError, KeyError) as e:  # a half-written or malformed tick

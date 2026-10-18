@@ -45,6 +45,15 @@ class CampusRover(Robot):
   for i in range(4):
    c=self.getDevice(f'camera_{i}');c.enable(self.dt);c.recognitionEnable(self.dt);self.cameras.append(c)
   self.emitter=self.getDevice('telemetry')
+  # Optional vision feed for the perception bridge (simulation/perception_bridge): camera pixels + pose only.
+  inbox=os.environ.get('PERCEPTION_INBOX');self.hook=None
+  if inbox:
+   from perception_hook import PerceptionHook
+   cams={}
+   for idx,name in [(1,'perception_left'),(3,'perception_right')]:
+    d=self.getDevice(name)
+    if d:d.enable(256);cams[idx]=d
+   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox)
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
   self.seen={r['sample_id']for r in self.records};self.new_captures=0;self.avoid_events=0
@@ -83,7 +92,7 @@ class CampusRover(Robot):
     model=obj.getModel()
     if '|' not in model:continue
     kind,item_id=model.split('|',1)
-    if kind not in ('backpack','book','bottle'):continue
+    if kind not in ('bottle','book','ball','toy'):continue  # items left on benches (bench_props.py)
     bw,bh=obj.getSizeOnImage()
     if bw<6 or bh<3 or bw*bh<36:continue
     # Adjacent cameras overlap slightly. One best view identifies each exact instance.
@@ -114,6 +123,7 @@ class CampusRover(Robot):
   return sector(0,.40),sector(.65,.50),sector(-.65,.50)
  def tick(self):
   now=self.getTime()
+  if self.hook:self.hook.maybe(now)
   if now>=self.flash_until:self.flash.set(0)
   p=self.gps.getValues();north=self.compass.getValues()
   if any(not math.isfinite(q)for q in p+north):self.drive(0,0);return

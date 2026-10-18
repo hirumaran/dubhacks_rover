@@ -19,6 +19,8 @@ for name,base,kind in [('limestone',(137,137,130),'stone'),('oak',(132,76,40),'w
   for y in [0,170,340,511]:d.line((0,y,512,y),fill=(92,95,92),width=2)
  im.save(TEX/(name+'.jpg'),quality=90)
 parts=[];idx=0
+# Footprints of anything a bench could bump into at floor level, and the walkable floor plate.
+floor_blocks=[];floor_plate=[]
 colors={'white':'.79 .78 .72','dark':'.07 .085 .09','steel':'.22 .24 .25','wood':'.43 .21 .10','glass':'.42 .60 .65','purple':'.24 .12 .29','warm':'.95 .72 .38'}
 def app(c,texture=None,transparent=0,emissive=None,rough=.7):
  c=colors.get(c,c);s=f'PBRAppearance {{ baseColor {c} roughness {rough} metalness 0.05'
@@ -30,6 +32,9 @@ def app(c,texture=None,transparent=0,emissive=None,rough=.7):
 def add_box(name,pos,size,c='white',texture=None,collision=False,trans=0,rot=None,emit=None,rough=.7):
  global idx
  idx+=1;geo=f'Box {{ size {size[0]} {size[1]} {size[2]} }}';a=app(c,texture,trans,emit,rough);rotation=f'rotation {rot}'if rot else''
+ half=(max(size[0],size[1])/2,)*2 if rot else (size[0]/2,size[1]/2)
+ if 'floor' in name:floor_plate.append((pos[0]-half[0],pos[1]-half[1],pos[0]+half[0],pos[1]+half[1]))
+ elif pos[2]-size[2]/2<1.0 and pos[2]+size[2]/2>.02:floor_blocks.append((pos[0]-half[0],pos[1]-half[1],pos[0]+half[0],pos[1]+half[1]))
  if collision:
   parts.append(f'Solid {{ translation {pos[0]} {pos[1]} {pos[2]} {rotation} name "{name}_{idx}" children [ Shape {{ appearance {a} geometry DEF G_{idx} {geo} }} ] boundingObject USE G_{idx} }}')
  else:parts.append(f'Pose {{ translation {pos[0]} {pos[1]} {pos[2]} {rotation} children [ Shape {{ appearance {a} geometry {geo} }} ] }}')
@@ -40,6 +45,7 @@ def sphere(pos,r,c,scale=None):
 def cylinder(pos,r,h,c,collision=False):
  global idx
  idx+=1;g=f'Cylinder {{ radius {r} height {h} subdivision 16 }}';shape=f'Shape {{ appearance {app(c)} geometry DEF G_{idx} {g} }}'
+ if pos[2]-h/2<1.0 and r>.1:floor_blocks.append((pos[0]-r,pos[1]-r,pos[0]+r,pos[1]+r))
  if collision:parts.append(f'Solid {{ translation {pos[0]} {pos[1]} {pos[2]} name "column_{idx}" children [ {shape} ] boundingObject USE G_{idx} }}')
  else:parts.append(f'Pose {{ translation {pos[0]} {pos[1]} {pos[2]} children [ {shape} ] }}')
 def rod(a,b,r,c):
@@ -148,27 +154,25 @@ for a,b in zip(checkpoints,checkpoints[1:]):
 mission={'map':'Reference-inspired Gates atrium and corridor','length_m':round(sum(math.dist(a,b)for a,b in zip(checkpoints,checkpoints[1:])),3),'waypoints':dense,'wheel_radius_m':.0271,'track_width_m':.1772,'cruise_speed_m_s':.40,'loop':True,'planner':'Ground-floor corridor patrol; reference-inspired approximate layout','detector':'Webots camera Recognition ground truth','localization':'Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim','total_items':6}
 (ROOT/'maps/mission.json').write_text(json.dumps(mission,indent=2))
 # Reuse the validated six-wheel geometry, retaining the actual 8-inch footprint.
-proto=(ROOT/'tools/CampusScout.base.proto').read_text().replace('PROTO CampusScout','PROTO IndoorScout').replace('controller "campus_rover"','controller "indoor_rover"').replace('width 320 height 240','width 640 height 480')
+proto=(ROOT/'tools/CampusScout.base.proto').read_text().replace('PROTO CampusScout','PROTO IndoorScout').replace('controller "campus_rover"','controller "indoor_rover"').replace('width 1280 height 960','width 640 height 480').replace('Recognition { maxRange 4.5 ','Recognition { maxRange 3 ').replace('fieldOfView 0.87','fieldOfView 1.64')  # benches are 1.2 m away indoors: wide perception lens
 proto=proto.replace('Emitter { name "telemetry" channel 37 }','''LED { translation -.01 0 .22 name "photo_flash" color [ 1 1 1 ] children [ PointLight { location 0 0 .03 intensity 1 radius 2 attenuation 0 0 1 } Shape { appearance PBRAppearance { baseColor 1 1 1 emissiveColor 0 0 0 } geometry Sphere { radius .008 subdivision 1 } } ] }
 Emitter { name "telemetry" channel 39 }''')
 (ROOT/'protos/IndoorScout.proto').write_text(proto)
-# Model lost objects with recognizable backpack seams, straps, pages and bottle cap.
-def item(kind,sid,x,y,color,heading=0):
- children=[]
- def ob(pos,size,c):return f'Pose {{ translation {pos[0]} {pos[1]} {pos[2]} children [ Shape {{ appearance {app(c)} geometry Box {{ size {size[0]} {size[1]} {size[2]} }} }} ] }}'
- if kind=='backpack':
-  children=[ob((0,0,.18),(.16,.28,.36),color),ob((.088,0,.105),(.035,.23,.14),'.56 .36 .21'),ob((.111,0,.18),(.012,.21,.01),'.13 .13 .12')]
-  for yy in [-.075,.075]:children.append(ob((-.092,yy,.18),(.022,.035,.30),'.09 .10 .10'))
-  children.append(ob((0,0,.38),(.05,.09,.025),'.13 .13 .12'));bo='Pose { translation 0 0 .18 children [ Box { size .16 .28 .36 } ] }'
- elif kind=='book':
-  children=[ob((0,0,.018),(.26,.19,.036),color),ob((.006,0,.022),(.245,.18,.022),'.88 .85 .76'),ob((-.125,0,.021),(.015,.19,.038),color)];bo='Pose { translation 0 0 .02 children [ Box { size .26 .19 .04 } ] }'
- else:
-  children=[f'Pose {{ translation 0 0 .125 children [ Shape {{ appearance {app(color)} geometry Cylinder {{ radius .04 height .25 }} }} ] }}',f'Pose {{ translation 0 0 .26 children [ Shape {{ appearance {app("dark")} geometry Cylinder {{ radius .028 height .025 }} }} ] }}'];bo='Pose { translation 0 0 .13 children [ Cylinder { radius .04 height .26 } ] }'
- parts.append(f'DEF ITEM_{sid} Solid {{ translation {x} {y} .003 rotation 0 0 1 {heading} name "{kind}_{sid}" model "{kind}|GATES-{sid:03}" recognitionColors [ {color} ] children [ {" ".join(children)} ] boundingObject {bo} }}')
-for data in [('backpack',1,2,-11.35,'.48 .21 .12',0),('book',2,4.65,-8.2,'.31 .17 .48',0),('backpack',3,11,-9.3,'.12 .25 .34',0),('bottle',4,4.65,2,'.12 .52 .52',0),('backpack',5,-3.35,8,'.26 .27 .14',0),('book',6,-3.35,-4,'.6 .16 .12',0)]:item(*data)
+# Lost items: real Webots object models left on benches beside the patrol route (bench_props.py).
+import os,sys
+sys.path.insert(0,str(next(p for p in [ROOT/'tools',ROOT.parent/'tools'] if (p/'bench_props.py').exists())))
+import bench_props
+from shapely.geometry import box as _rect
+from shapely.ops import unary_union
+props_seed=int(os.environ.get('PROPS_SEED','2026'))
+prop_nodes,benches,lost=bench_props.render(dense,unary_union([_rect(*f) for f in floor_blocks]),random.Random(props_seed),bench_count=4,
+ allowed=unary_union([_rect(*f) for f in floor_plate]).buffer(-.3),id_prefix='GATES',offsets=(1.2,1.5,1.8,2.1,2.5),margin=.25,min_gap_m=6)
+parts.extend(prop_nodes)
+(ROOT/'maps/items.json').write_text(json.dumps({it['id']:{'description':it['description']}for it in lost},indent=2)+'\n')
+(ROOT/'maps/lost_items.json').write_text(json.dumps({'seed':props_seed,'benches':[{'id':i,'x':round(x,2),'y':round(y,2),'yaw':round(t,3)}for i,(x,y,t) in enumerate(benches,1)],'items':lost},indent=2)+'\n')
 world='''#VRML_SIM R2025a utf8
 EXTERNPROTO "../protos/IndoorScout.proto"
-WorldInfo { title "Gates Atrium | Campus Scout Showcase" basicTimeStep 16 FPS 30 coordinateSystem "ENU" randomSeed 42 info [ "Reference-inspired presentation model; approximate dimensions and layout" "No user reference photographs are embedded" ] contactProperties [ ContactProperties { material1 "tire" coulombFriction .7 forceDependentSlip .005 bounce 0 softERP .3 softCFM .0001 bumpSound "" rollSound "" slideSound "" } ] }
+'''+''.join(f'EXTERNPROTO "{u}"\n' for u in bench_props.EXTERNPROTOS)+'''WorldInfo { title "Gates Atrium | Campus Scout Showcase" basicTimeStep 16 FPS 30 coordinateSystem "ENU" randomSeed 42 info [ "Reference-inspired presentation model; approximate dimensions and layout" "No user reference photographs are embedded" ] contactProperties [ ContactProperties { material1 "tire" coulombFriction .7 forceDependentSlip .005 bounce 0 softERP .3 softCFM .0001 bumpSound "" rollSound "" slideSound "" } ] }
 DEF SHOWCASE_VIEW Viewpoint { position -1 -13.5 .95 orientation 0 0 1 0 near .06 far 120 fieldOfView 1.18 }
 Background { skyColor [ .58 .72 .79 ] }
 '''+ '\n'.join(lights)+ '\n'+ '\n'.join(parts)+'''

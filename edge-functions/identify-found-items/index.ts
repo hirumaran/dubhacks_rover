@@ -23,6 +23,11 @@
 //   rover_id?      uuid
 //   discovered_at? ISO 8601 timestamp, default now
 //   dry_run?       boolean  identify only; no uploads or inserts
+//   min_box_px?    number   drop detections whose longer side is shorter: with a known camera,
+//                  small means far away (another bench across the quad), where false finds cluster
+//   detect_tiles?  { cols, rows, band?: [top, bottom] }   run detection on overlapping tiles of the
+//                  band (fractions of the image height, default [0, 1]) instead of the whole image;
+//                  finds small, distant items in wide-angle frames at the cost of one call per tile
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { HttpError, json, safeEqual, serve } from "../_shared/http.ts";
@@ -33,14 +38,18 @@ import {
   fromStorage,
   fromUrl,
   type LoadedImage,
+  tiles,
 } from "../_shared/images.ts";
 import { CATEGORIES, CATEGORY_GUIDE, COLORS } from "../_shared/items.ts";
 import { compareSightings, type Sighting } from "../_shared/rating.ts";
-import { askJson, type Box, detect, type Detection, image, text, toDataUrl } from "../_shared/perceptron.ts";
+import { askJson, type Box, detect, type Detection, image, locate, text, toDataUrl } from "../_shared/perceptron.ts";
 
 const MAX_ITEMS = 12;
 // Detections smaller than this (pixels per side) are too small to describe or compare reliably.
-const MIN_SIDE_PX = 24;
+const MIN_SIDE_PX = 12;
+// Crops sent for description (and listed as the photo) keep at least this much context, upscaled.
+const CROP_MIN_SIDE_PX = 160;
+const CROP_UPSCALE_PX = 448;
 
 // Duplicate check. Stored coordinates are rounded to ~100 m, so the radius has to cover that.
 const DUP_RADIUS_M = 150;
@@ -48,38 +57,19 @@ const DUP_WINDOW_H = 24;
 const DUP_MAX_CANDIDATES = 5;
 const DUP_MIN_SIMILARITY = 70;
 
-// What Detect looks for. Kept to concrete nouns: Detect's mention is one of these.
-const DETECT_CATEGORIES = [
-  "phone",
-  "laptop",
-  "tablet",
-  "headphones",
-  "earbuds case",
-  "charger",
-  "calculator",
-  "wallet",
-  "keys",
-  "id card",
-  "water bottle",
-  "travel mug",
-  "backpack",
-  "bag",
-  "tote bag",
-  "lunch box",
-  "jacket",
-  "sweatshirt",
-  "hat",
-  "scarf",
-  "gloves",
-  "glasses",
-  "sunglasses",
-  "watch",
-  "umbrella",
-  "book",
-  "notebook",
-];
+// Open-ended: no fixed list of item names, so anything a person might leave behind can be found.
+// The describe step then drops whatever isn't a personal belonging.
+const LOCATE_PROMPT = `Find every small, portable personal belonging that someone could have left behind or lost
+here (anything a person carries, wears or plays with). Ignore furniture, benches, plants, trees, buildings, vehicles,
+signs and other fixtures. Return one box per object, with a short mention naming it. If there are none, say so
+without boxes.`;
+// Fallback detections (open-ended Detect) larger than this share of the image are scenery, not items.
+const MAX_ITEM_AREA = 0.15;
 
 type Description = {
+  what_it_is: string;
+  part_of_scene: boolean;
+  clearly_visible: boolean;
   is_lost_item: boolean;
   title: string;
   description: string;
@@ -87,12 +77,24 @@ type Description = {
   color: string;
 };
 
+// Field order is generation order: the model names the object and checks it against the scene
+// before deciding whether it is a lost item.
 const DESCRIPTION_SCHEMA = {
   type: "object",
   properties: {
+    what_it_is: { type: "string", description: "Plainly, what the object at the centre of the photo is." },
+    part_of_scene: {
+      type: "boolean",
+      description: "True if it is part of furniture (bench slats, armrests, legs, seat), a building, wall, " +
+        "plant, tree, ground, path, sign, bin or other fixed or structural thing.",
+    },
+    clearly_visible: {
+      type: "boolean",
+      description: "False if it is too small, blurry, cut off or far away to tell confidently what it is.",
+    },
     is_lost_item: {
       type: "boolean",
-      description: "False if this is furniture, a fixture, trash, or not clearly a personal belonging.",
+      description: "True only for a portable personal belonging someone could have left behind.",
     },
     title: {
       type: "string",
@@ -105,12 +107,26 @@ const DESCRIPTION_SCHEMA = {
     category: { type: "string", enum: CATEGORIES },
     color: { type: "string", enum: COLORS, description: "The single dominant color." },
   },
-  required: ["is_lost_item", "title", "description", "category", "color"],
+  required: [
+    "what_it_is",
+    "part_of_scene",
+    "clearly_visible",
+    "is_lost_item",
+    "title",
+    "description",
+    "category",
+    "color",
+  ],
   additionalProperties: false,
 };
 
-const DESCRIBE_PROMPT = `This photo was taken by a campus lost-and-found service. Describe the
-detected item (a "{label}") for a public listing that its owner will search.
+const DESCRIBE_PROMPT = `This photo was taken by a campus lost-and-found service. A detector flagged the
+object at the centre of the photo as a possible lost item; it is often wrong, so decide for yourself
+what the object is before anything else. Look only at that object, not the rest of the scene.
+
+If it is part of a bench, other furniture, a building, a plant or any fixed part of the scene, or if
+you can't clearly tell what it is, say so: it will not be listed. Otherwise describe it for a public
+listing that its owner will search.
 
 Use only what you can clearly see; leave out anything you are unsure of. Do NOT transcribe
 names, student or ID numbers, phone numbers, email addresses, or any other text that identifies
@@ -127,26 +143,76 @@ function iou(a: Box, b: Box): number {
   return inter / (area(a) + area(b) - inter || 1);
 }
 
-/** Drops near-duplicate boxes (same object returned under two labels). */
-function dedupe(dets: Detection[]): Detection[] {
+/** Share of the smaller box covered by the larger: catches an item cut in half by a tile edge. */
+function containment(a: Box, b: Box): number {
+  const ix = Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1));
+  const iy = Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
+  const area = (r: Box) => (r.x2 - r.x1) * (r.y2 - r.y1);
+  return (ix * iy) / (Math.min(area(a), area(b)) || 1);
+}
+
+/** Drops tiny boxes and near-duplicates (same object under two labels, or seen by two tiles). */
+function dedupe(dets: Detection[], minLongSide = 0): Detection[] {
   const kept: Detection[] = [];
-  for (const d of dets) {
-    if (d.box.x2 - d.box.x1 < MIN_SIDE_PX || d.box.y2 - d.box.y1 < MIN_SIDE_PX) continue;
-    if (!kept.some((k) => iou(k.box, d.box) > 0.6)) kept.push(d);
+  const bySize = [...dets].sort((a, b) =>
+    (b.box.x2 - b.box.x1) * (b.box.y2 - b.box.y1) - (a.box.x2 - a.box.x1) * (a.box.y2 - a.box.y1)
+  );
+  for (const d of bySize) {
+    const w = d.box.x2 - d.box.x1, h = d.box.y2 - d.box.y1;
+    if (w < MIN_SIDE_PX || h < MIN_SIDE_PX || Math.max(w, h) < minLongSide) continue;
+    if (!kept.some((k) => iou(k.box, d.box) > 0.6 || containment(k.box, d.box) > 0.7)) kept.push(d);
   }
   return kept.slice(0, MAX_ITEMS);
 }
 
+type TileSpec = { cols: number; rows: number; band: [number, number] };
+
+function tileSpec(v: unknown): TileSpec | null {
+  if (v === undefined || v === null) return null;
+  const t = v as Record<string, unknown>;
+  const cols = Number(t.cols), rows = Number(t.rows);
+  const band = (Array.isArray(t.band) ? t.band.map(Number) : [0, 1]) as [number, number];
+  const ok = Number.isInteger(cols) && Number.isInteger(rows) && cols >= 1 && cols <= 4 && rows >= 1 && rows <= 3 &&
+    band.length === 2 && band[0] >= 0 && band[1] <= 1 && band[1] - band[0] >= 0.1;
+  if (!ok) throw new HttpError(400, "detect_tiles needs integer cols 1-4, rows 1-3 and an optional band [top, bottom]");
+  return { cols, rows, band };
+}
+
+/** Finds item boxes (image pixels) on the whole image or on overlapping tiles of it. */
+async function detectItems(scene: LoadedImage, spec: TileSpec | null): Promise<Detection[]> {
+  const { cols, rows, band } = spec ?? { cols: 1, rows: 1, band: [0, 1] as [number, number] };
+  const parts = await tiles(scene, cols, rows, band);
+  if (!parts) {
+    // A format imagescript can't decode (WebP): open-ended Detect works on the original bytes.
+    const all = await detect(toDataUrl(scene.bytes, scene.mime));
+    const area = Math.max(...all.map((d) => d.box.x2), 1) * Math.max(...all.map((d) => d.box.y2), 1);
+    return all.filter((d) => (d.box.x2 - d.box.x1) * (d.box.y2 - d.box.y1) < MAX_ITEM_AREA * area);
+  }
+  const perTile = await Promise.all(parts.map((t) => locate(toDataUrl(t.bytes, "image/jpeg"), LOCATE_PROMPT)));
+  return perTile.flatMap((boxes, i) => {
+    const t = parts[i];
+    return boxes.map((b) => ({
+      mention: b.mention,
+      box: {
+        x1: t.x + b.x1 * t.w / 1000,
+        y1: t.y + b.y1 * t.h / 1000,
+        x2: t.x + b.x2 * t.w / 1000,
+        y2: t.y + b.y2 * t.h / 1000,
+      },
+    }));
+  });
+}
+
 async function describe(scene: LoadedImage, det: Detection, crop: Uint8Array | null): Promise<Description> {
-  const prompt = DESCRIBE_PROMPT.replace("{label}", det.mention);
+  const prompt = DESCRIBE_PROMPT;
   const content = crop ? [image(toDataUrl(crop, "image/jpeg")), text(prompt)] : [
     image(toDataUrl(scene.bytes, scene.mime)),
     text(
       `${prompt}\n\nThe item is inside the pixel box (${Math.round(det.box.x1)},${Math.round(det.box.y1)})` +
-        `-(${Math.round(det.box.x2)},${Math.round(det.box.y2)}). Describe only that item.`,
+        `-(${Math.round(det.box.x2)},${Math.round(det.box.y2)}). Judge only the object in that box.`,
     ),
   ];
-  const d = await askJson<Description>(content, "found_item", DESCRIPTION_SCHEMA, 512);
+  const d = await askJson<Description>(content, "found_item", DESCRIPTION_SCHEMA, 1024);
   return {
     ...d,
     title: d.title.trim().slice(0, 80),
@@ -241,6 +307,8 @@ serve(async (body, req) => {
   const discoveredAt = str(body.discovered_at) ?? new Date().toISOString();
   if (Number.isNaN(Date.parse(discoveredAt))) throw new HttpError(400, "discovered_at must be an ISO 8601 timestamp");
   const dryRun = body.dry_run === true;
+  const minBoxPx = num(body.min_box_px) ?? 0;
+  if (minBoxPx < 0 || minBoxPx > 2000) throw new HttpError(400, "min_box_px must be within 0..2000");
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
     auth: { persistSession: false },
@@ -253,8 +321,10 @@ serve(async (body, req) => {
     : fromBase64(str(body.image_base64)!);
 
   // ---- identify
-  const detections = dedupe(await detect(toDataUrl(scene.bytes, scene.mime), DETECT_CATEGORIES));
-  const crops = await Promise.all(detections.map((d) => cropToJpeg(scene, d.box)));
+  const detections = dedupe(await detectItems(scene, tileSpec(body.detect_tiles)), minBoxPx);
+  const crops = await Promise.all(
+    detections.map((d) => cropToJpeg(scene, d.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })),
+  );
   const results = await Promise.allSettled(detections.map((d, i) => describe(scene, d, crops[i])));
 
   let items: { detection: Detection; crop: Uint8Array | null; info: Description }[] = [];
@@ -263,8 +333,13 @@ serve(async (body, req) => {
     const detection = detections[i];
     if (r.status === "rejected") {
       skipped.push({ label: detection.mention, box: detection.box, reason: String(r.reason?.message ?? r.reason) });
-    } else if (!r.value.is_lost_item) {
-      skipped.push({ label: detection.mention, box: detection.box, reason: "not a personal belonging" });
+    } else if (r.value.part_of_scene || !r.value.clearly_visible || !r.value.is_lost_item) {
+      const why = r.value.part_of_scene
+        ? "part of the scene"
+        : !r.value.clearly_visible
+        ? "not clearly visible"
+        : "not a personal belonging";
+      skipped.push({ label: `${detection.mention} (${r.value.what_it_is})`, box: detection.box, reason: why });
     } else {
       items.push({ detection, crop: crops[i], info: r.value });
     }

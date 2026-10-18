@@ -9,18 +9,21 @@ Only what a real rover could sense goes in: camera pixels and the rover's own GP
 pose. Simulator ground truth (Webots Recognition objects) is not exported.
 
 ```
-controllers/campus_rover/perception_hook.py      every 5 s: frame_<seq>_c<i>.png + frame_<seq>.json (GPS, heading)
-        │  inbox/
-        ▼
+controllers/campus_rover/perception_hook.py      every 5 s: frame_<seq>_c1.jpg / _c3.jpg + frame_<seq>.json (GPS, heading)
+        │  inbox/                                from the rover's left/right perception cameras (1920×1440,
+        ▼                                        50° lens on a 0.9 m mast, tilted ~10° down at bench seats)
 run_bridge.py
-  change_gate.py   send a camera's image only if the rover moved ≥2 m, that camera turned ≥20°,
+  change_gate.py   send a camera's image only if the rover moved ≥1.5 m, that camera turned ≥20°,
                    or the picture changed (64-bit image hash); otherwise skip it
   pose.py          rover GPS (sim metres) → latitude/longitude, per-camera facing
-  uploader.py      POST to identify-found-items, one at a time; offline queue in state/outbox/
+  uploader.py      POST to identify-found-items, both cameras at once; offline queue in state/outbox/
+                   (when the bridge falls behind it skips to the newest tick, unless SKIP_STALE=false)
         │
         ▼
-edge-functions/identify-found-items   Perceptron Detect → describe each crop → skip items already
-                                      listed nearby (Perceptron same-object check) → found_items
+edge-functions/identify-found-items   open-ended Mk1.5 search on 2 tiles ("any small personal belonging",
+                                      no fixed item list) → drop boxes under 48 px (too far away) →
+                                      describe each crop, rejecting scenery/furniture/unclear objects →
+                                      skip items already listed nearby → found_items
 ```
 
 ## Files
@@ -65,10 +68,30 @@ Every request and result is appended to `reports/events.jsonl`.
 .venv/bin/python tools/selftest.py    # no network, no Webots: expects "[selftest] PASS"
 ```
 
+## Indoor showcase
+
+The Gates atrium rover (`indoor_showcase/`, and the standalone copy in `simulation-indoors/`) has the
+same mast cameras (94° lens, since its benches are only 1.2 m from the route) and the same hook:
+
+```bash
+export PERCEPTION_INBOX="$(pwd)/inbox"
+PERCEPTION_MISSION=../indoor_showcase/maps/mission.json LOCATION_LABEL="Gates Center atrium" \
+  MOVE_MIN_M=1.0 .venv/bin/python run_bridge.py
+```
+
+## Checking detections
+
+The simulators write the layout they generated to `maps/lost_items.json` (benches, items, positions).
+That file is ground truth for scoring a run, never an input to the pipeline. Results from one lap with
+seed 2026: campus 7/7 items found (6 named correctly, 1 false find); indoor 4/4 (2 false finds).
+
 ## Notes
 
-- **Cost.** Each image that passes the gate costs one Perceptron Detect call, one describe call
-  per item found, and one comparison per similar listing nearby. Raise `MOVE_MIN_M` to send less.
+- **Cost.** Each image that passes the gate costs one Perceptron call per detection tile, one
+  describe call per item found, and one comparison per similar listing nearby. Raise `MOVE_MIN_M`
+  to send less.
+- **Speed.** A sim running faster than real time outpaces the detector; with `SKIP_STALE=true` the
+  bridge then skips views and can miss benches. Run in real time, or set `SKIP_STALE=false`.
 - **Location.** Listings use the rover's position, not each item's. Items are within a few
   metres of the rover, and matching treats anything under 600 m as nearby.
 - **Duplicates.** The server compares each new item with available listings of the same
