@@ -1,109 +1,22 @@
-import React, { useState } from "react";
-import { Alert, Text } from "react-native";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import * as Location from "expo-location";
-import {
-  Page,
-  Categories,
-  Chips,
-  Button,
-  ItemCard,
-  State,
-  s,
-} from "../../src/components/ui";
-import CampusMap from "../../src/components/CampusMap";
-import { foundItems } from "../../src/lib/api";
-import { FoundItem } from "../../src/lib/types";
+import React from "react";
+import { Text, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { Page, Button, State, s } from "../../src/components/ui";
+import { reports } from "../../src/lib/api";
 export default function MapScreen() {
-  const [category, setCategory] = useState("All");
-  const [source, setSource] = useState("all");
-  const [date, setDate] = useState("Any time");
-  const [selected, setSelected] = useState<FoundItem>();
-  const [center, setCenter] = useState<{
-    latitude: number;
-    longitude: number;
-  }>();
-  const q = useInfiniteQuery({
-    queryKey: ["map", category, source, date],
-    queryFn: ({ pageParam }) =>
-      foundItems(
-        "",
-        category,
-        pageParam,
-        "newest",
-        source,
-        date === "Today" ? 1 : date === "This week" ? 7 : 0,
-      ),
-    initialPageParam: 0,
-    getNextPageParam: (last, pages) =>
-      last.length === 20 ? pages.length : undefined,
-  });
-  async function locate() {
-    try {
-      const p = await Location.requestForegroundPermissionsAsync();
-      if (!p.granted)
-        throw new Error(
-          "Location permission was declined. You can still explore campus.",
-        );
-      setCenter(
-        (
-          await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          })
-        ).coords,
-      );
-    } catch (e) {
-      Alert.alert("Location", String(e));
-    }
-  }
-  return (
-    <Page>
-      <Text style={s.label}>UW SEATTLE</Text>
-      <Text style={s.title}>A campus of{`\n`}possibilities.</Text>
-      <Categories
-        value={category}
-        onChange={(v) => {
-          setCategory(v);
-          setSelected(undefined);
-        }}
-      />
-      <Chips
-        values={["all", "rover", "community"]}
-        value={source}
-        onChange={(v) => {
-          setSource(v);
-          setSelected(undefined);
-        }}
-      />
-      <Chips
-        values={["Any time", "Today", "This week"]}
-        value={date}
-        onChange={(v) => {
-          setDate(v);
-          setSelected(undefined);
-        }}
-      />
-      <CampusMap
-        items={q.data?.pages.flat() || []}
-        onSelect={setSelected}
-        center={center}
-      />
-      <Text style={s.small}>
-        Pins show approximate discovery locations. Items may have moved.
-      </Text>
-      <Button title="Center on my location" secondary onPress={locate} />
-      <State loading={q.isLoading} error={q.error} retry={() => q.refetch()} />
-      {!q.isLoading && !q.error && !q.data?.pages.flat().length && (
-        <State empty="No discoveries for these filters." />
-      )}
-      {q.hasNextPage && (
-        <Button
-          title="Load more map items"
-          secondary
-          onPress={() => q.fetchNextPage()}
-        />
-      )}
-      {selected && <ItemCard item={selected} wide />}
-    </Page>
-  );
+  const q = useQuery({ queryKey: ["my-private-search-areas"], queryFn: reports });
+  return <Page>
+    <Text style={s.label}>PRIVATE TO YOUR ACCOUNT</Text>
+    <Text style={s.title}>Your search areas.</Text>
+    <Text style={s.body}>Location helps match your missing items and plan rover searches in the background. Public listings do not show object GPS pins. Only your own reported search areas appear here.</Text>
+    <State loading={q.isLoading} error={q.error} retry={() => q.refetch()} />
+    {q.data?.length === 0 && <State empty="Report a missing item to start your private search." />}
+    {q.data?.map(r => <View key={r.id} style={s.card}>
+      <Text style={s.heading}>{r.title}</Text>
+      <Text style={s.body}>{r.last_seen_location}</Text>
+      <Text style={s.small}>{r.status} - Your last-seen area</Text>
+    </View>)}
+    <Button title="View my search activity" onPress={() => router.push("/(tabs)/activity")} />
+  </Page>;
 }

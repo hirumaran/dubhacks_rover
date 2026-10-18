@@ -22,11 +22,11 @@ export default function CampusMap({
           coordinate={{ latitude: i.latitude, longitude: i.longitude }}
           title={i.title}
           description={i.approximate_location}
-          pinColor={i.source === "rover" ? "#5B8174" : "#D39A68"}
+          pinColor={i.source === "rover" ? "#4B2E83" : "#B7A57A"}
           onPress={() => onSelect?.(i)}
         />
       ))}
-      {pin && <Marker coordinate={pin} pinColor="#5B8174" />}
+      {pin && <Marker coordinate={pin} pinColor="#4B2E83" />}
     </MapView>
   );
 }

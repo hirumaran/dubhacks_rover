@@ -1,3 +1,4 @@
+import { FOUND_PUBLIC_COLUMNS } from "../src/lib/api";
 import PrivatePhoto from "../src/components/PrivatePhoto";
 import React from "react";
 import { Text, View } from "react-native";
@@ -24,7 +25,7 @@ export default function Collection() {
         await supabase
           .from(table)
           .select(
-            kind === "saved" || kind === "claims" ? "*,found_items(*)" : "*",
+            kind === "saved" || kind === "claims" ? `*,found_items(${FOUND_PUBLIC_COLUMNS})` : "*",
           )
           .order("created_at", { ascending: false }),
       ),

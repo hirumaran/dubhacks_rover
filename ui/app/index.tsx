@@ -71,7 +71,7 @@ export default function Welcome() {
         <View
           style={{
             height: 300,
-            backgroundColor: "#E8EEE5",
+            backgroundColor: "#EEE8F5",
             borderRadius: 45,
             alignItems: "center",
             justifyContent: "center",
@@ -85,7 +85,7 @@ export default function Welcome() {
               height: 240,
               borderRadius: 120,
               borderWidth: 1,
-              borderColor: "#CDDACA",
+              borderColor: "#D6C8E7",
             }}
           />
           <View
@@ -95,7 +95,7 @@ export default function Welcome() {
               height: 170,
               borderRadius: 85,
               borderWidth: 1,
-              borderColor: "#CDDACA",
+              borderColor: "#D6C8E7",
             }}
           />
           <View

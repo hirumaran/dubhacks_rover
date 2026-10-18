@@ -1,13 +1,32 @@
 import PrivatePhoto from "../../src/components/PrivatePhoto";
-import React from "react";
+import React, { useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page, Button, ItemCard, State, s } from "../../src/components/ui";
-import { reports, matches, requestSearch } from "../../src/lib/api";
+import {
+  reports,
+  matches,
+  requestSearch,
+  invokeCloud,
+} from "../../src/lib/api";
 import { supabase, check } from "../../src/lib/supabase";
 import { matchLabel } from "../../src/lib/matching";
 export default function Activity() {
+  const [comparison, setComparison] = useState<
+    Record<
+      string,
+      {
+        similarity: number;
+        verdict: string;
+        summary: string;
+        matching_features: string[];
+        differences: string[];
+      }
+    >
+  >({});
+  const [comparing, setComparing] = useState<string | null>(null);
+  const [comparisonError, setComparisonError] = useState("");
   const cache = useQueryClient();
   const r = useQuery({ queryKey: ["reports"], queryFn: reports });
   const m = useQuery({ queryKey: ["matches"], queryFn: matches });
@@ -44,6 +63,11 @@ export default function Activity() {
       <Text style={s.label}>GOOD THINGS FIND THEIR WAY BACK</Text>
       <Text style={s.title}>Your activity.</Text>
       <Text style={s.heading}>Possible matches</Text>
+      {!!comparisonError && (
+        <Text accessibilityRole="alert" style={s.body}>
+          {comparisonError}
+        </Text>
+      )}
       <State
         loading={m.isLoading}
         error={m.error}
@@ -60,6 +84,57 @@ export default function Activity() {
           <Text style={s.body}>For your {match.missing_reports?.title}</Text>
           <ItemCard item={match.found_items} wide />
           <Text style={s.body}>{match.match_reasons.join(" · ")}</Text>
+          <Button
+            title={
+              comparing === match.id
+                ? "Comparing appearance…"
+                : "Compare item appearance with AI"
+            }
+            secondary
+            disabled={!!comparing}
+            onPress={async () => {
+              setComparing(match.id);
+              setComparisonError("");
+              try {
+                const result = await invokeCloud<(typeof comparison)[string]>(
+                  "compare-items",
+                  { match_id: match.id },
+                );
+                setComparison((old) => ({ ...old, [match.id]: result }));
+              } catch (error) {
+                setComparisonError(
+                  error instanceof Error ? error.message : String(error),
+                );
+              } finally {
+                setComparing(null);
+              }
+            }}
+          />
+          {comparison[match.id] && (
+            <View style={s.card}>
+              <Text style={s.label}>
+                AI APPEARANCE COMPARISON · {comparison[match.id].similarity}/100
+              </Text>
+              <Text style={s.heading}>
+                {comparison[match.id].verdict.replaceAll("_", " ")}
+              </Text>
+              <Text style={s.body}>{comparison[match.id].summary}</Text>
+              <Text style={s.small}>
+                Visible agreements:{" "}
+                {comparison[match.id].matching_features.join(" · ") ||
+                  "None confidently identified"}
+              </Text>
+              <Text style={s.small}>
+                Differences:{" "}
+                {comparison[match.id].differences.join(" · ") ||
+                  "None confidently identified"}
+              </Text>
+              <Text style={s.small}>
+                Model estimate, not ownership verification. Claims still require
+                private evidence.
+              </Text>
+            </View>
+          )}
           <Button
             title="Not my item"
             secondary
@@ -150,6 +225,18 @@ export default function Activity() {
           <Text style={s.body}>
             {request.rovers?.name || "Awaiting rover assignment"}
           </Text>
+          {!!request.assignment_reason && (
+            <Text style={s.body}>{request.assignment_reason}</Text>
+          )}
+          {!!request.search_brief && (
+            <>
+              <Text style={s.label}>VISUAL SEARCH BRIEF</Text>
+              <Text style={s.body}>
+                {request.search_brief.target} · {request.search_brief.color}
+              </Text>
+              <Text style={s.body}>{request.search_brief.visual_cues}</Text>
+            </>
+          )}
           <Text style={s.small}>
             Requested {new Date(request.created_at).toLocaleString()}
           </Text>
@@ -177,7 +264,7 @@ export default function Activity() {
       {notifications.data?.map((n) => (
         <View
           key={n.id}
-          style={[s.card, !n.read_at && { backgroundColor: "#EAF0E8" }]}
+          style={[s.card, !n.read_at && { backgroundColor: "#EEE8F5" }]}
         >
           <Text style={s.heading}>{n.title}</Text>
           <Text style={s.body}>{n.message}</Text>

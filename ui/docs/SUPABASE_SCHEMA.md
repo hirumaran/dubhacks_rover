@@ -250,3 +250,14 @@ Besides primary-key/unique indexes, explicit indexes cover found-item discovery 
 The current schema has no ingestion idempotency key or rover detection ID. If a rover can retry the same upload, use a stable caller-generated found-item UUID and handle duplicate-key responses, or add an ingestion identifier in a future migration. A privileged upsert bypasses student RLS but will not rerun the INSERT-only matching trigger when it updates an existing row.
 
 Push delivery is separate: `supabase/functions/push` is a webhook scaffold for notification INSERTs. Database triggers alone do not send device push messages; the webhook, its secret, device credentials, and EAS project must be configured.
+# Cloud judging additions (October 18, 2026)
+
+Migrations `202610180001_search_plans.sql`, `202610180002_judging_feed.sql`, and `202610180003_demo_photos.sql` add:
+
+- Rover coordinates and `is_demo`, plus three explicit virtual fleet records.
+- Private search-request `search_brief`, `assignment_reason`, and `assignment_distance_m`. The authenticated `plan_rover_search(report_id)` RPC locks the owned report, returns an existing assignment idempotently, and selects the closest eligible rover. Demo and physical fleets are separated; physical rovers need a recent heartbeat.
+- `judging_feeds`, holding the most recent consented camera frame for each source. Only authenticated anonymous demo users can read fresh frames; rows older than 15 seconds are excluded by RLS. Clients have no write privilege. The `judging-feed` Edge Function requires the operator ingestion secret for publishing/clearing and a validated user session for viewing or inference.
+- Updated demo-only reference photo URLs and descriptions using supplied campus images. Real listings are untouched.
+
+The report screen calls `analyze-missing-photo`, `plan-search` calls the ownership-checked planning RPC, and Activity can call `compare-items`. Gateway JWT verification remains enabled for these new/deployed user functions. See [judging setup](JUDGING.md) for the permanent hosted app and operator relay.
+

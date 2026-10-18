@@ -17,8 +17,11 @@ import {
 } from "../../src/lib/scout";
 
 export default function Scout() {
+  const cloudMode = !__DEV__;
   const [link, setLink] = useState("");
-  const [pair, setPair] = useState<Pairing | null>(null);
+  const [pair, setPair] = useState<Pairing | null>(
+    cloudMode ? { url: "", token: "", transport: "supabase" } : null,
+  );
   const [connecting, setConnecting] = useState(false);
   const [mode, setMode] = useState("Live feed");
   const [source, setSource] = useState("Laptop webcam");
@@ -114,7 +117,10 @@ export default function Scout() {
       } finally {
         clearTimeout(timeout);
         if (!cancelled)
-          timer = setTimeout(poll, source === "Rover" ? 1000 : 250);
+          timer = setTimeout(
+            poll,
+            cloudMode ? 1500 : source === "Rover" ? 1000 : 250,
+          );
       }
     };
     void poll();
@@ -178,6 +184,8 @@ export default function Scout() {
     const cacheFiles: string[] = [];
     try {
       let image = feed?.image || "";
+      let frameWidth = feed?.width || 640,
+        frameHeight = feed?.height || 480;
       if (mode === "Phone camera") {
         // The web camera announces its stream before the first playable frame.
         if (Platform.OS === "web") {
@@ -212,6 +220,8 @@ export default function Scout() {
           { compress: 0.8, format: SaveFormat.JPEG, base64: true },
         );
         cacheFiles.push(resized.uri);
+        frameWidth = resized.width;
+        frameHeight = resized.height;
         if (!resized.base64)
           throw new Error("Could not prepare this camera frame.");
         image = `data:image/jpeg;base64,${resized.base64}`;
@@ -223,6 +233,7 @@ export default function Scout() {
         "analyze",
         controller.signal,
         image,
+        { width: frameWidth, height: frameHeight },
       );
       if (epoch !== generation.current) return;
       const entry: Scan = {
@@ -272,6 +283,9 @@ export default function Scout() {
         Identify belongings with your phone, or see the rover’s latest camera
         frames.
       </Text>
+      {cloudMode && (
+        <Text style={s.label}>CLOUD JUDGING FEED · NO PAIRING CODE NEEDED</Text>
+      )}
       {!pair ? (
         <View style={s.card}>
           <Text style={s.heading}>Connect to Scout</Text>
@@ -445,14 +459,20 @@ export default function Scout() {
               <Text style={s.small}>
                 {source === "Rover"
                   ? "Start the rover vision demo on the computer. This view shows its actual published model frames, usually every five seconds; it is not continuous video."
-                  : "On your laptop, open http://127.0.0.1:8769/ and choose Enable webcam. Its preview is shared here automatically. Select Rover only when a rover vision demo is running."}
+                  : cloudMode
+                    ? "The operator must enable the laptop webcam and click Share with judging link. Consented frames are relayed through Supabase and expire when sharing stops. Phone-camera analysis works independently."
+                    : "On your laptop, open http://127.0.0.1:8769/ and choose Enable webcam. Its preview is shared here automatically. Select Rover only when a rover vision demo is running."}
               </Text>
             </View>
           )}
           <Button
-            title="Disconnect Scout"
+            title={cloudMode ? "Refresh cloud feed" : "Disconnect Scout"}
             secondary
             onPress={() => {
+              if (cloudMode) {
+                setPair({ url: "", token: "", transport: "supabase" });
+                return;
+              }
               stop();
               setPair(null);
               setFeed(null);

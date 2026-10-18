@@ -24,18 +24,16 @@ export default function Claim() {
         ? await uploadPhoto(image, "ownership-evidence", session.user.id)
         : null;
       check(
-        await supabase
-          .from("claims")
-          .insert({
-            found_item_id: id,
-            user_id: session.user.id,
-            verification_details: {
-              features: features.trim(),
-              where_and_when: where.trim(),
-              additional: additional.trim(),
-            },
-            evidence_path,
-          }),
+        await supabase.from("claims").insert({
+          found_item_id: id,
+          user_id: session.user.id,
+          verification_details: {
+            features: features.trim(),
+            where_and_when: where.trim(),
+            additional: additional.trim(),
+          },
+          evidence_path,
+        }),
       );
       await cache.invalidateQueries();
       Alert.alert(

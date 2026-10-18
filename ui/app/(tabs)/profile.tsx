@@ -48,7 +48,7 @@ export default function ProfileScreen() {
                 style={{
                   padding: 24,
                   borderRadius: 50,
-                  backgroundColor: "#EBF0E8",
+                  backgroundColor: "#EEE8F5",
                 }}
               >
                 <User size={42} color={colors.sage} />

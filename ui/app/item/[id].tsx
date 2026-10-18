@@ -3,7 +3,6 @@ import { Alert, Image, ScrollView, Share, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page, Back, Button, Field, State, s } from "../../src/components/ui";
-import CampusMap from "../../src/components/CampusMap";
 import { item } from "../../src/lib/api";
 import { supabase, check, photo } from "../../src/lib/supabase";
 export default function Detail() {
@@ -81,7 +80,7 @@ export default function Detail() {
                   height: 330,
                   borderRadius: 28,
                   marginRight: 12,
-                  backgroundColor: "#E9EEE7",
+                  backgroundColor: "#EEE8F5",
                 }}
               />
             ))}
@@ -98,7 +97,7 @@ export default function Detail() {
             <Text style={s.body}>· {i.color}</Text>
           </View>
           <View style={s.card}>
-            <Text style={s.heading}>{i.approximate_location}</Text>
+            <Text style={s.heading}>Discovery location kept private</Text>
             <Text style={s.body}>
               Discovered {new Date(i.discovered_at).toLocaleString()}
             </Text>
@@ -115,7 +114,6 @@ export default function Detail() {
               </Text>
             )}
           </View>
-          <CampusMap items={[i]} />
           <Button
             title="This might be mine"
             disabled={i.status !== "available"}

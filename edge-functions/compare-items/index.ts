@@ -44,6 +44,8 @@ serve(async (body, req) => {
     global: { headers: { Authorization: authorization } },
     auth: { persistSession: false },
   });
+  const { data: { user } } = await supabase.auth.getUser(authorization.replace(/^Bearer\s+/i, ""));
+  if (!user) throw new HttpError(401, "Sign in to compare item photos");
 
   // ---- resolve which pairs to rate
   let reportId = str(body.missing_report_id);

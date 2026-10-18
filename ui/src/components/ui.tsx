@@ -9,6 +9,8 @@ import {
   TextInput,
   View,
   TextInputProps,
+  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -16,31 +18,64 @@ import { ArrowUpRight, MapPin, Radio, Search } from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { FoundItem, categories } from "../lib/types";
 import { photo } from "../lib/supabase";
+import { demoPhoto } from "../lib/demo-photos";
 export const colors = {
-  sage: "#5B8174",
-  peach: "#FCCFA5",
-  ink: "#231F20",
-  paper: "#FAFAF7",
-  muted: "#747A76",
-  line: "#E6E9E3",
+  purple: "#4B2E83",
+  darkPurple: "#2D174C",
+  lavender: "#EEE8F5",
+  gold: "#B7A57A",
+  sage: "#4B2E83",
+  peach: "#E8D8A1",
+  ink: "#251B36",
+  paper: "#FAF8FC",
+  muted: "#71677D",
+  line: "#E6DEEE",
 };
 export const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.paper },
   content: { padding: 24, paddingBottom: 120, gap: 20 },
   title: {
+    fontFamily:
+      Platform.OS === "web"
+        ? '"Segoe UI", system-ui, sans-serif'
+        : Platform.OS === "ios"
+          ? "System"
+          : "sans-serif",
     fontSize: 34,
     fontWeight: "700",
     letterSpacing: -1.2,
     color: colors.ink,
   },
   heading: {
+    fontFamily:
+      Platform.OS === "web"
+        ? '"Segoe UI", system-ui, sans-serif'
+        : Platform.OS === "ios"
+          ? "System"
+          : "sans-serif",
     fontSize: 22,
     fontWeight: "700",
     letterSpacing: -0.5,
     color: colors.ink,
   },
-  body: { fontSize: 15, lineHeight: 23, color: colors.muted },
+  body: {
+    fontFamily:
+      Platform.OS === "web"
+        ? '"Segoe UI", system-ui, sans-serif'
+        : Platform.OS === "ios"
+          ? "System"
+          : "sans-serif",
+    fontSize: 15,
+    lineHeight: 23,
+    color: colors.muted,
+  },
   label: {
+    fontFamily:
+      Platform.OS === "web"
+        ? '"Segoe UI", system-ui, sans-serif'
+        : Platform.OS === "ios"
+          ? "System"
+          : "sans-serif",
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.5,
@@ -84,7 +119,17 @@ export const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
   },
-  small: { fontSize: 12, color: colors.muted, lineHeight: 18 },
+  small: {
+    fontFamily:
+      Platform.OS === "web"
+        ? '"Segoe UI", system-ui, sans-serif'
+        : Platform.OS === "ios"
+          ? "System"
+          : "sans-serif",
+    fontSize: 12,
+    color: colors.muted,
+    lineHeight: 18,
+  },
 });
 export function Page({
   children,
@@ -93,11 +138,20 @@ export function Page({
   children: React.ReactNode;
   scroll?: boolean;
 }) {
+  const { width } = useWindowDimensions();
   return (
     <SafeAreaView edges={["top"]} style={s.page}>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={s.content}
+          contentContainerStyle={[
+            s.content,
+            {
+              width: "100%",
+              maxWidth: 1000,
+              alignSelf: "center",
+              paddingHorizontal: width >= 800 ? 40 : 22,
+            },
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           {children}
@@ -127,7 +181,7 @@ export function Button({
       onPress={onPress}
       style={[
         s.button,
-        secondary && { backgroundColor: "#EBF0EC" },
+        secondary && { backgroundColor: "#EEE8F5" },
         disabled && { opacity: 0.45 },
       ]}
     >
@@ -145,7 +199,7 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
       </Text>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor="#999F99"
+        placeholderTextColor="#8D809C"
         style={[
           s.input,
           props.multiline && { minHeight: 100, textAlignVertical: "top" },
@@ -221,7 +275,7 @@ export function State({
     return (
       <View style={{ gap: 16 }}>
         <ActivityIndicator color={colors.sage} />
-        <View style={[s.card, { height: 180, backgroundColor: "#EAF0E9" }]} />
+        <View style={[s.card, { height: 180, backgroundColor: "#EEE8F5" }]} />
       </View>
     );
   if (error)
@@ -249,6 +303,8 @@ export function ItemCard({
   item: FoundItem;
   wide?: boolean;
 }) {
+  const { width } = useWindowDimensions();
+  const horizontal = wide && width >= 900;
   return (
     <Animated.View entering={FadeInDown.duration(300)} style={{ flex: 1 }}>
       <Pressable
@@ -261,17 +317,28 @@ export function ItemCard({
           overflow: "hidden",
           borderWidth: 1,
           borderColor: colors.line,
+          flexDirection: horizontal ? "row" : "column",
         }}
       >
         <Image
-          source={{ uri: photo(item.image_path) }}
+          source={
+            (item.is_demo && /unsplash\.com/.test(item.image_path || "")
+              ? demoPhoto(item.title, item.category)
+              : undefined) || { uri: photo(item.image_path) }
+          }
           style={{
-            width: "100%",
+            width: horizontal ? 240 : "100%",
             height: wide ? 210 : 165,
-            backgroundColor: "#E9EEE7",
+            backgroundColor: "#EEE8F5",
           }}
         />
-        <View style={{ padding: 13, gap: 7 }}>
+        <View
+          style={{
+            padding: horizontal ? 24 : 13,
+            gap: 7,
+            flex: horizontal ? 1 : undefined,
+          }}
+        >
           <View style={s.row}>
             <Radio size={12} color={colors.sage} />
             <Text style={[s.small, { color: colors.sage, fontWeight: "600" }]}>
@@ -290,7 +357,7 @@ export function ItemCard({
           <View style={{ flexDirection: "row", gap: 4 }}>
             <MapPin size={13} color={colors.muted} />
             <Text numberOfLines={1} style={[s.small, { flex: 1 }]}>
-              {item.approximate_location}
+              Location kept private
             </Text>
           </View>
           <Text style={s.small}>

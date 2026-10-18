@@ -26,7 +26,7 @@ export type Feed = Scan & {
   frame_id?: number;
   analysis?: (Scan & { updated_at: number }) | null;
 };
-export type Pairing = { url: string; token: string };
+export type Pairing = { url: string; token: string; transport?: "supabase" };
 
 export function expoOrigin(host: string): string {
   const value = host.replace(/^(exp|exps|http|https):\/\//, "");
@@ -79,7 +79,19 @@ export async function scoutRequest<T>(
   path: string,
   signal: AbortSignal,
   image?: string,
+  dimensions?: { width: number; height: number },
 ): Promise<T> {
+  if (pair.transport === "supabase") {
+    const { invokeCloud } = await import("./api");
+    const source =
+      new URL(`https://scout.local/${path}`).searchParams.get("source") ||
+      "webcam";
+    return invokeCloud<T>("judging-feed", {
+      action: image ? "analyze" : "read",
+      source,
+      ...(image ? { image, ...dimensions } : {}),
+    });
+  }
   let response: Response;
   try {
     response = await fetch(`${pair.url}/api/mobile/${path}`, {

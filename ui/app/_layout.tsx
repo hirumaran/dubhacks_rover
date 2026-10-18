@@ -37,7 +37,7 @@ function Navigator() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#FAFAF7" },
+          contentStyle: { backgroundColor: "#FAF8FC" },
           animation: "slide_from_right",
         }}
       >

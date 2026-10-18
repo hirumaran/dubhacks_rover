@@ -1,7 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
 import { File } from "expo-file-system";
+import { Platform } from "react-native";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { supabase, check } from "./supabase";
 import { FoundItem, MissingReport, Match, Profile } from "./types";
+export const FOUND_PUBLIC_COLUMNS = "id,title,description,category,color,image_path,image_paths,approximate_location,source,rover_id,status,pickup_location,discovered_at,created_at,is_demo";
 export async function foundItems(
   search = "",
   category = "All",
@@ -10,7 +13,7 @@ export async function foundItems(
   source = "all",
   days = 0,
 ) {
-  let q = supabase.from("found_items").select("*").eq("status", "available");
+  let q = supabase.from("found_items").select(FOUND_PUBLIC_COLUMNS).eq("status", "available");
   if (search.trim())
     q = q.ilike("title", `%${search.trim().replace(/[%_]/g, "")}%`);
   if (category !== "All") q = q.eq("category", category);
@@ -24,12 +27,12 @@ export async function foundItems(
     await q
       .order("discovered_at", { ascending: sort === "oldest" })
       .range(page * 20, page * 20 + 19),
-  ) as FoundItem[];
+  ) as unknown as FoundItem[];
 }
 export async function item(id: string) {
   return check(
-    await supabase.from("found_items").select("*").eq("id", id).single(),
-  ) as FoundItem;
+    await supabase.from("found_items").select(FOUND_PUBLIC_COLUMNS).eq("id", id).single(),
+  ) as unknown as FoundItem;
 }
 export async function reports() {
   return check(
@@ -43,7 +46,7 @@ export async function matches() {
   return check(
     await supabase
       .from("item_matches")
-      .select("*,found_items!inner(*),missing_reports!inner(*)")
+      .select(`*,found_items!inner(${FOUND_PUBLIC_COLUMNS}),missing_reports!inner(*)`)
       .eq("status", "active")
       .eq("missing_reports.status", "active")
       .eq("found_items.status", "available")
@@ -73,12 +76,27 @@ export async function uploadPhoto(
   bucket: string,
   userId: string,
 ) {
-  const bytes = await new File(asset.uri).bytes();
+  const scale = Math.min(1, 1280 / asset.width, 1280 / asset.height);
+  const normalized = await manipulateAsync(
+    asset.uri,
+    [
+      {
+        resize: {
+          width: Math.max(1, Math.round(asset.width * scale)),
+          height: Math.max(1, Math.round(asset.height * scale)),
+        },
+      },
+    ],
+    { format: SaveFormat.JPEG, compress: 0.85 },
+  );
+  const bytes =
+    Platform.OS === "web"
+      ? new Uint8Array(await (await fetch(normalized.uri)).arrayBuffer())
+      : await new File(normalized.uri).bytes();
   if (bytes.byteLength > 10 * 1024 * 1024)
     throw new Error("Please choose a photograph smaller than 10 MB.");
-  const mime = asset.mimeType || "image/jpeg";
-  const ext =
-    mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+  const mime = "image/jpeg";
+  const ext = "jpg";
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   check(
     await supabase.storage
@@ -94,12 +112,50 @@ export async function createReport(
     await supabase.from("missing_reports").insert(value).select().single(),
   ) as MissingReport;
 }
+export interface SearchPlan {
+  request_id: string;
+  rover_id: string | null;
+  rover_name: string | null;
+  status: string;
+  demo: boolean;
+  reason: string;
+  distance_m: number | null;
+  brief: {
+    target: string;
+    category: string;
+    color: string;
+    visual_cues: string;
+    search_area: string;
+    instruction: string;
+    matching_weights: Record<string, number>;
+  };
+}
+export async function invokeCloud<T>(
+  name: string,
+  body: Record<string, unknown>,
+): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000);
+  try {
+    const { data, error } = await supabase.functions.invoke(name, {
+      body,
+      signal: controller.signal,
+    });
+    if (error) {
+      let message = error.message;
+      if (error.context instanceof Response) {
+        try {
+          const detail = await error.context.json();
+          message = detail.error || detail.message || message;
+        } catch {}
+      }
+      throw new Error(message);
+    }
+    return data as T;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 export async function requestSearch(report: MissingReport) {
-  check(
-    await supabase.from("search_requests").insert({
-      user_id: report.user_id,
-      missing_report_id: report.id,
-      target_location: report.last_seen_location,
-    }),
-  );
+  return invokeCloud<SearchPlan>("plan-search", { report_id: report.id });
 }

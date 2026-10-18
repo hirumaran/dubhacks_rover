@@ -6,11 +6,20 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "web": {
+      "output": "server",
+      "name": "HuskyFind · UW Lost & Found",
+      "shortName": "HuskyFind",
+      "themeColor": "#4B2E83",
+      "backgroundColor": "#FAF8FC"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "edu.huskyfind.mobile"
     },
-    "android": { "package": "edu.huskyfind.mobile" },
+    "android": {
+      "package": "edu.huskyfind.mobile"
+    },
     "plugins": [
       "expo-router",
       "expo-dev-client",
@@ -36,6 +45,8 @@
         }
       ]
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

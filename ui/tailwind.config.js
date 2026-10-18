@@ -5,10 +5,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        sage: "#5B8174",
-        peach: "#FCCFA5",
-        ink: "#231F20",
-        paper: "#FAFAF7",
+        sage: "#4B2E83",
+        peach: "#E8D8A1",
+        ink: "#251B36",
+        paper: "#FAF8FC",
       },
     },
   },

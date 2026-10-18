@@ -14,6 +14,9 @@ const commands = {
   backend: "scripts/check-backend.cjs",
   browser: "scripts/check-app.cjs",
   scout: "scripts/start-scout.cjs",
+  eas: "scripts/eas.cjs",
+  judging: "scripts/check-judging.cjs",
+  qr: "scripts/make-judging-qr.cjs",
 };
 const [tool, ...args] = process.argv.slice(2);
 if (!commands[tool] || !fs.existsSync(localNode)) {
@@ -24,6 +27,8 @@ if (!commands[tool] || !fs.existsSync(localNode)) {
 }
 const entry = path.join(root, commands[tool]);
 const env = { ...process.env };
+if (tool === "eas" && process.platform === "win32")
+  env.APPDATA = path.join(root, ".expo", "eas-config");
 if (tool === "expo" && args[0] === "login" && args.includes("--browser")) {
   // Expo's Windows browser launcher can fail on URLs with query parameters.
   // Keep its local login callback running and let the user open the printed URL.

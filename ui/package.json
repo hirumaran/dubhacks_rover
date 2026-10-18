@@ -42,6 +42,9 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
+    "publish:judging": "node scripts/run-tool.cjs qr && npm run export:web && node scripts/run-tool.cjs eas deploy --prod --non-interactive --export-dir dist-web",
+    "check:judging": "node scripts/run-tool.cjs judging",
+    "configure:cloud": "node scripts/configure-cloud.cjs",
     "scout:gateway": "node scripts/run-tool.cjs scout",
     "start": "node scripts/run-tool.cjs expo start --go --tunnel",
     "start:tunnel": "node scripts/run-tool.cjs expo start --go --tunnel --clear",
@@ -71,6 +74,7 @@
     "node": "24.19.0",
     "playwright-core": "^1.64.1",
     "prettier": "^3.9.10",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.0",
     "typescript": "~6.0.3"

@@ -8,10 +8,11 @@ import {
   User,
   ScanLine,
 } from "lucide-react-native";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { useSession } from "../../src/lib/session";
 import { State, colors } from "../../src/components/ui";
 export default function Layout() {
+  const { width } = useWindowDimensions();
   const { session, ready } = useSession();
   if (!ready) return <State loading />;
   if (!session) return <Redirect href="/" />;
@@ -24,8 +25,8 @@ export default function Layout() {
         tabBarStyle: {
           position: "absolute",
           bottom: 20,
-          left: 16,
-          right: 16,
+          left: Math.max(16, (width - 900) / 2),
+          right: Math.max(16, (width - 900) / 2),
           height: 74,
           paddingBottom: 10,
           paddingTop: 10,
@@ -47,7 +48,7 @@ export default function Layout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: "Map",
+          title: "My areas",
           tabBarIcon: ({ color }) => <MapPin color={color} size={23} />,
         }}
       />

@@ -35,8 +35,12 @@ test("migrations, server matching, and cross-account RLS boundaries", async () =
         "utf8",
       ),
     );
+    await db.exec(readFileSync("supabase/migrations/202610180004_location_privacy.sql", "utf8"));
     const a = "20000000-0000-0000-0000-000000000001",
       b = "20000000-0000-0000-0000-000000000002";
+    await db.exec(readFileSync("supabase/migrations/202610180001_search_plans.sql","utf8"));
+    await db.exec(readFileSync("supabase/migrations/202610180002_judging_feed.sql","utf8"));
+    await db.exec(readFileSync("supabase/migrations/202610180003_demo_photos.sql","utf8"));
     await db.exec(
       `insert into auth.users(id,is_anonymous) values('${a}',true),('${b}',true);`,
     );
@@ -46,11 +50,19 @@ test("migrations, server matching, and cross-account RLS boundaries", async () =
       );
     }
     await asUser(a);
+    await assert.rejects(db.query("select latitude,longitude from public.found_items"), /permission denied/);
+    await db.query("select id,title from public.found_items");
     await db.exec(
       "select public.initialize_demo();select public.initialize_demo();",
     );
     let rows = await db.query("select * from public.missing_reports");
     assert.equal(rows.rows.length, 1, "demo initialization is idempotent");
+    const planReport = (rows.rows[0] as {id:string}).id;
+    const plan = await db.query<{plan:{rover_id:string;demo:boolean;brief:{visual_cues:string}}}>(`select public.plan_rover_search('${planReport}') as plan`);
+    assert.ok(plan.rows[0].plan.rover_id, "demo search chooses an eligible demo rover");
+    assert.equal(plan.rows[0].plan.demo,true);
+    const secondPlan = await db.query<{plan:{rover_id:string}}>(`select public.plan_rover_search('${planReport}') as plan`);
+    assert.equal(secondPlan.rows[0].plan.rover_id,plan.rows[0].plan.rover_id,"assignment is idempotent");
     const matches = await db.query<{ id: string }>(
       "select id from public.item_matches",
     );
@@ -83,6 +95,7 @@ test("migrations, server matching, and cross-account RLS boundaries", async () =
       /row-level security/,
     );
     await asUser(b);
+    await assert.rejects(db.exec(`select public.plan_rover_search('${planReport}')`),/Report not found/);
     for (const table of [
       "missing_reports",
       "claims",

@@ -12,6 +12,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     ...config.extra,
-    eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || undefined },
+    eas: {
+      projectId:
+        process.env.EXPO_PUBLIC_EAS_PROJECT_ID ||
+        "d817ed9d-7e58-4242-b262-f643998bf60a",
+    },
   },
 });

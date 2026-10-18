@@ -16,7 +16,7 @@ export default function ScoutImage({
         style={{
           width: "100%",
           aspectRatio: scan.width / scan.height,
-          backgroundColor: "#18231E",
+          backgroundColor: "#241339",
           overflow: "hidden",
           borderRadius: 16,
         }}

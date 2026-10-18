@@ -4,6 +4,8 @@ let config,stream=null,opening=false,busy=false,automatic=false,timer=null,epoch
 let sharing=false,sharingBusy=false,shareCount=0;
 const shareButton=document.createElement('button');shareButton.id='share';shareButton.textContent='Share preview with phone';shareButton.disabled=true;$('stop').after(shareButton);
 const shareStatus=document.createElement('span');shareStatus.id='share-status';shareStatus.setAttribute('role','status');shareButton.after(shareStatus);
+const cloudButton=document.createElement('button');cloudButton.textContent='Share with judging link';cloudButton.disabled=false;shareStatus.after(cloudButton);let cloudShared=false;
+cloudButton.onclick=async()=>{try{const response=await fetch('/api/cloud-sharing',{method:'POST',headers:{'Content-Type':'application/json','X-Webcam-Token':config.token},body:JSON.stringify({enabled:!cloudShared})});const data=await response.json();if(!response.ok)throw Error(data.error);cloudShared=data.enabled;cloudButton.textContent=cloudShared?'Stop judging-link sharing':'Share with judging link';}catch(error){state(error.message,'error');}};
 async function sharePreview(){
  if(!sharing||!stream||sharingBusy)return;
  // A stream can be ready before its first decoded frame; keep retrying.
@@ -16,6 +18,8 @@ async function sharePreview(){
 function stopSharing(){sharing=false;shareStatus.textContent='Preview sharing off';shareButton.textContent='Share preview with phone';if(config)void fetch('/api/preview',{method:'POST',headers:{'Content-Type':'application/json','X-Webcam-Token':config.token},body:JSON.stringify({image:null})}).catch(()=>{});}
 shareButton.onclick=()=>{if(sharing)stopSharing();else{sharing=true;shareButton.textContent='Stop sharing preview';void sharePreview();}};
 setInterval(()=>void sharePreview(),250);
+setInterval(()=>{if(cloudShared&&config)void fetch('/api/cloud-sharing',{method:'POST',headers:{'Content-Type':'application/json','X-Webcam-Token':config.token},body:JSON.stringify({enabled:true})}).catch(()=>{});},5000);
+window.addEventListener('pagehide',()=>{if(cloudShared&&config)void fetch('/api/cloud-sharing',{method:'POST',headers:{'Content-Type':'application/json','X-Webcam-Token':config.token},body:JSON.stringify({enabled:false}),keepalive:true}).catch(()=>{});});
 const stamp=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 function state(message,kind='ready'){ $('status').textContent=message;$('model-state').textContent=kind==='busy'?'ANALYZING':kind==='error'?'TRY AGAIN':kind==='ok'?'CONNECTED':'READY';$('model-state').dataset.state=kind;}
 function controls(){const live=!!stream;shareButton.disabled=!live;$('enable').disabled=live||opening;$('stop').disabled=!live;$('scan').disabled=!live||busy;$('auto').disabled=!live||busy||automatic;$('pause').disabled=!automatic;$('camera-select').disabled=!live||busy;}

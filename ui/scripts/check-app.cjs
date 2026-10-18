@@ -98,6 +98,7 @@ async function main() {
     await page.goto(base, { timeout: 60000 });
     await bottle.waitFor({ timeout: 60000 });
     console.log("Activity, Profile, and session restoration passed.");
+    if (process.env.HUSKYFIND_JUDGING_SMOKE === "1") await require("./check-judging-ui.cjs")(page,base);
     if (process.env.HUSKYFIND_SCOUT_SMOKE === "1")
       await require("./check-scout.cjs")(page, base);
     assert.deepEqual(runtimeErrors, [], "No uncaught browser runtime errors");
@@ -142,6 +143,9 @@ async function main() {
             }
             if (!session?.access_token || !session?.user?.is_anonymous)
               continue;
+            const storageHeaders={apikey:key,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json"};
+            const files=await fetch(`${url}/storage/v1/object/list/missing-photos`,{method:"POST",headers:storageHeaders,body:JSON.stringify({prefix:session.user.id+"/",limit:100})});
+            if(files.ok){const photos=await files.json();const prefixes=photos.filter(p=>p.name.endsWith(".jpg")).map(p=>session.user.id+"/"+p.name);if(prefixes.length)await fetch(`${url}/storage/v1/object/missing-photos`,{method:"DELETE",headers:storageHeaders,body:JSON.stringify({prefixes})});}
             const response = await fetch(
               `${url}/rest/v1/rpc/delete_my_account`,
               {

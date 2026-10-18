@@ -5,6 +5,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import base64, binascii, io, json, os, secrets, threading, time, urllib.error, urllib.request
 from PIL import Image, UnidentifiedImageError
 import mobile
+import cloud
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / 'presentation'
@@ -76,7 +77,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(204); self.end_headers()
     def do_POST(self):
         is_mobile = self.path == '/api/mobile/analyze'
-        if self.path not in ('/api/analyze', '/api/preview', '/api/mobile/analyze'): self.reply(404, {'error':'Not found'}); return
+        if self.path not in ('/api/analyze', '/api/preview', '/api/cloud-sharing', '/api/mobile/analyze'): self.reply(404, {'error':'Not found'}); return
         local_auth = self.valid_host() and self.headers.get('Sec-Fetch-Site') != 'cross-site' and self.headers.get('Origin', 'http://'+self.headers.get('Host','')) == 'http://'+self.headers.get('Host','') and secrets.compare_digest(self.headers.get('X-Webcam-Token',''), self.server.token)
         if not (mobile.authorized(self) if is_mobile else local_auth):
             self.reply(403, {'error':'Pair again using the current Scout gateway code.' if is_mobile else 'Open this page locally and reload it.'}); return
@@ -85,9 +86,18 @@ class Handler(SimpleHTTPRequestHandler):
             if not 0 < n <= MAX_BODY: self.reply(413, {'error':'Camera frame is too large.'}); return
             if self.headers.get_content_type() != 'application/json': raise ValueError('Send JSON.')
             body = json.loads(self.rfile.read(n))
+            if self.path == '/api/cloud-sharing':
+                if not getattr(self.server,'cloud_config',None):
+                    self.reply(503,{'error':'Configure the judging relay first: npm run configure:cloud'});return
+                self.server.cloud_enabled=body.get('enabled') is True
+                self.server.cloud_deadline=time.monotonic()+15
+                if not self.server.cloud_enabled:
+                    for source in ('webcam','rover'):cloud.publish(self.server,source=source,clear=True)
+                self.reply(200,{'enabled':self.server.cloud_enabled});return
             if self.path == '/api/preview' and body.get('image') is None:
                 self.server.preview = None
                 self.server.webcam_analysis = None
+                if getattr(self.server,'cloud_enabled',False):cloud.publish(self.server,clear=True)
                 self.reply(200, {'shared':False}); return
             raw, (w,h) = decode_frame(body.get('image'))
         except (ValueError, TypeError, AttributeError) as e:
@@ -96,6 +106,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.server.preview_sequence += 1
             self.server.preview = {'image':body['image'], 'width':w, 'height':h,
                                    'updated_at':time.time(), 'frame_id':self.server.preview_sequence, 'detections':[]}
+            cloud.publish(self.server,self.server.preview)
             self.reply(200, {'shared':True}); return
         if not self.server.inference_lock.acquire(blocking=False):
             self.reply(429, {'error':'Another camera frame is still being analyzed. Please wait.'}); return
@@ -142,6 +153,7 @@ def main():
     port = int(os.environ.get('WEBCAM_PORT','8769'))
     enabled = os.environ.get('WEBCAM_MOBILE') == '1'
     server = WebcamServer(('127.0.0.1',port), 'http://127.0.0.1:'+os.environ.get('WEBCAM_IDENTIFY_PORT','8001'), secret, mobile_enabled=enabled)
+    cloud.configure(server,repo,secret)
     print(f'Webcam demo: http://127.0.0.1:{port}/ — real Perceptron, no Supabase writes', flush=True)
     if enabled:
         print(f'\nSCOUT PAIRING CODE: {server.mobile_token}\n', flush=True)

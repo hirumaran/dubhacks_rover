@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { router } from "expo-router";
 import { Bell, MapPin, Search, ArrowUpRight } from "lucide-react-native";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -15,6 +22,8 @@ import {
   colors,
 } from "../../src/components/ui";
 export default function Discover() {
+  const { width } = useWindowDimensions();
+  const columns = width >= 1100 ? 4 : width >= 760 ? 3 : 2;
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("newest");
@@ -31,11 +40,19 @@ export default function Discover() {
   return (
     <Page scroll={false}>
       <FlatList
+        key={columns}
         data={items}
         keyExtractor={(i) => i.id}
-        numColumns={2}
+        numColumns={columns}
         columnWrapperStyle={{ gap: 12 }}
-        contentContainerStyle={{ padding: 22, paddingBottom: 125, gap: 14 }}
+        contentContainerStyle={{
+          padding: width >= 800 ? 40 : 22,
+          paddingBottom: 125,
+          gap: 14,
+          width: "100%",
+          maxWidth: 1280,
+          alignSelf: "center",
+        }}
         onRefresh={() => {
           void feed.refetch();
           void recommendations.refetch();
@@ -47,7 +64,7 @@ export default function Discover() {
         }}
         onEndReachedThreshold={0.4}
         renderItem={({ item }) => (
-          <View style={{ flex: 1, maxWidth: "49%" }}>
+          <View style={{ flex: 1, maxWidth: `${100 / columns}%` }}>
             <ItemCard item={item} />
           </View>
         )}
@@ -68,7 +85,7 @@ export default function Discover() {
                 <Bell color={colors.ink} size={21} />
               </Pressable>
             </View>
-            <Text style={[s.title, { fontSize: 38 }]}>
+            <Text style={[s.title, { fontSize: width >= 800 ? 56 : 38 }]}>
               Find what{`\n`}matters
               <Text style={{ color: colors.sage }}>.</Text>
             </Text>
@@ -95,7 +112,7 @@ export default function Discover() {
             </View>
             <View
               style={{
-                backgroundColor: "#E9EFE7",
+                backgroundColor: "#EEE8F5",
                 borderRadius: 24,
                 padding: 22,
                 gap: 10,
