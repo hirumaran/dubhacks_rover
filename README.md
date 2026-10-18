@@ -1,5 +1,7 @@
 # dubhacks_rover
 
+**Run the end-to-end demo:** see [DEMO.md](DEMO.md) (rover finds an item, HuskyFind reports the match).
+
 The standalone indoor rover showcase on branch **sarath** is in [`simulation-indoors/`](simulation-indoors/README.md). It captures all four directions every five simulation seconds and labels visible items. Open `simulation-indoors/Start Showcase.command` to run it.
 
 The complete autonomous campus rover simulation is in [`simulation/`](simulation/).
