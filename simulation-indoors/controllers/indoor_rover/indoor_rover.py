@@ -53,7 +53,8 @@ class CampusRover(Robot):
    for idx,name in [(1,'perception_left'),(3,'perception_right')]:
     d=self.getDevice(name)
     if d:d.enable(256);cams[idx]=d
-   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox)
+   self.hook=PerceptionHook(cams or dict(enumerate(self.cameras)),self.gps,self.compass,inbox,MISSION.get("camera_mounts_m"))
+  self.vision_only=bool(self.hook) and os.environ.get('SHOW_REFERENCE_LABELS','0')!='1'
   try:self.records=json.loads((GALLERY/'items.json').read_text())
   except (OSError,ValueError):self.records=[]
   self.seen={r['sample_id']for r in self.records};self.new_captures=0;self.avoid_events=0
@@ -70,7 +71,7 @@ class CampusRover(Robot):
   atomic_json(GALLERY/'snapshots.json',self.snapshots)
   print(f'GATES_SCOUT READY | indoor route {MISSION["length_m"]:.1f}m | 6 wheel motors | 4 recognition cameras | lidar',flush=True)
  def drive(self,v,w):
-  r=MISSION['wheel_radius_m'];track=MISSION['track_width_m'];vl=clamp((v-w*track/2)/r,-17,17);vr=clamp((v+w*track/2)/r,-17,17)
+  r=MISSION['wheel_radius_m'];track=MISSION['track_width_m'];vl=clamp((v-w*track/2)/r,-12,12);vr=clamp((v+w*track/2)/r,-12,12)
   for m in self.left:m.setVelocity(vl)
   for m in self.right:m.setVelocity(vr)
  def snapshot(self,now,scheduled):
@@ -88,6 +89,7 @@ class CampusRover(Robot):
   write_png(GALLERY/image,w*4,h,rows)
   candidates={}
   for i,c in enumerate(self.cameras):
+   if self.vision_only:continue
    for obj in c.getRecognitionObjects():
     model=obj.getModel()
     if '|' not in model:continue
@@ -160,7 +162,7 @@ class CampusRover(Robot):
    goal=self.detour[0];err=wrap(math.atan2(goal[1]-xy[1],goal[0]-xy[0])-heading)
   self.state='AVOID'if self.detour else'PATROL'
   w=clamp(2.5*err,-1.5,1.5)
-  v=(.16 if self.detour else MISSION['cruise_speed_m_s'])*max(0.,math.cos(err))
+  v=(.16 if self.detour else min(MISSION['cruise_speed_m_s'],.20 if self.vision_only else MISSION['cruise_speed_m_s']))*max(0.,math.cos(err))
   if abs(err)>.4:v=0.
   if self.detour and front<.18 and abs(err)<.5:
    v=0.;w=1.2*self.avoid_sign
@@ -170,7 +172,7 @@ class CampusRover(Robot):
  def status(self,now,xy,heading,front):
   if now-self.last_status<.5:return
   self.last_status=now
-  status={'time_s':round(now,2),'state':self.state,'waypoint':self.wp,'waypoints':len(self.route),'lap':self.lap,'distance_m':round(self.travel,2),'captures':len(self.records),'new_captures':self.new_captures,'avoid_events':self.avoid_events,'front_range_m':round(front,2),'position_local_m':[round(v,4)for v in xy],'heading_rad':round(heading,4),'latest':self.snapshots[-1]['detections'][0]if self.snapshots and self.snapshots[-1]['detections']else None,'snapshots':len(self.snapshots),'snapshot_interval_s':self.snapshot_interval,'next_snapshot_s':self.next_snapshot,'latest_snapshot':self.snapshots[-1]if self.snapshots else None}
+  status={'time_s':round(now,2),'state':self.state,'waypoint':self.wp,'waypoints':len(self.route),'lap':self.lap,'distance_m':round(self.travel,2),'captures':len(self.records),'new_captures':self.new_captures,'avoid_events':self.avoid_events,'front_range_m':round(front,2),'position_local_m':[round(v,4)for v in xy],'heading_rad':round(heading,4),'latest':self.snapshots[-1]['detections'][0]if self.snapshots and self.snapshots[-1]['detections']else None,'total_items':len(self.catalog),'vision_model_active':self.vision_only,'snapshots':len(self.snapshots),'snapshot_interval_s':self.snapshot_interval,'next_snapshot_s':self.next_snapshot,'latest_snapshot':self.snapshots[-1]if self.snapshots else None}
   atomic_json(LOGS/'robot_state.json',status);self.emitter.send(json.dumps(status).encode())
   if int(now)%10==0:print(f'PATROL {now:.1f}s | {self.state} | waypoint {self.wp}/{len(self.route)} | distance {self.travel:.1f}m | found {len(self.records)}',flush=True)
  def run(self):

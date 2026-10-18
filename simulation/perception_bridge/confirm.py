@@ -1,7 +1,7 @@
 """Two-view confirmation: an item is listed only once it has been seen from two rover positions.
 
 The first sighting of an item is kept as pending (with a copy of its frame). A later sighting
-confirms it when it has the same category, a matching color or a shared name word, was seen at
+confirms it when specific visual type and known color agree, it was seen at
 least MIN_BASELINE_M away, and the two sight lines cross 0.3-MAX_RANGE_M in front of both
 cameras, i.e. both views agree on where the object is. One-off misreads (a blurry bench leg, a
 "rectangular object" that only exists from one angle) rarely repeat at a consistent spot, so they
@@ -19,6 +19,7 @@ from pathlib import Path
 
 from config import CAMERA_MOUNT_YAW, PERCEPTION_HFOV, STATE_DIR
 from pose import Pose
+from quality import type_words
 
 PENDING_DIR = STATE_DIR / "pending"
 MIN_BASELINE_M = 0.8      # views closer than this can't triangulate
@@ -42,9 +43,9 @@ class Sighting:
     words: set[str] = field(default_factory=set)
 
 
-def bearing_of(pose: Pose, camera: int, box: dict, image_width: int) -> float:
+def bearing_of(pose: Pose, camera: int, box: dict, image_width: int, hfov: float | None = None) -> float:
     cx = (box["x1"] + box["x2"]) / 2
-    theta = math.atan((0.5 - cx / image_width) * 2 * math.tan(PERCEPTION_HFOV / 2))  # + = image left = CCW
+    theta = math.atan((0.5 - cx / image_width) * 2 * math.tan((hfov if hfov is not None else PERCEPTION_HFOV) / 2))  # + = image left = CCW
     return pose.heading_rad + CAMERA_MOUNT_YAW[camera % len(CAMERA_MOUNT_YAW)] + theta
 
 
@@ -53,7 +54,7 @@ def intersect(a: Sighting, b: Sighting) -> tuple[float, float] | None:
     dax, day = math.cos(a.bearing), math.sin(a.bearing)
     dbx, dby = math.cos(b.bearing), math.sin(b.bearing)
     denom = dax * dby - day * dbx
-    if abs(denom) < 1e-3:
+    if abs(denom) < math.sin(math.radians(6)):
         return None  # parallel lines
     ex, ey = b.x - a.x, b.y - a.y
     ta = (ex * dby - ey * dbx) / denom
@@ -69,14 +70,19 @@ class Confirmer:
         for old in PENDING_DIR.iterdir():
             old.unlink(missing_ok=True)
         self.pending: list[Sighting] = []
-        self.confirmed: list[tuple[float, float]] = []
+        self.confirmed: list[tuple[tuple[float, float], set[str]]] = []
         self._n = 0
 
     def _same_item(self, a: Sighting, b: Sighting) -> bool:
-        return a.item["category"] == b.item["category"] and (
-            a.item["color"] == b.item["color"] or bool(a.words & b.words))
+        a_type,b_type=type_words(a.item),type_words(b.item)
+        # Equal broad categories/colors are insufficient (e.g. a black phone and black bench leg).
+        if not a_type or not b_type or not (a_type & b_type):return False
+        a_color=str(a.item.get('color','')).lower();b_color=str(b.item.get('color','')).lower()
+        known=lambda c:c not in ('','unknown','multicolor','other')
+        return not (known(a_color) and known(b_color) and a_color!=b_color)
 
-    def observe(self, pose: Pose, camera: int, image: Path, image_width: int, items: list[dict]) -> list[tuple[Path, dict]]:
+
+    def observe(self, pose: Pose, camera: int, image: Path, image_width: int, items: list[dict], hfov: float | None = None) -> list[tuple[Path, dict]]:
         """Feeds one frame's identified items; returns (frame, item) pairs that are now confirmed."""
         for p in [p for p in self.pending if math.dist((p.x, p.y), (pose.x, pose.y)) > EXPIRE_M]:
             p.image.unlink(missing_ok=True)
@@ -84,7 +90,7 @@ class Confirmer:
         confirmed: list[tuple[Path, dict]] = []
         keep_frame = False
         for item in items:
-            s = Sighting(pose.x, pose.y, bearing_of(pose, camera, item["box"], image_width), item, image,
+            s = Sighting(pose.x, pose.y, bearing_of(pose, camera, item["box"], image_width,hfov), item, image,
                          words(f"{item.get('title', '')} {item.get('what_it_is', '')}"))
             match = None
             for p in self.pending:
@@ -98,9 +104,10 @@ class Confirmer:
                 p, point = match
                 self.pending.remove(p)
                 p.image.unlink(missing_ok=True)
-                if any(math.dist(point, c) < CONFIRMED_RADIUS_M for c in self.confirmed):
+                if any(math.dist(point, c) < CONFIRMED_RADIUS_M and bool(type_words(item)&kinds) for c,kinds in self.confirmed):
                     continue  # already listed from earlier views
-                self.confirmed.append(point)
+                self.confirmed.append((point,type_words(item)))
+                item['_confirmation']={'point_local_m':[round(v,3)for v in point],'baseline_m':round(math.dist((p.x,p.y),(s.x,s.y)),3),'type':sorted(type_words(item))}
                 confirmed.append((image, item))
             else:
                 self.pending.append(s)

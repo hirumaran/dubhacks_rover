@@ -151,13 +151,10 @@ dense=[checkpoints[0]]
 for a,b in zip(checkpoints,checkpoints[1:]):
  n=max(1,math.ceil(math.dist(a,b)/.5))
  dense.extend(tuple(a[j]+(b[j]-a[j])*k/n for j in [0,1])for k in range(1,n+1))
-mission={'map':'Reference-inspired Gates atrium and corridor','length_m':round(sum(math.dist(a,b)for a,b in zip(checkpoints,checkpoints[1:])),3),'waypoints':dense,'wheel_radius_m':.0271,'track_width_m':.1772,'cruise_speed_m_s':.40,'loop':True,'planner':'Ground-floor corridor patrol; reference-inspired approximate layout','detector':'Webots camera Recognition ground truth','localization':'Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim','total_items':6}
+mission={'map':'Reference-inspired Gates atrium and corridor','length_m':round(sum(math.dist(a,b)for a,b in zip(checkpoints,checkpoints[1:])),3),'waypoints':dense,'wheel_radius_m':.10,'track_width_m':.54,'cruise_speed_m_s':.40,'loop':True,'planner':'Ground-floor corridor patrol; reference-inspired approximate layout','detector':'Webots camera Recognition ground truth','localization':'Simulated indoor pose via GPS device; no real indoor GPS or SLAM claim','total_items':6,'robot_dimensions_m':[.70,.60,.925],'camera_height_m':.90,'camera_mounts_m':{'0': [0.343, 0, 0.9], '1': [0, 0.257, 0.9], '2': [-0.343, 0, 0.9], '3': [0, -0.257, 0.9]}}
 (ROOT/'maps/mission.json').write_text(json.dumps(mission,indent=2))
-# Reuse the validated six-wheel geometry, retaining the actual 8-inch footprint.
-proto=(ROOT/'tools/CampusScout.base.proto').read_text().replace('PROTO CampusScout','PROTO IndoorScout').replace('controller "campus_rover"','controller "indoor_rover"').replace('width 1280 height 960','width 640 height 480').replace('Recognition { maxRange 4.5 ','Recognition { maxRange 3 ').replace('fieldOfView 0.87','fieldOfView 1.64')  # benches are 1.2 m away indoors: wide perception lens
-proto=proto.replace('Emitter { name "telemetry" channel 37 }','''LED { translation -.01 0 .22 name "photo_flash" color [ 1 1 1 ] children [ PointLight { location 0 0 .03 intensity 1 radius 2 attenuation 0 0 1 } Shape { appearance PBRAppearance { baseColor 1 1 1 emissiveColor 0 0 0 } geometry Sphere { radius .008 subdivision 1 } } ] }
-Emitter { name "telemetry" channel 39 }''')
-(ROOT/'protos/IndoorScout.proto').write_text(proto)
+# Dedicated indoor-size rover; do not regenerate the earlier 8-inch mast geometry.
+(ROOT/'protos/IndoorScout.proto').write_text((ROOT/'tools/IndoorScout.base.proto').read_text())
 # Lost items: real Webots object models left on benches beside the patrol route (bench_props.py).
 import os,sys
 sys.path.insert(0,str(next(p for p in [ROOT/'tools',ROOT.parent/'tools'] if (p/'bench_props.py').exists())))
@@ -165,9 +162,10 @@ import bench_props
 from shapely.geometry import box as _rect
 from shapely.ops import unary_union
 props_seed=int(os.environ.get('PROPS_SEED','2026'))
-prop_nodes,benches,lost=bench_props.render(dense,unary_union([_rect(*f) for f in floor_blocks]),random.Random(props_seed),bench_count=4,
+prop_nodes,benches,lost=bench_props.render(dense,unary_union([_rect(*f) for f in floor_blocks]),random.Random(props_seed),bench_count=4,required_kinds=("backpack","laptop","book","bottle"),
  allowed=unary_union([_rect(*f) for f in floor_plate]).buffer(-.3),id_prefix='GATES',offsets=(1.2,1.5,1.8,2.1,2.5),margin=.25,min_gap_m=6)
 parts.extend(prop_nodes)
+mission['reference_lat_lon']=[47.6529035, -122.3045693];mission['reference_source']='https://www.openstreetmap.org/way/1491155067';mission['total_items']=len(lost);(ROOT/'maps/mission.json').write_text(json.dumps(mission,indent=2))
 (ROOT/'maps/items.json').write_text(json.dumps({it['id']:{'description':it['description']}for it in lost},indent=2)+'\n')
 (ROOT/'maps/lost_items.json').write_text(json.dumps({'seed':props_seed,'benches':[{'id':i,'x':round(x,2),'y':round(y,2),'yaw':round(t,3)}for i,(x,y,t) in enumerate(benches,1)],'items':lost},indent=2)+'\n')
 world='''#VRML_SIM R2025a utf8

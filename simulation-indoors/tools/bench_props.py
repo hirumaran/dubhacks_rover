@@ -36,12 +36,16 @@ SEAT_SLOTS = [-0.75, -0.25, 0.25, 0.75]
 
 # kind -> (node template, height of the item's origin above the surface it rests on, recognition colour)
 ITEMS = {
+    "backpack": ('Solid {{ translation {x} {y} {z} rotation 0 0 1 {yaw} name "{name}" children [ CadShape {{ url [ "assets/lost-items/backpack/model.obj" ] }} ] boundingObject Pose {{ translation 0 0 .21 children [ Box {{ size .472 .356 .42 }} ] }} }}',0.0,"0.3 0.4 0.6"),
+    "laptop": ('Solid {{ translation {x} {y} {z} rotation 0 0 1 {yaw} name "{name}" children [ CadShape {{ url [ "assets/lost-items/laptop/model.obj" ] }} ] boundingObject Pose {{ translation 0 0 .104 children [ Box {{ size .34 .31 .209 }} ] }} }}',0.0,"0.5 0.5 0.55"),
     "bottle": ('WaterBottle {{ translation {x} {y} {z} rotation 0 0 1 {yaw} name "{name}" mass 0 }}', 0.0, "0.75 0.85 0.95"),
     "book": ('Book {{ translation {x} {y} {z} rotation {book_rot} name "{name}" color {color} }}', 0.012, "0.45 0.2 0.2"),
     "ball": ('SoccerBall {{ translation {x} {y} {z} name "{name}" radius 0.11 }}', 0.112, "0.95 0.95 0.95"),
     "toy": ('RubberDuck {{ translation {x} {y} {z} rotation 0 0 1 {yaw} name "{name}" scale 2 density 0 }}', 0.04, "1 0.8 0"),
 }
 DESCRIPTIONS = {
+    "backpack": "Backpack with shoulder straps and front pocket",
+    "laptop": "Open laptop with keyboard and screen",
     "bottle": "Clear plastic water bottle",
     "book": "Hardcover book",
     "ball": "Black and white soccer ball",
@@ -151,7 +155,7 @@ def place_benches(route_pts, blocked, count, rng, allowed=None, offsets=(1.7, 2.
 
 
 def render(route_pts, blocked, rng, bench_count=6, max_items_per_bench=2, allowed=None, id_prefix="CS",
-           **place_kw):
+           required_kinds=(), **place_kw):
     """World nodes (one per line) for benches and the items left on them, plus a summary."""
     benches = place_benches(route_pts, blocked, bench_count, rng, allowed=allowed, **place_kw)
     nodes, summary = [], []
@@ -162,12 +166,12 @@ def render(route_pts, blocked, rng, bench_count=6, max_items_per_bench=2, allowe
         slots = rng.sample(SEAT_SLOTS, k=rng.randint(0, max_items_per_bench))
         for slot in slots:
             item_no += 1
-            kind = rng.choice(list(ITEMS))
+            kind = required_kinds[item_no-1] if item_no<=len(required_kinds) else rng.choice(list(ITEMS))
             template, z0, col = ITEMS[kind]
             u = SEAT_X + rng.uniform(-0.06, 0.06)
             v = slot + rng.uniform(-0.12, 0.12)
             ix, iy = bx + c * u - s * v, by + s * u + c * v
-            spin = rng.uniform(-math.pi, math.pi)  # the wrapper Solid turns the item on the seat
+            spin = yaw-math.pi/2 if kind=='laptop' else rng.uniform(-math.pi, math.pi)  # the wrapper Solid turns the item on the seat
             sid = f"{id_prefix}-{item_no:03d}"
             inner = template.format(x=0, y=0, z=z0, yaw=0, name=f"{kind}_{item_no}",
                                     book_rot="0 1 0 1.5708",  # lie the upright book flat

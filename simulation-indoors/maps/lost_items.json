@@ -29,35 +29,27 @@
   "items": [
     {
       "id": "GATES-001",
-      "kind": "toy",
-      "description": "Yellow rubber duck",
+      "kind": "backpack",
+      "description": "Backpack with shoulder straps and front pocket",
       "bench": 1,
-      "x": 6.64,
-      "y": -8.92
+      "x": 6.62,
+      "y": -8.97
     },
     {
       "id": "GATES-002",
-      "kind": "ball",
-      "description": "Black and white soccer ball",
+      "kind": "laptop",
+      "description": "Open laptop with keyboard and screen",
       "bench": 3,
-      "x": -1.44,
-      "y": 11.92
+      "x": -1.48,
+      "y": 11.98
     },
     {
       "id": "GATES-003",
-      "kind": "ball",
-      "description": "Black and white soccer ball",
+      "kind": "book",
+      "description": "Hardcover book",
       "bench": 4,
-      "x": -2.95,
-      "y": 1.35
-    },
-    {
-      "id": "GATES-004",
-      "kind": "bottle",
-      "description": "Clear plastic water bottle",
-      "bench": 4,
-      "x": -3.02,
-      "y": 2.29
+      "x": -3.01,
+      "y": 2.36
     }
   ]
 }

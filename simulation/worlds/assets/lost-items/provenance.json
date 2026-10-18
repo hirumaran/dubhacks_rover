@@ -1,0 +1,28 @@
+[
+  {
+    "name": "backpack",
+    "author": "Quaternius",
+    "license": "CC0-1.0",
+    "source": "https://poly.pizza/m/vF7TuXCPDH",
+    "download": "https://static.poly.pizza/2eb5178b-0c98-4a0d-b0ea-ad8925525d1e.glb",
+    "dimensions_m": [
+      0.4715289217710407,
+      0.3551136465988165,
+      0.42000000000000004
+    ],
+    "conversion": "glTF Y-up to Webots Z-up; scaled to physical size; normalized base; OBJ/MTL export"
+  },
+  {
+    "name": "laptop",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "source": "https://poly.pizza/m/GnbwSUiVty",
+    "download": "https://static.poly.pizza/8190e659-7079-442f-9ed9-083f67b1746b.glb",
+    "dimensions_m": [
+      0.34,
+      0.309174883189571,
+      0.20839089471313574
+    ],
+    "conversion": "glTF Y-up to Webots Z-up; scaled to physical size; normalized base; OBJ/MTL export"
+  }
+]

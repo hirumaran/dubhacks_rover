@@ -129,3 +129,8 @@ export async function tiles(
   }
   return out;
 }
+
+/** Decode once for dimensions/blank-frame validation before any paid model request. */
+export async function sceneInfo(img:LoadedImage):Promise<{width:number;height:number;bitmap:Uint8Array|Uint8ClampedArray}|null>{
+ const full=await decoded(img);return full?{width:full.width,height:full.height,bitmap:full.bitmap}:null;
+}

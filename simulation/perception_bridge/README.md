@@ -86,8 +86,8 @@ PERCEPTION_MISSION=../indoor_showcase/maps/mission.json LOCATION_LABEL="Gates Ce
 ## Checking detections
 
 The simulators write the layout they generated to `maps/lost_items.json` (benches, items, positions).
-That file is ground truth for scoring a run, never an input to the pipeline. Results from one lap with
-seed 2026: campus 7/7 items found (6 named correctly, 1 false find); indoor 4/4 (2 false finds).
+That file is ground truth for scoring a run, never an input to the pipeline. Historical baseline before the October 17 fixes, from one lap with
+seed 2026 (not a score for the current scene): campus 7/7 items found (6 named correctly, 1 false find); indoor 4/4 (2 false finds).
 
 ## Notes
 
@@ -100,6 +100,31 @@ seed 2026: campus 7/7 items found (6 named correctly, 1 false find); indoor 4/4 
   metres of the rover, and matching treats anything under 600 m as nearby.
 - **Duplicates.** The server compares each new item with available listings of the same
   category within ~150 m from the last 24 h and skips it if Perceptron rates it the same object.
-  Requests are sent one at a time so two cameras can't list the same item at once.
-- The rover's own photo gallery (`campus_rover.py`) still uses Webots Recognition; it is a
-  separate showcase feature and does not feed Supabase.
+  First-view detection can run across cameras in parallel; confirmed listing requests run sequentially.
+- When the actual bridge hook is active, the showcase disables reference labels. Without the hook, Webots Recognition remains a clearly labeled reference mode.
+
+
+## Accuracy fixes and connection checks (October 17, 2026)
+
+- All HTTPS calls verify certificates using `certifi`; credentials are read from private `.env` files and remain gitignored.
+- The controller emits session ID, actual image size/FOV and sampling interval. The bridge uses each frame's FOV, rather than assuming the outdoor 50° lens for the indoor 94° cameras.
+- Camera buffers are rendered at the GPS/compass sampling cadence shortly before the capture timer fires. Pairing an older 256 ms image with a newer heading during turns is avoided.
+- New capture sessions clear pending associations and view-change state; launchers archive stale inbox files before starting the bridge.
+- Blank/near-uniform images, invalid/out-of-frame/scene-sized boxes, generic “rectangular object” descriptions and furniture identities are rejected locally. Matching broad category/color alone cannot confirm an item. Sight lines need a meaningful intersection angle and a separate viewpoint.
+- Distinct item types at nearby positions are no longer suppressed by one global “already found” radius.
+- Optional `PERCEPTION_PUBLIC_DIR` writes only model frame images, normalized pixel boxes, status and confirmed item summaries for the local showcase. It exports no secrets or navigation coordinates.
+- The Edge Function fix independently validates blank images/boxes, asks the model to judge crop **and full-scene context**, rechecks caller-supplied candidates, and makes dry-run identification independent of database reads. Deploy it from a Supabase account with access to the project; browser sign-in alone is not project membership.
+
+Regression commands:
+
+```sh
+simulation/perception_bridge/.venv/bin/python simulation/perception_bridge/tools/selftest.py
+simulation/perception_bridge/.venv/bin/python simulation/perception_bridge/tools/quality_selftest.py
+simulation/perception_bridge/.venv/bin/python simulation/perception_bridge/tools/hook_selftest.py
+npx deno test edge-functions/_shared/detection_quality_test.ts
+npx deno check --node-modules-dir=none edge-functions/identify-found-items/index.ts
+```
+
+Blank-frame and architectural negative controls, imported-backpack and laptop positive controls, a physical two-view backpack confirmation and one authenticated Supabase demo photo/listing insertion were tested. These are targeted regression controls, not a claim of perfect detection across all views. See the indoor project's `validation/perception_verification.json` for measured results.
+
+For a local end-to-end demo without cloud deployment, use `simulation-indoors/Start Vision Demo.command`. It runs the patched Edge Function on loopback with `LOCAL_ONLY=1` (forced dry run), calls the real hosted Perceptron API, and starts the bridge, Webots and presentation. It requires the private bridge, Edge Function and UI `.env` files; do not commit them. The legacy `perception/run_service.py` and `tools/bridge_selftest.py` instructions do not apply to this repository version.

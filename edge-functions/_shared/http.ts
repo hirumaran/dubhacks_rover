@@ -15,13 +15,13 @@ export class HttpError extends Error {
 export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json", "X-Perception-Pipeline":"vision-guard-20261017" },
   });
 }
 
 /** Wraps a POST handler with CORS preflight, JSON body parsing and error responses. */
 export function serve(handler: (body: Record<string, unknown>, req: Request) => Promise<Response>) {
-  Deno.serve(async (req) => {
+  Deno.serve({hostname:Deno.env.get("LOCAL_ONLY")==="1"?"127.0.0.1":"0.0.0.0"},async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return json({ error: "Use POST" }, 405);
 

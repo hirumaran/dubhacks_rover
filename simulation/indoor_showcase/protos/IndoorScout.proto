@@ -1,72 +1,75 @@
 #VRML_SIM R2025a utf8
-# Campus Scout physical six-wheel concept; dimensions in meters.
+# Indoor delivery-size rover: 0.70 x 0.60 m footprint, 0.925 m roof.
+# Flush roof-edge cameras retain the 0.90 m optical height and lens angles.
 PROTO IndoorScout [ field SFVec3f translation 0 0 .005 field SFRotation rotation 0 0 1 0 field SFString name "CampusScout" ] {
- Robot { translation IS translation rotation IS rotation name IS name controller "indoor_rover" children [
-Pose { translation 0 0 0.087 children [ Shape { appearance PBRAppearance { baseColor .26 .17 .40 roughness 0.85 metalness 0 } geometry Box { size .178 .136 .078 } } ] }
-Pose { translation 0 0 0.13 children [ Shape { appearance PBRAppearance { baseColor .88 .89 .85 roughness 0.85 metalness 0 } geometry Box { size .180 .138 .006 } } ] }
-Pose { translation 0 0 0.134 children [ Shape { appearance PBRAppearance { baseColor .31 .23 .44 roughness 0.85 metalness 0 } geometry Box { size .15 .108 .002 } } ] }
-Pose { translation 0 0 0.043 children [ Shape { appearance PBRAppearance { baseColor .45 .5 .5 roughness 0.85 metalness 0 } geometry Box { size .174 .124 .004 } } ] }
-Pose { translation 0 -0.069 0.079 children [ Shape { appearance PBRAppearance { baseColor .77 .65 .35 roughness 0.85 metalness 0 } geometry Box { size .145 .001 .005 } } ] }
-Pose { translation 0 -0.069 0.103 children [ Shape { appearance PBRAppearance { baseColor .88 .87 .81 roughness 0.85 metalness 0 } geometry Box { size .08 .001 .018 } } ] }
-Pose { translation 0 0.069 0.079 children [ Shape { appearance PBRAppearance { baseColor .77 .65 .35 roughness 0.85 metalness 0 } geometry Box { size .145 .001 .005 } } ] }
-Pose { translation 0 0.069 0.103 children [ Shape { appearance PBRAppearance { baseColor .88 .87 .81 roughness 0.85 metalness 0 } geometry Box { size .08 .001 .018 } } ] }
-Pose { translation -0.096 0 0.055 children [ Shape { appearance PBRAppearance { baseColor .08 .1 .1 roughness 0.85 metalness 0 } geometry Box { size .011 .114 .012 } } ] }
-Pose { translation 0.096 0 0.055 children [ Shape { appearance PBRAppearance { baseColor .08 .1 .1 roughness 0.85 metalness 0 } geometry Box { size .011 .114 .012 } } ] }
-Pose { translation -0.015 0 0.16 children [ Shape { appearance PBRAppearance { baseColor .12 .15 .15 roughness 0.85 metalness 0 } geometry Cylinder { radius .006 height .05 } } ] }
-Pose { translation -0.015 0 0.2 children [ Shape { appearance PBRAppearance { baseColor .83 .84 .8 roughness 0.85 metalness 0 } geometry Box { size .022 .024 .029 } } ] }
-Pose { translation 0.091 0 0.098 children [ Shape { appearance PBRAppearance { baseColor .05 .08 .09 roughness 0.85 metalness 0 } geometry Box { size .003 .095 .024 } } ] }
-Pose { translation 0.053 0.032 0.14 children [ Shape { appearance PBRAppearance { baseColor .8 .1 .1 roughness 0.85 metalness 0 } geometry Cylinder { radius .007 height .006 } } ] }
-HingeJoint { jointParameters HingeJointParameters { anchor -0.0745 0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "left_0" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "left_0_encoder" } ]
- endPoint Solid { translation -0.0745 0.0886 .0271 rotation 1 0 0 1.57079632679 name "left_0_wheel" contactMaterial "tire"
- children [ DEF TIRE_left_0 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 -0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_left_0 physics Physics { density -1 mass .045 } } }
-HingeJoint { jointParameters HingeJointParameters { anchor 0 0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "left_1" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "left_1_encoder" } ]
- endPoint Solid { translation 0 0.0886 .0271 rotation 1 0 0 1.57079632679 name "left_1_wheel" contactMaterial "tire"
- children [ DEF TIRE_left_1 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 -0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_left_1 physics Physics { density -1 mass .045 } } }
-HingeJoint { jointParameters HingeJointParameters { anchor 0.0745 0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "left_2" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "left_2_encoder" } ]
- endPoint Solid { translation 0.0745 0.0886 .0271 rotation 1 0 0 1.57079632679 name "left_2_wheel" contactMaterial "tire"
- children [ DEF TIRE_left_2 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 -0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_left_2 physics Physics { density -1 mass .045 } } }
-HingeJoint { jointParameters HingeJointParameters { anchor -0.0745 -0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "right_0" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "right_0_encoder" } ]
- endPoint Solid { translation -0.0745 -0.0886 .0271 rotation 1 0 0 1.57079632679 name "right_0_wheel" contactMaterial "tire"
- children [ DEF TIRE_right_0 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_right_0 physics Physics { density -1 mass .045 } } }
-HingeJoint { jointParameters HingeJointParameters { anchor 0 -0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "right_1" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "right_1_encoder" } ]
- endPoint Solid { translation 0 -0.0886 .0271 rotation 1 0 0 1.57079632679 name "right_1_wheel" contactMaterial "tire"
- children [ DEF TIRE_right_1 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_right_1 physics Physics { density -1 mass .045 } } }
-HingeJoint { jointParameters HingeJointParameters { anchor 0.0745 -0.0886 .0271 axis 0 1 0 dampingConstant .0001 }
- device [ RotationalMotor { name "right_2" maxVelocity 20 maxTorque .12 acceleration 25 sound "" } PositionSensor { name "right_2_encoder" } ]
- endPoint Solid { translation 0.0745 -0.0886 .0271 rotation 1 0 0 1.57079632679 name "right_2_wheel" contactMaterial "tire"
- children [ DEF TIRE_right_2 Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness 0.85 metalness 0 } geometry Cylinder { radius .0271 height .026 subdivision 24 } }
- Pose { translation 0 0 0.0135 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .7 roughness 0.85 metalness 0 } geometry Cylinder { radius .018 height .001 subdivision 18 } } ] } ]
- boundingObject USE TIRE_right_2 physics Physics { density -1 mass .045 } } }
+Robot { translation IS translation rotation IS rotation name IS name controller "indoor_rover" children [
+Pose { translation 0 0 0.56 children [ Shape { appearance PBRAppearance { baseColor .88 .89 .85 roughness .65 } geometry Box { size 0.64 0.47 0.6 } } ] }
+Pose { translation 0 0 0.38 children [ Shape { appearance PBRAppearance { baseColor .26 .17 .40 roughness .65 } geometry Box { size 0.644 0.474 0.24 } } ] }
+Pose { translation 0 0 0.205 children [ Shape { appearance PBRAppearance { baseColor .12 .15 .16 roughness .65 } geometry Box { size 0.62 0.44 0.05 } } ] }
+Pose { translation 0 0 0.872 children [ Shape { appearance PBRAppearance { baseColor .26 .17 .40 roughness .65 } geometry Box { size 0.648 0.478 0.016 } } ] }
+Pose { translation 0 0 0.31 children [ Shape { appearance PBRAppearance { baseColor .77 .65 .35 roughness .65 } geometry Box { size 0.65 0.48 0.025 } } ] }
+Pose { translation 0 -0.238 0.53 children [ Shape { appearance PBRAppearance { baseColor .31 .23 .44 roughness .65 } geometry Box { size 0.45 0.006 0.025 } } ] }
+Pose { translation 0 -0.239 0.58 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 roughness .65 } geometry Box { size 0.25 0.006 0.055 } } ] }
+Pose { translation 0 0.238 0.53 children [ Shape { appearance PBRAppearance { baseColor .31 .23 .44 roughness .65 } geometry Box { size 0.45 0.006 0.025 } } ] }
+Pose { translation 0 0.239 0.58 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 roughness .65 } geometry Box { size 0.25 0.006 0.055 } } ] }
+Pose { translation 0.327 0 0.69 children [ Shape { appearance PBRAppearance { baseColor .06 .09 .10 roughness .65 } geometry Box { size 0.014 0.34 0.12 } } ] }
+Pose { translation 0.33 0 0.36 children [ Shape { appearance PBRAppearance { baseColor .10 .12 .13 roughness .65 } geometry Box { size 0.02 0.38 0.04 } } ] }
+Pose { translation -0.33 0 0.36 children [ Shape { appearance PBRAppearance { baseColor .10 .12 .13 roughness .65 } geometry Box { size 0.02 0.38 0.04 } } ] }
+Pose { translation .338 -0.105 .69 children [ Shape { appearance PBRAppearance { baseColor .45 .66 .68 metalness .3 roughness .2 } geometry Sphere { radius .028 } } ] }
+Pose { translation .338 0.105 .69 children [ Shape { appearance PBRAppearance { baseColor .45 .66 .68 metalness .3 roughness .2 } geometry Sphere { radius .028 } } ] }
+Pose { translation .04 0 .240 children [ Shape { appearance PBRAppearance { baseColor .05 .08 .10 } geometry Cylinder { radius .045 height .016 } } ] }
+HingeJoint { jointParameters HingeJointParameters { anchor -0.25 0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "left_0" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "left_0_encoder" } ]
+ endPoint Solid { translation -0.25 0.27 .10 rotation 1 0 0 1.57079632679 name "left_0_wheel" contactMaterial "tire"
+ children [ DEF TIRE_left_0 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 -0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_left_0 physics Physics { density -1 mass .45 } } }
+HingeJoint { jointParameters HingeJointParameters { anchor 0 0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "left_1" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "left_1_encoder" } ]
+ endPoint Solid { translation 0 0.27 .10 rotation 1 0 0 1.57079632679 name "left_1_wheel" contactMaterial "tire"
+ children [ DEF TIRE_left_1 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 -0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_left_1 physics Physics { density -1 mass .45 } } }
+HingeJoint { jointParameters HingeJointParameters { anchor 0.25 0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "left_2" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "left_2_encoder" } ]
+ endPoint Solid { translation 0.25 0.27 .10 rotation 1 0 0 1.57079632679 name "left_2_wheel" contactMaterial "tire"
+ children [ DEF TIRE_left_2 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 -0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_left_2 physics Physics { density -1 mass .45 } } }
+HingeJoint { jointParameters HingeJointParameters { anchor -0.25 -0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "right_0" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "right_0_encoder" } ]
+ endPoint Solid { translation -0.25 -0.27 .10 rotation 1 0 0 1.57079632679 name "right_0_wheel" contactMaterial "tire"
+ children [ DEF TIRE_right_0 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_right_0 physics Physics { density -1 mass .45 } } }
+HingeJoint { jointParameters HingeJointParameters { anchor 0 -0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "right_1" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "right_1_encoder" } ]
+ endPoint Solid { translation 0 -0.27 .10 rotation 1 0 0 1.57079632679 name "right_1_wheel" contactMaterial "tire"
+ children [ DEF TIRE_right_1 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_right_1 physics Physics { density -1 mass .45 } } }
+HingeJoint { jointParameters HingeJointParameters { anchor 0.25 -0.27 .10 axis 0 1 0 dampingConstant .015 }
+ device [ RotationalMotor { name "right_2" maxVelocity 12 maxTorque 6 acceleration 10 sound "" } PositionSensor { name "right_2_encoder" } ]
+ endPoint Solid { translation 0.25 -0.27 .10 rotation 1 0 0 1.57079632679 name "right_2_wheel" contactMaterial "tire"
+ children [ DEF TIRE_right_2 Shape { appearance PBRAppearance { baseColor .07 .09 .10 roughness .9 } geometry Cylinder { radius .10 height .06 subdivision 32 } }
+ Pose { translation 0 0 0.031 children [ Shape { appearance PBRAppearance { baseColor .72 .73 .70 metalness .3 } geometry Cylinder { radius .065 height .004 subdivision 24 } } ] } ]
+ boundingObject USE TIRE_right_2 physics Physics { density -1 mass .45 } } }
+Pose { translation 0.32 0 .890 children [ Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness .4 } geometry Box { size 0.04 0.08 .060 } } ] }
+Pose { translation -0.32 0 .890 children [ Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness .4 } geometry Box { size 0.04 0.08 .060 } } ] }
+Pose { translation 0 0.235 .890 children [ Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness .4 } geometry Box { size 0.08 0.04 .060 } } ] }
+Pose { translation 0 -0.235 .890 children [ Shape { appearance PBRAppearance { baseColor .08 .10 .11 roughness .4 } geometry Box { size 0.08 0.04 .060 } } ] }
 GPS { name "gps" accuracy .003 }
 Compass { name "compass" }
 InertialUnit { name "imu" }
-Lidar { translation .04 0 .170 name "lidar" fieldOfView 6.283185307 horizontalResolution 180 numberOfLayers 1 verticalFieldOfView .01 near .04 minRange .04 maxRange 5 noise .005 type "fixed" }
-# Camera mast: a raised view over bench seats and low obstacles.
-Pose { translation -.015 0 0.515 children [ Shape { appearance PBRAppearance { baseColor .15 .15 .16 roughness .6 metalness .4 } geometry Cylinder { radius .01 height 0.770 } } ] } Pose { translation -.015 0 0.900 children [ Shape { appearance PBRAppearance { baseColor .1 .1 .11 roughness .5 metalness .3 } geometry Cylinder { radius .035 height .05 } } ] }
-Camera { translation -.015 0 0.9 rotation -0.000000 1.000000 0.000000 0.200000 name "camera_0" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 0.9 rotation -0.099340 0.099340 0.990082 1.580763 name "camera_1" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 0.9 rotation -0.099833 0.000000 0.995004 3.141593 name "camera_2" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-Camera { translation -.015 0 0.9 rotation -0.099340 -0.099340 0.990082 4.702422 name "camera_3" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
-# Perception cameras: narrow 50 deg lenses looking left/right at bench-seat height for item recognition.
-Camera { translation -.015 0 0.9 rotation -0.084593 0.084593 0.992818 1.578004 name "perception_left" width 1920 height 1440 fieldOfView 1.64 near .02 far 60 antiAliasing TRUE }
-Camera { translation -.015 0 0.9 rotation -0.084593 -0.084593 0.992818 4.705181 name "perception_right" width 1920 height 1440 fieldOfView 1.64 near .02 far 60 antiAliasing TRUE }
-LED { translation -.01 0 .22 name "photo_flash" color [ 1 1 1 ] children [ PointLight { location 0 0 .03 intensity 1 radius 2 attenuation 0 0 1 } Shape { appearance PBRAppearance { baseColor 1 1 1 emissiveColor 0 0 0 } geometry Sphere { radius .008 subdivision 1 } } ] }
+Lidar { translation .04 0 .240 name "lidar" fieldOfView 6.283185307 horizontalResolution 180 numberOfLayers 1 verticalFieldOfView .01 near .04 minRange .04 maxRange 5 noise .005 type "fixed" }
+Camera { translation 0.343 0 0.9 rotation -0.000000 1.000000 0.000000 0.200000 name "camera_0" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation 0 0.257 0.9 rotation -0.099340 0.099340 0.990082 1.580763 name "camera_1" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation -0.343 0 0.9 rotation -0.099833 0.000000 0.995004 3.141593 name "camera_2" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation 0 -0.257 0.9 rotation -0.099340 -0.099340 0.990082 4.702422 name "camera_3" width 640 height 480 fieldOfView 1.64 antiAliasing TRUE near .02 far 60 recognition Recognition { maxRange 3 maxObjects 12 occlusion 2 frameThickness 1 segmentation TRUE } }
+Camera { translation 0 0.257 0.9 rotation -0.084593 0.084593 0.992818 1.578004 name "perception_left" width 1920 height 1440 fieldOfView 1.64 near .02 far 60 antiAliasing TRUE }
+Camera { translation 0 -0.257 0.9 rotation -0.084593 -0.084593 0.992818 4.705181 name "perception_right" width 1920 height 1440 fieldOfView 1.64 near .02 far 60 antiAliasing TRUE }
+LED { translation .336 0 .81 name "photo_flash" color [ 1 1 1 ] children [ PointLight { location .04 0 .02 intensity 1 radius 2 attenuation 0 0 1 } Shape { appearance PBRAppearance { baseColor 1 1 1 } geometry Sphere { radius .012 subdivision 1 } } ] }
 Emitter { name "telemetry" channel 39 }
- ] boundingObject Pose { translation 0 0 .087 children [ Box { size .178 .136 .078 } ] }
- physics Physics { density -1 mass .95 centerOfMass [ 0 0 .070 ] } selfCollision FALSE }
+] boundingObject Group { children [ Pose { translation 0 0 .56 children [ Box { size .644 .474 .60 } ] } Pose { translation 0 0 .205 children [ Box { size .62 .44 .05 } ] } ] }
+physics Physics { density -1 mass 18 centerOfMass [ 0 0 .26 ] } selfCollision FALSE }
 }

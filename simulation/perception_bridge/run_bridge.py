@@ -30,6 +30,8 @@ from change_gate import ChangeGate
 from confirm import Confirmer
 from pose import Pose
 from uploader import Uploader
+from quality import image_quality_reason,candidate_reason
+from public_status import PublicStatus
 
 TICK_RE = re.compile(r"^frame_(\d+)\.json$")
 CAM_RE = re.compile(r"^frame_(\d+)_c(\d+)\.(?:jpg|png)$")
@@ -63,6 +65,9 @@ class Bridge:
         if not config.ROVER_ID:
             sys.exit("ROVER_ID is not set: register this rover in the `rovers` table and put its id in .env")
         config.INBOX_DIR.mkdir(parents=True, exist_ok=True)
+        self.public=PublicStatus()
+        if not config.IS_DEMO:sys.exit("Webots ingestion requires IS_DEMO=true")
+        self.session_id=None
         self.gate = ChangeGate()
         self.confirmer = Confirmer() if config.CONFIRM_VIEWS >= 2 else None
         cols, _, rows = config.DETECT_TILES.partition("x")
@@ -99,6 +104,12 @@ class Bridge:
 
     def process_tick(self, seq: int, meta_path: Path) -> int:
         meta = json.loads(meta_path.read_text())
+        session=meta.get('session_id')
+        if session and session!=self.session_id:
+            self.session_id=session;self.gate.last={};self.public=PublicStatus()
+            if self.confirmer is not None:self.confirmer=Confirmer()
+            log({'session':session,'event':'new capture session'})
+        camera_specs={int(c['idx']):c for c in meta.get('cameras',[])if 'idx'in c}
         pose = Pose.from_meta(meta)
         captured_at = datetime.fromtimestamp(meta_path.stat().st_mtime, timezone.utc).isoformat()
         pngs = sorted(
@@ -112,6 +123,9 @@ class Bridge:
                 continue
             with Image.open(png) as img:
                 img.load()
+            unusable=image_quality_reason(img)
+            if unusable:
+                log({'seq':seq,'camera':cam,'skipped':unusable});continue
             send, reason = self.gate.check(cam, pose, img)
             if send:
                 to_send.append((cam, png, reason))
@@ -121,7 +135,7 @@ class Bridge:
         # Cameras face different directions, so they never see the same item: send them together.
         with ThreadPoolExecutor(max_workers=max(1, len(to_send))) as pool:
             results = pool.map(
-                lambda c: self.uploader.send(self.payload(c[1], pose, captured_at), key=f"{seq:07d}_c{c[0]}"), to_send)
+                lambda c: self.uploader.send(self.payload(c[1], pose, captured_at), key=f"{self.session_id or 'legacy'}_{seq:07d}_c{c[0]}"), to_send)
             results = list(results)
         for (cam, png, reason), result in zip(to_send, results):
             where = [round(pose.x, 2), round(pose.y, 2), round(pose.heading_rad, 4)]
@@ -135,15 +149,25 @@ class Bridge:
                   f"{'saw ' + names if seen else summarize(result)}", flush=True)
             log({"seq": seq, "camera": cam, "reason": reason, "pose": where, "result": result})
             with Image.open(png) as img:
-                width = img.width
-            for frame, item in self.confirmer.observe(pose, cam, png, width, seen):
+                width,height = img.size
+            accepted=[]
+            for item in seen:
+                rejection=candidate_reason(item,width,height,config.MIN_BOX_PX)
+                if rejection:log({'seq':seq,'camera':cam,'rejected':item.get('title'),'reason':rejection})
+                else:accepted.append(item)
+            hfov=camera_specs.get(cam,{}).get('hfov')
+            if hfov is not None and not 0.1<float(hfov)<3.1:raise ValueError('invalid camera hfov')
+            published=[]
+            for frame, item in self.confirmer.observe(pose.at_offset(camera_specs.get(cam,{}).get('offset_m',[0,0,0])), cam, png, width, accepted,hfov=hfov):
                 listing = self.uploader.send(
                     {**self.payload(frame, pose, captured_at), "dry_run": config.DRY_RUN,
                      "items": [{k: item[k] for k in ("box", "title", "description", "category", "color")}]},
-                    key=f"{seq:07d}_c{cam}_confirmed")
+                    key=f"{self.session_id or 'legacy'}_{seq:07d}_c{cam}_confirmed")
                 print(f"[bridge] seq {seq} cam {cam} confirmed '{item.get('title')}' in two views -> "
                       f"{summarize(listing)}", flush=True)
-                log({"seq": seq, "camera": cam, "confirmed": item.get("title"), "pose": where, "result": listing})
+                log({"seq": seq, "camera": cam, "confirmed": item.get("title"), "confirmation":item.get("_confirmation"), "pose": where, "result": listing})
+                published.append((item,listing))
+            self.public.publish(seq,cam,pose,png,accepted,len(seen)-len(accepted),result,published)
         sent = len(to_send)
         for _, png in pngs:
             png.unlink(missing_ok=True)

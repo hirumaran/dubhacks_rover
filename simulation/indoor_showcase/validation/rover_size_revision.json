@@ -1,0 +1,34 @@
+{
+  "revision": "Delivery-size indoor rover, roof-edge cameras",
+  "footprint_m": [
+    0.7,
+    0.6
+  ],
+  "overall_height_m": 0.925,
+  "camera_optical_height_m": 0.9,
+  "wheel_radius_m": 0.1,
+  "track_width_m": 0.54,
+  "mass_kg": 20.7,
+  "extended_camera_arm": false,
+  "native_chassis_validation": {
+    "runtime": "Webots R2025a",
+    "simulated_seconds": 230.02,
+    "distance_m": 88.7,
+    "completed_laps": 1,
+    "terminal_state": "PATROL",
+    "detours": 0,
+    "purpose": "Full physical patrol of enlarged chassis; camera visibility checked separately after roof-edge placement."
+  },
+  "camera_validation": {
+    "four_view_snapshot": "Native camera images show bench seats and scene without roof/body occlusion.",
+    "lens_fields_of_view_and_tilt": "Unchanged",
+    "calibrated_camera_origins": "Robot-relative offsets exported in per-frame metadata and rotated into world frame for two-view confirmation.",
+    "model_listing_mode": "dry_run"
+  },
+  "regressions": {
+    "quality_checks": 12,
+    "camera_hook": "PASS",
+    "bridge_selftest": "PASS"
+  },
+  "note": "Approximate concept geometry; no manufacturing validation."
+}

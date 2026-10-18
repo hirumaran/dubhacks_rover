@@ -1,0 +1,5 @@
+These backpack and laptop models are dedicated to the public domain under CC0 1.0.
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Backpack by Quaternius: https://poly.pizza/m/vF7TuXCPDH
+Laptop by Kenney: https://poly.pizza/m/GnbwSUiVty
+See provenance.json for original download URLs and geometric conversions.

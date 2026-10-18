@@ -44,6 +44,13 @@ class Pose:
     def lat_lon(self) -> tuple[float, float]:
         return LAT0 + self.y * DEG_PER_M_LAT, LON0 + self.x * DEG_PER_M_LON
 
+    def at_offset(self, offset: list[float]) -> "Pose":
+        """Camera origin from fixed, calibrated robot-frame x/y offsets (not scene truth)."""
+        if len(offset) != 3 or not all(isinstance(v, (float,int)) and math.isfinite(v) for v in offset):
+            raise ValueError("invalid camera mounting offset")
+        dx,dy,_=offset;c,s=math.cos(self.heading_rad),math.sin(self.heading_rad)
+        return Pose(self.x+dx*c-dy*s,self.y+dx*s+dy*c,self.heading_rad,self.sim_time_s)
+
     def camera_yaw(self, camera_idx: int) -> float:
         return (self.heading_rad + CAMERA_MOUNT_YAW[camera_idx % len(CAMERA_MOUNT_YAW)]) % (2 * math.pi)
 
