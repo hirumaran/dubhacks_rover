@@ -1,5 +1,14 @@
 # dubhacks_rover
 
+## Scan to open the app
+
+<a href="https://hirumaran.github.io/dubhacks_rover/"><img src="assets/huskyfind-qr.png" alt="QR code that opens the HuskyFind web app" width="170" /></a>
+
+Point a phone camera at the QR — or open **<https://hirumaran.github.io/dubhacks_rover/>** — to launch
+the HuskyFind web build of the Expo app. No install, no dev server. Tap **Explore Demo** to see the
+seeded student flow (Discover, report, matches). Native Expo Go instructions are in
+[`ui/README.md`](ui/README.md).
+
 **Use a real webcam:** see [`webcam/README.md`](webcam/README.md), or double-click `webcam/Start Webcam.command`. Open http://127.0.0.1:8769/ for real Perceptron image detection with manual or five-second scans; no Webots or database uploads are required.
 
 **Run the end-to-end demo:** see [DEMO.md](DEMO.md) (rover finds an item, HuskyFind reports the match).

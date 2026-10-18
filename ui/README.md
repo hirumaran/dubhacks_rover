@@ -13,6 +13,20 @@ Native iOS/Android lost-and-found app for UW Seattle, built with Expo SDK 57, Re
 
 Run `npm run typecheck`, `npm test`, and `npm run export:native` for validation. A native JavaScript export is not a signed app binary or a device UI test. Android local builds require Android Studio; local iOS builds require macOS/Xcode. EAS build profiles are included for cloud builds.
 
+## Hosted web build
+
+A static export of the app is served from the `gh-pages` branch at
+<https://hirumaran.github.io/dubhacks_rover/> (the root README shows a QR for judges).
+Refresh it after app changes:
+
+```bash
+EXPO_WEB_BASE_URL=/dubhacks_rover npm run export:web
+# publish ui/dist-web to the gh-pages branch root
+```
+
+`EXPO_WEB_BASE_URL` is read by `app.config.ts` and only affects the web export's asset
+and route prefix; local development is unchanged.
+
 ## Supabase setup
 
 The publishable key cannot deploy SQL. In PowerShell, run:
