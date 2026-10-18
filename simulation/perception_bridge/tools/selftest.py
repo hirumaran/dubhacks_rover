@@ -137,6 +137,31 @@ def main() -> int:
         ("inbox emptied", not any(inbox.iterdir())),
     ]
 
+    # Two-view confirmation: an item 3 m to the left of the route, seen from x=0 and x=1.
+    import math as _m
+    from confirm import Confirmer
+    from pose import Pose
+    W = 1920
+    def box_for(px, py, item_x, item_y, hfov=0.87):  # box centred on the item's bearing, camera 1 (left)
+        theta = _m.atan2(item_y - py, item_x - px) - _m.pi / 2
+        cx = W * (0.5 - _m.tan(theta) / (2 * _m.tan(hfov / 2)))
+        return {"x1": cx - 30, "y1": 600, "x2": cx + 30, "y2": 760}
+    duck = {"title": "Yellow rubber duck", "category": "Other", "color": "Yellow", "description": "d"}
+    frame = tmp / "frame.jpg"
+    Image.new("RGB", (W, 1440)).save(frame)
+    c = Confirmer()
+    first = c.observe(Pose(0, 0, 0, 0), 1, frame, W, [{**duck, "box": box_for(0, 0, 0, 3)}])
+    same_spot = c.observe(Pose(0.2, 0, 0, 5), 1, frame, W, [{**duck, "box": box_for(0.2, 0, 0, 3)}])
+    other = c.observe(Pose(1, 0, 0, 10), 1, frame, W,
+                      [{"title": "Black wallet", "category": "Accessories", "color": "Black", "description": "d",
+                        "box": box_for(1, 0, 0, 3)}])
+    second = c.observe(Pose(1.2, 0, 0, 15), 1, frame, W, [{**duck, "box": box_for(1.2, 0, 0, 3)}])
+    checks += [
+        ("one view never lists", first == [] and same_spot == []),
+        ("different item at the same spot doesn't confirm", other == []),
+        ("second view from 1.2 m away confirms", len(second) == 1 and second[0][1]["title"] == duck["title"]),
+    ]
+
     server.shutdown()
     shutil.rmtree(tmp, ignore_errors=True)
     for name, ok in checks:

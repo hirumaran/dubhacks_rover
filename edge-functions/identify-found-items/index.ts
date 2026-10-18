@@ -23,6 +23,8 @@
 //   rover_id?      uuid
 //   discovered_at? ISO 8601 timestamp, default now
 //   dry_run?       boolean  identify only; no uploads or inserts
+//   items?         [{ box, title, description, category, color }]   list these already-identified
+//                  items (e.g. confirmed in two rover views) instead of detecting; same checks after that
 //   min_box_px?    number   drop detections whose longer side is shorter: with a known camera,
 //                  small means far away (another bench across the quad), where false finds cluster
 //   detect_tiles?  { cols, rows, band?: [top, bottom] }   run detection on overlapping tiles of the
@@ -278,6 +280,40 @@ async function findDuplicate(
   return best;
 }
 
+/** Validates `items`: listings the caller already identified (from an earlier dry run). */
+function preIdentifiedItems(v: unknown): { detection: Detection; info: Description }[] | null {
+  if (v === undefined || v === null) return null;
+  if (!Array.isArray(v) || v.length === 0 || v.length > MAX_ITEMS) {
+    throw new HttpError(400, `items must be a non-empty array of at most ${MAX_ITEMS}`);
+  }
+  return v.map((raw, i) => {
+    const it = raw as Record<string, unknown>;
+    const b = it.box as Record<string, unknown> | undefined;
+    const box = b && { x1: Number(b.x1), y1: Number(b.y1), x2: Number(b.x2), y2: Number(b.y2) };
+    const texts = ["title", "description", "category", "color"].map((k) => it[k]);
+    if (!box || ![box.x1, box.y1, box.x2, box.y2].every(Number.isFinite) || box.x2 <= box.x1 || box.y2 <= box.y1) {
+      throw new HttpError(400, `items[${i}].box needs numeric x1 < x2 and y1 < y2`);
+    }
+    if (texts.some((t) => typeof t !== "string" || !t.trim())) {
+      throw new HttpError(400, `items[${i}] needs title, description, category and color`);
+    }
+    const [title, description, category, color] = texts as string[];
+    return {
+      detection: { mention: title, box },
+      info: {
+        what_it_is: title,
+        part_of_scene: false,
+        clearly_visible: true,
+        is_lost_item: true,
+        title: title.trim().slice(0, 80),
+        description: description.trim(),
+        category: CATEGORIES.includes(category) ? category : "Other",
+        color: COLORS.includes(color) ? color : "Multicolor",
+      },
+    };
+  });
+}
+
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
 
@@ -320,30 +356,41 @@ serve(async (body, req) => {
     ? await fromUrl(str(body.image_url)!)
     : fromBase64(str(body.image_base64)!);
 
-  // ---- identify
-  const detections = dedupe(await detectItems(scene, tileSpec(body.detect_tiles)), minBoxPx);
-  const crops = await Promise.all(
-    detections.map((d) => cropToJpeg(scene, d.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })),
-  );
-  const results = await Promise.allSettled(detections.map((d, i) => describe(scene, d, crops[i])));
-
   let items: { detection: Detection; crop: Uint8Array | null; info: Description }[] = [];
   const skipped: { label: string; box: Box; reason: string }[] = [];
-  results.forEach((r, i) => {
-    const detection = detections[i];
-    if (r.status === "rejected") {
-      skipped.push({ label: detection.mention, box: detection.box, reason: String(r.reason?.message ?? r.reason) });
-    } else if (r.value.part_of_scene || !r.value.clearly_visible || !r.value.is_lost_item) {
-      const why = r.value.part_of_scene
-        ? "part of the scene"
-        : !r.value.clearly_visible
-        ? "not clearly visible"
-        : "not a personal belonging";
-      skipped.push({ label: `${detection.mention} (${r.value.what_it_is})`, box: detection.box, reason: why });
-    } else {
-      items.push({ detection, crop: crops[i], info: r.value });
-    }
-  });
+  const preIdentified = preIdentifiedItems(body.items);
+
+  if (preIdentified) {
+    // ---- caller already identified these (e.g. a rover confirming an item seen in two views)
+    const crops = await Promise.all(
+      preIdentified.map((d) =>
+        cropToJpeg(scene, d.detection.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })
+      ),
+    );
+    items = preIdentified.map((d, i) => ({ ...d, crop: crops[i] }));
+  } else {
+    // ---- identify
+    const detections = dedupe(await detectItems(scene, tileSpec(body.detect_tiles)), minBoxPx);
+    const crops = await Promise.all(
+      detections.map((d) => cropToJpeg(scene, d.box, { minSide: CROP_MIN_SIDE_PX, upscaleTo: CROP_UPSCALE_PX })),
+    );
+    const results = await Promise.allSettled(detections.map((d, i) => describe(scene, d, crops[i])));
+    results.forEach((r, i) => {
+      const detection = detections[i];
+      if (r.status === "rejected") {
+        skipped.push({ label: detection.mention, box: detection.box, reason: String(r.reason?.message ?? r.reason) });
+      } else if (r.value.part_of_scene || !r.value.clearly_visible || !r.value.is_lost_item) {
+        const why = r.value.part_of_scene
+          ? "part of the scene"
+          : !r.value.clearly_visible
+          ? "not clearly visible"
+          : "not a personal belonging";
+        skipped.push({ label: `${detection.mention} (${r.value.what_it_is})`, box: detection.box, reason: why });
+      } else {
+        items.push({ detection, crop: crops[i], info: r.value });
+      }
+    });
+  }
 
   // ---- drop items that are already listed nearby
   const where = { lat, lng, isDemo: body.is_demo, at: discoveredAt };

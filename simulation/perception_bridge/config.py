@@ -33,6 +33,12 @@ LOCATION_LABEL = os.environ.get("LOCATION_LABEL", "UW Seattle campus, rover patr
 # Cameras whose images are sent. Benches sit beside the route, so the side cameras (1 = left,
 # 3 = right; the rover's narrow perception cameras) look straight at them; "0,1,2,3" sends all four.
 SEND_CAMERAS = {int(c) for c in os.environ.get("SEND_CAMERAS", "1,3").split(",") if c.strip()}
+# Two-view confirmation: 2 = list an item only after two rover positions agree on it (confirm.py);
+# 1 = list everything the detector reports straight away.
+CONFIRM_VIEWS = int(os.environ.get("CONFIRM_VIEWS", "2"))
+# Horizontal field of view of the sending cameras, for turning a box position into a bearing.
+# Campus perception cameras: 0.87 rad (50 deg); indoor: 1.64 rad (94 deg).
+PERCEPTION_HFOV = float(os.environ.get("PERCEPTION_HFOV", "0.87"))
 # Detections whose longer side is under this many pixels are ignored as too far away. On the
 # 1920x1440 perception cameras a bench item 2-3 m off the route is ~65-250 px.
 MIN_BOX_PX = int(os.environ.get("MIN_BOX_PX", "48"))

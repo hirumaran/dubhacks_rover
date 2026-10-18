@@ -86,8 +86,8 @@ SUPABASE_URL=https://salsusdncqbtrkcqxdkg.supabase.co SUPABASE_SERVICE_ROLE_KEY=
 ## Notes
 
 - `identify-found-items` doesn't use a fixed list of item names: it asks Mk1.5 for "any small, portable personal
-  belonging" (optionally per tile, `detect_tiles`), drops boxes smaller than `min_box_px`, then has Mk1.5 name each
-  crop and reject furniture, scenery and anything it can't make out before listing.
+  belonging" (optionally per tile, `detect_tiles`), drops boxes smaller than `min_box_px`, then has Mk1.5 name each crop
+  and reject furniture, scenery and anything it can't make out before listing.
 
 - Listing descriptions are told to leave out names, ID numbers and other owner text, because owners use those details
   privately to prove a claim.

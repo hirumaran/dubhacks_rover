@@ -44,7 +44,7 @@ To try it without creating listings, set `DRY_RUN=true` for the bridge (it print
 
 ```bash
 PERCEPTION_MISSION=simulation/indoor_showcase/maps/mission.json LOCATION_LABEL="Gates Center atrium" \
-  MOVE_MIN_M=1.0 python3 simulation/perception_bridge/run_bridge.py
+  MOVE_MIN_M=1.0 PERCEPTION_HFOV=1.64 python3 simulation/perception_bridge/run_bridge.py
 PERCEPTION_INBOX="$PWD/simulation/perception_bridge/inbox" \
   /Applications/Webots.app/Contents/MacOS/webots --mode=realtime simulation/indoor_showcase/worlds/gates_atrium.wbt
 ```
@@ -52,7 +52,11 @@ PERCEPTION_INBOX="$PWD/simulation/perception_bridge/inbox" \
 ## Things to know
 
 - Rover listings are `is_demo = true`: only demo accounts see them, never real students.
-- Each run adds listings. The duplicate check skips items already listed nearby, but it is imperfect:
-  expect the occasional duplicate, or a vague "rectangular object", especially for the green book.
+- An item is listed only after two rover positions agree on it (two-view confirmation), so the bridge
+  prints `saw …` first and `confirmed '…' in two views -> listed …` a little later.
+- Reset between runs (removes this rover's demo listings and their photos; drop `--yes` to preview):
+  ```bash
+  python3 simulation/perception_bridge/tools/reset_demo_listings.py --all --yes
+  ```
 - New item layout: `python3 simulation/tools/apply_bench_props.py --seed <n>` (campus).
 - Scoring a run against the layout file is described in `simulation/perception_bridge/README.md`.

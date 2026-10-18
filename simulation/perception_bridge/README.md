@@ -16,6 +16,8 @@ run_bridge.py
   change_gate.py   send a camera's image only if the rover moved ≥1.5 m, that camera turned ≥20°,
                    or the picture changed (64-bit image hash); otherwise skip it
   pose.py          rover GPS (sim metres) → latitude/longitude, per-camera facing
+  confirm.py       two-view confirmation: a find is listed only once a second rover position sees the
+                   same kind of item and both sight lines cross at one spot (triangulation)
   uploader.py      POST to identify-found-items, both cameras at once; offline queue in state/outbox/
                    (when the bridge falls behind it skips to the newest tick, unless SKIP_STALE=false)
         │
@@ -33,7 +35,9 @@ edge-functions/identify-found-items   open-ended Mk1.5 search on 2 tiles ("any s
 | `run_bridge.py` | Watches the inbox and drives everything |
 | `change_gate.py` | Decides which images are new views; state in `state/gate.json` |
 | `pose.py` | GPS → lat/lon (mission reference point), camera facing |
+| `confirm.py` | Two-view confirmation before anything is listed (`CONFIRM_VIEWS=1` turns it off) |
 | `uploader.py` | Requests to the edge function, offline retry |
+| `tools/reset_demo_listings.py` | List or delete this rover's demo listings and their photos |
 | `config.py` | Settings from `.env` |
 | `tools/selftest.py` | Offline test with a mock server: gate, request contents, retry |
 

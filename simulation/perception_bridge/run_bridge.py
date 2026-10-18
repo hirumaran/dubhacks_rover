@@ -27,6 +27,7 @@ from PIL import Image
 
 import config
 from change_gate import ChangeGate
+from confirm import Confirmer
 from pose import Pose
 from uploader import Uploader
 
@@ -63,6 +64,7 @@ class Bridge:
             sys.exit("ROVER_ID is not set: register this rover in the `rovers` table and put its id in .env")
         config.INBOX_DIR.mkdir(parents=True, exist_ok=True)
         self.gate = ChangeGate()
+        self.confirmer = Confirmer() if config.CONFIRM_VIEWS >= 2 else None
         cols, _, rows = config.DETECT_TILES.partition("x")
         self.tiles = {} if config.DETECT_TILES == "1x1" else {
             "detect_tiles": {"cols": int(cols), "rows": int(rows or 1), "band": config.DETECT_BAND}}
@@ -89,7 +91,8 @@ class Bridge:
             "rover_id": config.ROVER_ID,
             "is_demo": config.IS_DEMO,
             "discovered_at": captured_at,
-            "dry_run": config.DRY_RUN,
+            # With two-view confirmation, detection never lists; confirmed items are listed separately.
+            "dry_run": config.DRY_RUN or self.confirmer is not None,
             "min_box_px": config.MIN_BOX_PX,
             **self.tiles,
         }
@@ -119,9 +122,28 @@ class Bridge:
         with ThreadPoolExecutor(max_workers=max(1, len(to_send))) as pool:
             results = pool.map(
                 lambda c: self.uploader.send(self.payload(c[1], pose, captured_at), key=f"{seq:07d}_c{c[0]}"), to_send)
-            for (cam, _, reason), result in zip(to_send, results):
+            results = list(results)
+        for (cam, png, reason), result in zip(to_send, results):
+            where = [round(pose.x, 2), round(pose.y, 2), round(pose.heading_rad, 4)]
+            if self.confirmer is None:
                 print(f"[bridge] seq {seq} cam {cam} ({reason}) -> {summarize(result)}", flush=True)
-                log({"seq": seq, "camera": cam, "reason": reason, "pose": [round(pose.x, 2), round(pose.y, 2), round(pose.heading_rad, 4)], "result": result})
+                log({"seq": seq, "camera": cam, "reason": reason, "pose": where, "result": result})
+                continue
+            seen = result.get("identified") or [] if result["status"] == "ok" else []
+            names = ", ".join(i.get("title", "?") for i in seen)
+            print(f"[bridge] seq {seq} cam {cam} ({reason}) -> "
+                  f"{'saw ' + names if seen else summarize(result)}", flush=True)
+            log({"seq": seq, "camera": cam, "reason": reason, "pose": where, "result": result})
+            with Image.open(png) as img:
+                width = img.width
+            for frame, item in self.confirmer.observe(pose, cam, png, width, seen):
+                listing = self.uploader.send(
+                    {**self.payload(frame, pose, captured_at), "dry_run": config.DRY_RUN,
+                     "items": [{k: item[k] for k in ("box", "title", "description", "category", "color")}]},
+                    key=f"{seq:07d}_c{cam}_confirmed")
+                print(f"[bridge] seq {seq} cam {cam} confirmed '{item.get('title')}' in two views -> "
+                      f"{summarize(listing)}", flush=True)
+                log({"seq": seq, "camera": cam, "confirmed": item.get("title"), "pose": where, "result": listing})
         sent = len(to_send)
         for _, png in pngs:
             png.unlink(missing_ok=True)
