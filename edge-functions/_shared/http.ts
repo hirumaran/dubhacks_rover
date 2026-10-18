@@ -21,7 +21,8 @@ export function json(body: unknown, status = 200): Response {
 
 /** Wraps a POST handler with CORS preflight, JSON body parsing and error responses. */
 export function serve(handler: (body: Record<string, unknown>, req: Request) => Promise<Response>) {
-  Deno.serve({port:Number(Deno.env.get("PORT")??8000),hostname:Deno.env.get("LOCAL_ONLY")==="1"?"127.0.0.1":"0.0.0.0"},async (req) => {
+  const localOnly = Deno.env.get("LOCAL_ONLY") === "1";
+  Deno.serve({port:localOnly ? Number(Deno.env.get("PORT") ?? 8000) : 8000, hostname:localOnly ? "127.0.0.1" : "0.0.0.0"},async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return json({ error: "Use POST" }, 405);
 
