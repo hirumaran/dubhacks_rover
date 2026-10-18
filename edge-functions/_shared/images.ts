@@ -1,7 +1,6 @@
 // Loading images from Storage / URLs / base64, and cropping detections out of them.
 
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { decodeBase64 } from "jsr:@std/encoding@1/base64";
 import { decode, Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { HttpError } from "./http.ts";
 import type { Box } from "./perceptron.ts";
@@ -49,7 +48,7 @@ export function fromBase64(b64: string): LoadedImage {
   const stripped = b64.replace(/^data:[^;]+;base64,/, "");
   let bytes: Uint8Array;
   try {
-    bytes = decodeBase64(stripped);
+    bytes = Uint8Array.from(atob(stripped), char => char.charCodeAt(0));
   } catch {
     throw new HttpError(400, "image_base64 is not valid base64");
   }

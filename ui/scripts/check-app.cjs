@@ -27,7 +27,17 @@ async function main() {
       );
     await delay(500);
   }
-  const browser = await chromium.launch({ executablePath, headless: true });
+  const browser = await chromium.launch({
+    executablePath,
+    headless: true,
+    args:
+      process.env.HUSKYFIND_SCOUT_SMOKE === "1"
+        ? [
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+          ]
+        : [],
+  });
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
   });
@@ -88,6 +98,8 @@ async function main() {
     await page.goto(base, { timeout: 60000 });
     await bottle.waitFor({ timeout: 60000 });
     console.log("Activity, Profile, and session restoration passed.");
+    if (process.env.HUSKYFIND_SCOUT_SMOKE === "1")
+      await require("./check-scout.cjs")(page, base);
     assert.deepEqual(runtimeErrors, [], "No uncaught browser runtime errors");
   } catch (error) {
     console.error("Uncaught runtime errors:", runtimeErrors);

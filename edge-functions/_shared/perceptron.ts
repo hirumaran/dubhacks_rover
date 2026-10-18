@@ -1,7 +1,7 @@
 // Thin client for the Perceptron HTTP API (https://docs.perceptron.inc).
 // The key comes from the PERCEPTRON_API_KEY function secret and never leaves the server.
 
-import { encodeBase64 } from "jsr:@std/encoding@1/base64";
+import { Buffer } from "node:buffer";
 
 const API_BASE = "https://api.perceptron.inc/v1";
 export const MODEL = "perceptron-mk1.5";
@@ -21,7 +21,7 @@ export const text = (t: string): ContentPart => ({ type: "text", text: t });
 export const image = (url: string): ContentPart => ({ type: "image_url", image_url: { url } });
 
 export function toDataUrl(bytes: Uint8Array, mime: string): string {
-  return `data:${mime};base64,${encodeBase64(bytes)}`;
+  return `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {

@@ -1,5 +1,6 @@
 # Python and editor caches
 __pycache__/
+webcam/.runtime/
 *.py[cod]
 .venv/
 .DS_Store

@@ -1,6 +1,13 @@
 import React from "react";
 import { Redirect, Tabs } from "expo-router";
-import { Compass, MapPin, Plus, Bell, User } from "lucide-react-native";
+import {
+  Compass,
+  MapPin,
+  Plus,
+  Bell,
+  User,
+  ScanLine,
+} from "lucide-react-native";
 import { View } from "react-native";
 import { useSession } from "../../src/lib/session";
 import { State, colors } from "../../src/components/ui";
@@ -67,6 +74,13 @@ export default function Layout() {
         options={{
           title: "Activity",
           tabBarIcon: ({ color }) => <Bell color={color} size={23} />,
+        }}
+      />
+      <Tabs.Screen
+        name="scout"
+        options={{
+          title: "Scout",
+          tabBarIcon: ({ color }) => <ScanLine color={color} size={23} />,
         }}
       />
       <Tabs.Screen

@@ -23,6 +23,8 @@ sends only camera images and the rover's GPS/compass pose.
 The student app (HuskyFind, Expo/React Native) is in [`ui/`](ui/README.md). It reads the same
 Supabase project: found listings, matches, missing reports and claims.
 
+Its **Scout** tab also supports phone-camera recognition and paired webcam/rover feeds on Expo SDK 57. See [phone setup](ui/docs/SCOUT.md); run `npm run scout:gateway` from `ui/` alongside Expo to connect it.
+
 On macOS, open `simulation/Start Rover.command` to launch the rover (set
 `PERCEPTION_INBOX` first to enable the perception bridge), or open
 `simulation/worlds/uw_autonomous.wbt` in Webots R2025a or newer.

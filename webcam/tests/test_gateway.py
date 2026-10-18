@@ -49,7 +49,7 @@ class GatewayTests(unittest.TestCase):
     def test_config_has_no_service_credentials(self):
         with urllib.request.urlopen(self.url+'/api/config')as r:
             d=json.load(r);self.assertIn('microphone=()',r.headers['Permissions-Policy'])
-        self.assertEqual(set(d),{'token','model','dry_run','interval_s'});self.assertNotIn('test-private-secret',json.dumps(d))
+        self.assertEqual(set(d),{'token','model','dry_run','interval_s','mobile_enabled'});self.assertNotIn('test-private-secret',json.dumps(d))
     def test_private_sources_are_not_served(self):
         for p in ['/server.py','/../edge-functions/.env','/api/other']:
             with self.assertRaises(urllib.error.HTTPError)as e:urllib.request.urlopen(self.url+p)

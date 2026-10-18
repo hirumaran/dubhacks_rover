@@ -16,6 +16,13 @@
       "expo-dev-client",
       "expo-notifications",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Let Scout identify belongings using your camera.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Choose photos of your missing item or ownership evidence.",

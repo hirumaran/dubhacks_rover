@@ -13,6 +13,7 @@ const commands = {
   "expo-doctor": "node_modules/expo-doctor/build/index.js",
   backend: "scripts/check-backend.cjs",
   browser: "scripts/check-app.cjs",
+  scout: "scripts/start-scout.cjs",
 };
 const [tool, ...args] = process.argv.slice(2);
 if (!commands[tool] || !fs.existsSync(localNode)) {

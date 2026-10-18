@@ -94,3 +94,7 @@ Stop Metro with Ctrl+C, then run `npm run start:tunnel` and scan the newly gener
 Use `npm run start:lan` on networks that permit device-to-device traffic, or `npm run start:web` for a browser preview. The browser preview has a campus location list in place of the native interactive map; device push remains native-only. A React Native DevTools download warning uses Expo's fallback tools and does not itself stop the app from loading.
 
 The browser startup regression check (`npm run smoke:browser`) has also passed against the live backend: welcome → demo authentication → populated Discover feed → search → save/unsave → Activity → Profile → restored session, with no uncaught runtime errors. This uses an isolated test account that is deleted afterward; physical iOS/Android UI testing remains a separate check.
+
+## Phone camera recognition and rover feed
+
+Open the new **Scout** tab for Perceptron phone-camera scans, automatic scanning, detection boxes/history, and paired rover/webcam feeds. Run `npm run scout:gateway` in a separate terminal before connecting. See [Scout setup and networking](docs/SCOUT.md) for private server credentials, pairing, and starting a rover feed. Expo SDK 57 is retained.

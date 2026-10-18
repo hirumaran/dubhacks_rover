@@ -33,3 +33,7 @@ npx deno check --node-modules-dir=none edge-functions/identify-found-items/index
 ```
 
 Camera image quality, lighting, occlusion, request latency and model errors affect results. The app does not infer reliable numerical confidence or claim that every visible object is lost property. Large scene-sized boxes are rejected by the shared model pipeline; move a close-up item farther from the lens if necessary.
+
+## Expo phone integration
+
+From `ui/`, run `npm run scout:gateway`, then `npm run start:tunnel` in another terminal. The laptop camera page opens; choose **Enable webcam** to allow camera access and share its preview automatically. The Expo **Scout** tab accepts the single **SCOUT PAIRING CODE** printed by the launcher. It uses the app's existing Expo tunnel for phone-camera analysis and laptop/rover feeds, with no laptop IP selection or separate LAN connection. Both Python services remain loopback-only. Restart Expo after updating to load the proxy. See [mobile setup](../ui/docs/SCOUT.md). Shared frames stay in gateway memory until sharing stops or the service exits.
