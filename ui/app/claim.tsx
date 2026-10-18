@@ -1,5 +1,6 @@
+import { Alert } from "../src/lib/dialog";
 import React, { useState } from "react";
-import { Alert, Image, Text } from "react-native";
+import { Image, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ImagePickerAsset } from "expo-image-picker";
 import { useQueryClient } from "@tanstack/react-query";
@@ -51,7 +52,9 @@ export default function Claim() {
         ],
       );
     } catch (e) {
-      Alert.alert("Couldn’t submit claim", String(e));
+      if (String(e).includes("claims_user_id_found_item_id_key")) {
+        Alert.alert("You already have a claim", "Your claim is saved. Open My Claims to follow its review.", [{ text: "View claims", onPress: () => router.replace({ pathname: "/collection", params: { kind: "claims" } }) }]);
+      } else Alert.alert("Couldn’t submit claim", e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }

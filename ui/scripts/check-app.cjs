@@ -98,6 +98,7 @@ async function main() {
     await page.goto(base, { timeout: 60000 });
     await bottle.waitFor({ timeout: 60000 });
     console.log("Activity, Profile, and session restoration passed.");
+    if (process.env.HUSKYFIND_ACTIONS_SMOKE === "1") await require("./check-judging-actions.cjs")(page,base);
     if (process.env.HUSKYFIND_JUDGING_SMOKE === "1") await require("./check-judging-ui.cjs")(page,base);
     if (process.env.HUSKYFIND_SCOUT_SMOKE === "1")
       await require("./check-scout.cjs")(page, base);

@@ -69,3 +69,5 @@ npm run smoke:browser
 The judging checks use temporary anonymous accounts, invoke the real hosted model, test report/rover planning and operator feed authentication, and clean up their photos/accounts. Browser checks exercise a real file upload and phone/desktop layouts. Physical-device testing remains a separate final check on the devices at the judging table.
 
 Location privacy: public discovery pins and object GPS are hidden. Database column permissions block client reads of discovery coordinates; server matching and rover planning retain coordinates. My areas shows only the signed-in account reports under RLS.
+
+Final readiness checks: hosted claims and listing corrections use cross-platform confirmation dialogs. Web sharing opens a selectable permanent item URL with a clipboard fallback. Browser push setup is hidden; in-app notifications remain available. Public discovery listings refresh every 15 seconds without broadcasting hidden object coordinates.

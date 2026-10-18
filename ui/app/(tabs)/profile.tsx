@@ -1,5 +1,6 @@
+import { Alert } from "../../src/lib/dialog";
 import React, { useState } from "react";
-import { Alert, Image, Pressable, Text, View } from "react-native";
+import { Image, Platform, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, User } from "lucide-react-native";
@@ -126,12 +127,12 @@ export default function ProfileScreen() {
             secondary
             onPress={() => router.push("/(tabs)/activity")}
           />
-          <Button
+          {Platform.OS !== "web" && <Button
             title="Enable device push notifications"
             secondary
             disabled={busy}
             onPress={() => action(enablePush)}
-          />
+          />}
           <Button
             title={
               p.notifications_enabled

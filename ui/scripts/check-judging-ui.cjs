@@ -69,6 +69,7 @@ module.exports = async function checkJudging(page, base) {
     path: path.join(output, "desktop-report.png"),
     fullPage: true,
   });
+  await require("./check-judging-actions.cjs")(page, base);
   console.log(
     "Hosted judging UI: actual photo upload, cloud AI prefill, private report, rover assignment, responsive desktop, refreshed item links, and unpaired cloud Scout passed.",
   );

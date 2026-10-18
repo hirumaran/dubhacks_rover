@@ -1,6 +1,7 @@
+import { Alert } from "../../src/lib/dialog";
 import PrivatePhoto from "../../src/components/PrivatePhoto";
 import React, { useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page, Button, ItemCard, State, s } from "../../src/components/ui";

@@ -1,5 +1,6 @@
+import { Alert } from "../../src/lib/dialog";
 import React, { useState } from "react";
-import { Alert, Image, ScrollView, Share, Text, View } from "react-native";
+import { Image, Platform, ScrollView, Share, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page, Back, Button, Field, State, s } from "../../src/components/ui";
@@ -131,9 +132,21 @@ export default function Detail() {
             title="Share listing"
             secondary
             onPress={() => {
-              void Share.share({
-                message: `${i.title} · Found near ${i.approximate_location}\nOpen in HuskyFind: huskyfind://item/${i.id}`,
-              }).catch((e) => Alert.alert("Share", String(e)));
+              const url = `https://huskyfind-uw.expo.app/item/${i.id}`;
+              if (Platform.OS === "web") {
+                Alert.alert("Share this item", url, [
+                  { text: "Copy link", onPress: () => {
+                    void Promise.race([
+                      navigator.clipboard.writeText(url),
+                      new Promise((_, reject) => setTimeout(() => reject(new Error("Copy unavailable")), 1500)),
+                    ]).then(() => Alert.alert("Link copied", "Paste the link to share this item."))
+                      .catch(() => Alert.alert("Copy this link", url));
+                  } },
+                  { text: "Done", style: "cancel" },
+                ]);
+              } else {
+                void Share.share({ message: `${i.title}\n${url}` }).catch(e => Alert.alert("Share", String(e)));
+              }
             }}
           />
           <Button

@@ -11,7 +11,7 @@ export async function enablePush() {
     throw new Error(
       "Push notifications require a physical device and an Expo development build.",
     );
-  const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+  const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID || Constants.easConfig?.projectId;
   if (!projectId)
     throw new Error(
       "Push setup needs an EAS project ID. In-app notifications already work.",

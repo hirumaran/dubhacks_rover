@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Linking, Platform, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { File } from "expo-file-system";
@@ -33,7 +33,7 @@ export default function Scout() {
   const [automatic, setAutomatic] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(
-    "Connect to Scout to scan with your phone or view the rover.",
+    cloudMode ? "Cloud connection ready. Use your camera or wait for the operator to share a live feed." : "Connect to Scout to scan with your phone or view the rover.",
   );
   const [history, setHistory] = useState<Scan[]>([]);
   const [selected, setSelected] = useState<Scan | null>(null);
@@ -392,7 +392,7 @@ export default function Scout() {
               )}
               <Text style={s.small}>
                 Microphone off. Scans send selected images to Perceptron through
-                your computer. Automatic scans wait for inference to finish. No
+                {cloudMode ? "Supabase" : "your computer"}. Automatic scans wait for inference to finish. No
                 GPS or Supabase listings.
               </Text>
             </View>
@@ -456,6 +456,7 @@ export default function Scout() {
                   )}
                 </>
               )}
+              {!feed?.online && <Button title="Try photo identification instead" secondary onPress={() => router.push("/(tabs)/report")} />}
               <Text style={s.small}>
                 {source === "Rover"
                   ? "Start the rover vision demo on the computer. This view shows its actual published model frames, usually every five seconds; it is not continuous video."

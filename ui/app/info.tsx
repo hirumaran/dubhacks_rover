@@ -1,5 +1,6 @@
+import { Alert } from "../src/lib/dialog";
 import React, { useState } from "react";
-import { Alert, Linking, Text } from "react-native";
+import { Linking, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Page, Back, Button, s } from "../src/components/ui";
 import { check, supabase } from "../src/lib/supabase";
@@ -53,8 +54,9 @@ export default function Info() {
           <Text style={s.body}>
             Your profile, missing-item reports, search requests, and ownership
             answers are private. Authorized reviewers can access claim evidence.
-            Public item locations are approximate. Your device location is used
-            to center the map and is not saved.
+            Object GPS coordinates are hidden from public listings. Only your own
+            last-seen search areas appear in My areas; coordinates remain available
+            privately to server matching and rover planning.
           </Text>
           <Text style={s.heading}>You’re in control</Text>
           <Text style={s.body}>
@@ -97,9 +99,9 @@ export default function Info() {
           </Text>
           <Text style={s.heading}>What does a rover search mean?</Text>
           <Text style={s.body}>
-            Searches begin as queued requests. Activity reflects updates from
-            campus operations. A rover detection does not mean an item has been
-            collected.
+            Demo searches receive a saved plan from a virtual rover fleet. This is
+            simulated dispatch. Real searches queue until an available rover
+            reports in. A camera detection does not mean an item has been collected.
           </Text>
           <Text style={s.heading}>Need campus assistance?</Text>
           <Text style={s.body}>

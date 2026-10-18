@@ -122,7 +122,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (!session) return;
     const channel = supabase.channel(`huskyfind-${session.user.id}`);
     for (const table of [
-      "found_items",
       "missing_reports",
       "item_matches",
       "search_requests",

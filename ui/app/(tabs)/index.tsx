@@ -30,6 +30,7 @@ export default function Discover() {
   const { session } = useSession();
   const feed = useInfiniteQuery({
     queryKey: ["found", search, category, sort],
+    refetchInterval: 15000,
     queryFn: ({ pageParam }) => foundItems(search, category, pageParam, sort),
     initialPageParam: 0,
     getNextPageParam: (last, pages) =>

@@ -1,4 +1,5 @@
 import "../global.css";
+import { DialogHost } from "../src/lib/dialog";
 import React from "react";
 import { Text } from "react-native";
 import { Stack } from "expo-router";
@@ -61,6 +62,7 @@ export default function Layout() {
       <QueryClientProvider client={client}>
         <SessionProvider>
           <Navigator />
+          <DialogHost />
         </SessionProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

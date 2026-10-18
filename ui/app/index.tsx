@@ -1,6 +1,7 @@
+import { Alert } from "../src/lib/dialog";
 import { exchangeCode } from "../src/lib/auth";
 import React, { useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { LocateFixed, MapPin, Sparkles } from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
