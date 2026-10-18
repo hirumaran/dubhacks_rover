@@ -1,5 +1,7 @@
 # dubhacks_rover
 
+**Use a real webcam:** see [`webcam/README.md`](webcam/README.md), or double-click `webcam/Start Webcam.command`. Open http://127.0.0.1:8769/ for real Perceptron image detection with manual or five-second scans; no Webots or database uploads are required.
+
 **Run the end-to-end demo:** see [DEMO.md](DEMO.md) (rover finds an item, HuskyFind reports the match).
 
 The standalone indoor rover showcase on branch **sarath** is in [`simulation-indoors/`](simulation-indoors/README.md). It captures all four directions every five simulation seconds and labels visible items. Open `simulation-indoors/Start Showcase.command` to run it.

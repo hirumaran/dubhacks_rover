@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-17",
+  "python_gateway_tests": {"passed": 6, "failed": 0},
+  "javascript_repeat_sighting_tests": {"passed": 4, "failed": 0},
+  "deno_typecheck": "passed",
+  "real_browser_check": {
+    "browser": "Chrome",
+    "camera": "FaceTime HD Camera",
+    "camera_permission": "granted",
+    "actual_perceptron_result": "Black backpack identified and boxed from a real webcam image",
+    "response_seconds": 2.23,
+    "earlier_scan": "no items identified",
+    "dry_run": true,
+    "database_uploads": false,
+    "camera_images_in_repository": false
+  },
+  "limits": ["Repeat sightings are approximate temporal association, not proof of identity or abandonment.", "This is sampled single-camera analysis, not a 360-degree camera or continuous video stream."]
+}
