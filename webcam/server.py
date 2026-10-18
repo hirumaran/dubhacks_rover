@@ -77,7 +77,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(204); self.end_headers()
     def do_POST(self):
         is_mobile = self.path == '/api/mobile/analyze'
-        if self.path not in ('/api/analyze', '/api/preview', '/api/cloud-sharing', '/api/mobile/analyze'): self.reply(404, {'error':'Not found'}); return
+        if self.path not in ('/api/analyze', '/api/preview', '/api/cloud-sharing', '/api/pairing', '/api/mobile/analyze'): self.reply(404, {'error':'Not found'}); return
         local_auth = self.valid_host() and self.headers.get('Sec-Fetch-Site') != 'cross-site' and self.headers.get('Origin', 'http://'+self.headers.get('Host','')) == 'http://'+self.headers.get('Host','') and secrets.compare_digest(self.headers.get('X-Webcam-Token',''), self.server.token)
         if not (mobile.authorized(self) if is_mobile else local_auth):
             self.reply(403, {'error':'Pair again using the current Scout gateway code.' if is_mobile else 'Open this page locally and reload it.'}); return
@@ -86,6 +86,10 @@ class Handler(SimpleHTTPRequestHandler):
             if not 0 < n <= MAX_BODY: self.reply(413, {'error':'Camera frame is too large.'}); return
             if self.headers.get_content_type() != 'application/json': raise ValueError('Send JSON.')
             body = json.loads(self.rfile.read(n))
+            if self.path == '/api/pairing':
+                if not self.server.mobile_enabled:
+                    self.reply(409, {'error':'Restart the gateway with --mobile to enable Expo Go pairing.'}); return
+                self.reply(200, {'code':self.server.mobile_token}); return
             if self.path == '/api/cloud-sharing':
                 if not getattr(self.server,'cloud_config',None):
                     self.reply(503,{'error':'Configure the judging relay first: npm run configure:cloud'});return

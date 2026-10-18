@@ -44,6 +44,19 @@ class MobileTests(unittest.TestCase):
         config = json.load(urllib.request.urlopen(self.url + '/api/config'))
         self.assertNotIn(self.server.mobile_token, json.dumps(config))
 
+    def test_pairing_recovery_requires_local_operator_token(self):
+        for headers in ({}, {'Authorization':'Bearer '+self.server.mobile_token},
+                        {'X-Webcam-Token':self.server.token, 'Origin':'https://untrusted.invalid'}):
+            request = urllib.request.Request(self.url+'/api/pairing', data=b'{}',
+                headers={'Content-Type':'application/json', **headers})
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(request)
+            self.assertEqual(error.exception.code, 403)
+        request = urllib.request.Request(self.url+'/api/pairing', data=b'{}',
+            headers={'Content-Type':'application/json','X-Webcam-Token':self.server.token})
+        with urllib.request.urlopen(request) as response:
+            self.assertEqual(json.load(response)['code'], self.server.mobile_token)
+
     def test_feeds_use_only_published_pixels_and_expire(self):
         self.assertFalse(self.call('/api/mobile/feed')['online'])
         self.server.preview = {'image':frame(), 'width':640, 'height':480, 'updated_at':0, 'detections':[]}
