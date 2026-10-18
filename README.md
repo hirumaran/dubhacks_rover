@@ -20,8 +20,9 @@ whether a lost and a found item are the same object. The rover feeds them throug
 [`simulation/perception_bridge/`](simulation/perception_bridge/README.md), which
 sends only camera images and the rover's GPS/compass pose.
 
-The student app (HuskyFind, Expo/React Native) is in [`ui/`](ui/README.md). It reads the same
-Supabase project: found listings, matches, missing reports and claims.
+The student app (HuskyFind, Expo/React Native) is in [`ui/`](ui/README.md). Open it on a
+phone with `cd ui && npm run start:tunnel` and scan the terminal QR code with Expo Go. It
+reads the same Supabase project: found listings, matches, missing reports and claims.
 
 On macOS, open `simulation/Start Rover.command` to launch the rover (set
 `PERCEPTION_INBOX` first to enable the perception bridge), or open

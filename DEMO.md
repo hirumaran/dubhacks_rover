@@ -19,7 +19,11 @@ HuskyFind app ◀── Strong match / Rover found ◀── Supabase matching t
 
 ## Run it (about 8 minutes)
 
-1. **App.** `cd ui && npm run start:web`, open <http://localhost:8081>, click **Explore Demo**.
+1. **App.** Open HuskyFind on your phone: `cd ui && npm run start:tunnel`, then scan the
+   QR code printed in the terminal with Expo Go (SDK 57-compatible; sign the CLI and Expo Go
+   into the same Expo account, see `ui/README.md`). The Expo terminal QR is the only QR in
+   this demo — there is no printable desk code. Quick look without a phone:
+   `npm run start:web` and open <http://localhost:8081>. Tap **Explore Demo**.
 2. **Report something the rover will find.** Report tab: name `Yellow rubber duck`, category **Other**,
    color `Yellow`, any description, location **Suzzallo Library**, keep the default time (now).
    Click **Start my search**. (The benches also have books, a water bottle and soccer balls, depending
